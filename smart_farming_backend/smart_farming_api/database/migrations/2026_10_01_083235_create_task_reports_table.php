@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('companies', function (Blueprint $table) {
+        Schema::create('task_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('owner_id')->constrained('users')->restrictOnDelete();
-            $table->string('name');
+            $table->foreignId('task_id')->unique()->constrained()->cascadeOnDelete();
+            $table->json('media_urls');
+            $table->decimal('actual_qty', 10, 2);
+            $table->string('notes')->nullable();
+            $table->datetime('reported_at');
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('companies');
+        Schema::dropIfExists('task_reports');
     }
 };
