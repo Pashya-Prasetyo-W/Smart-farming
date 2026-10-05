@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('task_resources', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->foreignId('task_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('resource_id')->constrained()->cascadeOnDelete();
-            $table->unique(['task_id', 'resource_id']);
+            $table->foreignId('resource_id')->constrained()->restrictOnDelete();
             $table->decimal('max_allocated_qty', 10, 2);
+            $table->decimal('actual_used_qty', 10, 2)->nullable();
+            $table->decimal('variance_qty', 10, 2)->default(0);
+            $table->boolean('is_over_allocated')->default(false);
             $table->timestamps();
+            $table->unique(['task_id', 'resource_id']);
         });
     }
 

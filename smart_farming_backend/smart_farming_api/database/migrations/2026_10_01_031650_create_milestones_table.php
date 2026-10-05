@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('milestones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('land_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->morphs('milestoneable');
             $table->string('title');
             $table->decimal('target_value', 10, 2);
             $table->decimal('current_value', 10, 2)->default(0);
             $table->date('deadline');
             $table->timestamps();
+            $table->index(['company_id', 'deadline']);
         });
     }
 

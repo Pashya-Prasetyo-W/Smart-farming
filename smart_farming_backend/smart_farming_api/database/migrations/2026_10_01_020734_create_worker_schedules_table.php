@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('worker_schedules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
             $table->time('start_time');
             $table->time('end_time');
-            $table->time('break_start');
-            $table->time('break_end');
+            $table->time('break_start')->nullable();
+            $table->time('break_end')->nullable();
             $table->json('work_days');
             $table->timestamps();
         });

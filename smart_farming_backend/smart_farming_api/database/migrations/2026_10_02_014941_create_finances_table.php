@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tools', function (Blueprint $table) {
+        Schema::create('finances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
-            $table->string('unit_label')->nullable();
-            $table->unsignedInteger('total_qty');
-            $table->unsignedInteger('available_qty');
+            $table->foreignId('planting_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('type', ['pemasukan', 'pengeluaran']);
+            $table->decimal('amount', 15, 2);
+            $table->string('description');
+            $table->date('record_date');
             $table->timestamps();
+            $table->index(['company_id', 'record_date']);
+            $table->index(['company_id', 'type']);
         });
     }
 
@@ -27,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tools');
+        Schema::dropIfExists('finances');
     }
 };

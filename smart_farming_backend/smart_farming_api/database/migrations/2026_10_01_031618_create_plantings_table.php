@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('plantings', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->foreignId('land_id')->constrained()->cascadeOnDelete();
             $table->string('crop_name');
             $table->date('plant_date');
             $table->date('est_harvest_date');
             $table->enum('status', ['berjalan', 'panen', 'gagal'])->default('berjalan');
-            $table->decimal('total_cost', 10, 2)->default(0);
+            $table->decimal('total_cost', 15, 2)->default(0);
             $table->timestamps();
+            $table->index(['company_id', 'status']);
         });
     }
 

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('owner_id')->constrained('users')->restrictOnDelete();
             $table->string('name');
             $table->timestamps();
+            $table->unique(['owner_id', 'name']);
         });
     }
 

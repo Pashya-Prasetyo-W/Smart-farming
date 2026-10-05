@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('worker_benefits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
             $table->boolean('health_insurance')->default(false);
             $table->boolean('food_allowance')->default(false);
             $table->timestamps();

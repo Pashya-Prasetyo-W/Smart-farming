@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('stock_qty', 10, 2 );
             $table->decimal('unit_price', 10, 2);
             $table->timestamps();
+            $table->index(['company_id', 'name']);
         });
     }
 

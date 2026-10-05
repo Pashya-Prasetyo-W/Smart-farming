@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('task_reports', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->foreignId('task_id')->unique()->constrained()->cascadeOnDelete();
             $table->json('media_urls');
-            $table->decimal('actual_qty', 10, 2);
-            $table->string('notes')->nullable();
+            $table->text('notes')->nullable();
             $table->datetime('reported_at');
             $table->timestamps();
         });
