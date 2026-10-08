@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->foreignId('tool_id')->constrained()->cascadeOnDelete();
             $table->string('unit_code');
-            $table->enum('condition', ['baik', 'rusak', 'perbaikan'])->default('baik');
+            $table->enum('condition', ['baik', 'rusak', 'perbaikan', 'hilang'])->default('baik');
             $table->boolean('is_available')->default(true);
             $table->timestamps();
             $table->unique(['tool_id', 'unit_code']);
