@@ -50,6 +50,7 @@ class Task extends Model
             'task_resources',
             'task_id',
             'resource_id')
+        ->using(TaskResource::class)
         ->withPivot([
             'max_allocated_qty',
             'actual_used_qty',
@@ -64,6 +65,7 @@ class Task extends Model
             'task_tools',
             'task_id',
             'tool_id')
+        ->using(TaskTool::class)
         ->withPivot([
             'qty',
             'lost_qty',])
