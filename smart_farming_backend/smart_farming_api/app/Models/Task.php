@@ -18,6 +18,7 @@ class Task extends Model
         'task_date',
         'due_date',
         'status',
+        'cancel_reason'
     ];
 
     protected function casts(): array
@@ -26,6 +27,7 @@ class Task extends Model
             'task_date' => 'date',
             'due_date' => 'date',
             'status' => TaskStatus::class,
+            'cancelled_at' => 'datetime'
         ];
     }
 

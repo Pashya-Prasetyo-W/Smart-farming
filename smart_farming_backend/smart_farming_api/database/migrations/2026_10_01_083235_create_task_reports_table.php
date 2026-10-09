@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->foreignId('task_id')->unique()->constrained()->cascadeOnDelete();
+            $table->enum('type', ['selesai', 'pengembalian'])->default('selesai');
             $table->json('media_urls');
             $table->text('notes')->nullable();
             $table->datetime('reported_at');

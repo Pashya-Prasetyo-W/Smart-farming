@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('tool_id')->constrained()->restrictOnDelete();
             $table->unsignedInteger('qty');
             $table->unsignedInteger('lost_qty')->default(0);
+            $table->json('assigned_unit_ids')->nullable();
             $table->timestamps();
             $table->unique(['task_id', 'tool_id']);
         });

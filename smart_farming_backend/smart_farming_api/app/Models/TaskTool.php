@@ -23,6 +23,7 @@ class TaskTool extends Model
         return [
             'qty'      => 'integer',
             'lost_qty' => 'integer',
+            'assigned_unit_ids' => 'array'
         ];
     }
 

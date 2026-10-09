@@ -20,7 +20,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->date('task_date');
             $table->date('due_date');
-            $table->enum('status', ['menunggu', 'dikerjakan','selesai', 'gagal'])->default('menunggu');
+            $table->enum('status', ['menunggu', 'dikerjakan','selesai', 'gagal', 'batal'])->default('menunggu');
+            $table->text('cancel_reason')->nullable();
+            $table->datetime('cancelled_at')->nullable(); 
             $table->timestamps();
             $table->index(['company_id', 'status']);
             $table->index(['assigned_to', 'status']);

@@ -8,4 +8,5 @@ enum TaskStatus: string
     case Dikerjakan = 'dikerjakan';
     case Selesai = 'selesai';
     case Gagal = 'gagal';
+    case Batal = 'batal';
 }

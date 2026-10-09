@@ -10,6 +10,7 @@ class TaskReport extends Model
     use HasFactory;
 
     protected $fillable = [
+        'type',
         'media_urls',
         'notes',
         'reported_at'
