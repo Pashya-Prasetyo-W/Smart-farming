@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('planting_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('source', ['cronjob', 'manual'])->default('cronjob');
             $table->foreignId('input_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->decimal('risk_score', 5, 2);
+            $table->unsignedTinyInteger('risk_score')->default(0);
             $table->string('reason');
             $table->json('analyzed_data_json');
             $table->timestamps();
