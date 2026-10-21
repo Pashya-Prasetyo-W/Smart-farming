@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LandController;
 use App\Http\Controllers\Api\ToolController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\PlantingController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -20,4 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tools', ToolController::class)->only(['index', 'store']);
     Route::apiResource('resources', ResourceController::class)->only(['index', 'store']);
     Route::apiResource('plantings', PlantingController::class)->only(['index', 'store']);
+    Route::apiResource('tasks', TaskController::class)->only(['index', 'store']);
+    Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
+    Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
 });
