@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\ToolController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\PlantingController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\IncidentReportController;
+use App\Http\Controllers\Api\FinanceController;
+use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -25,4 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
     Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
     Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
+    Route::apiResource('incidents', IncidentReportController::class)->only(['index', 'store']);
+    Route::apiResource('finances', FinanceController::class)->only(['index', 'store']);
+    Route::get('/plantings/{planting}/hpp', [FinanceController::class, 'calculateHPP']);
+    Route::get('/dashboard/owner', [DashboardController::class, 'owner']);
+    Route::get('/dashboard/worker', [DashboardController::class, 'worker']);
 });
