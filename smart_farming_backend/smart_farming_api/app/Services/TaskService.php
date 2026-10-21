@@ -110,4 +110,46 @@ class TaskService
             return $task->load(['planting', 'assignee', 'resources', 'tools']);
         });
     }
+
+    public function cancelTask(Task $task, User $pemilik, string $reason): Task
+    {
+        if (!in_array($task->status, [TaskStatus::Menunggu, TaskStatus::Dikerjakan])) {
+            throw ValidationException::withMessages([
+                'status' => ['Tugas dengan status ini tidak dapat dibatalkan.'],
+            ]);
+        }
+
+        return DB::transaction(function () use ($task, $reason) {
+            $previousStatus = $task->status;
+
+            $task->status = TaskStatus::Batal;
+            $task->cancel_reason = $reason;
+            $task->cancelled_at = now();
+            $task->save();
+
+            if ($previousStatus === TaskStatus::Dikerjakan) {
+                foreach ($task->tools as $tool) {
+                    $taskTool = \App\Models\TaskTool::where('task_id', $task->id)
+                        ->where('tool_id', $tool->id)
+                        ->first();
+                    $assignedUnitIds = $taskTool ? $taskTool->assigned_unit_ids : [];
+                    $borrowedQty = $tool->pivot->qty;
+
+                    if (!empty($assignedUnitIds)) {
+                        ToolUnit::whereIn('id', $assignedUnitIds)->update([
+                            'is_available' => true,
+                        ]);
+                    }
+
+                    $lockedTool = Tool::where('id', $tool->id)->lockForUpdate()->first();
+                    if ($lockedTool) {
+                        $lockedTool->available_qty += $borrowedQty;
+                        $lockedTool->save();
+                    }
+                }
+            }
+
+            return $task->load(['planting', 'assignee', 'resources', 'tools']);
+        });
+    }
 }

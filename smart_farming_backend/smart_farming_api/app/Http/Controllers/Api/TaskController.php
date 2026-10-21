@@ -94,4 +94,24 @@ class TaskController extends Controller
             'data'    => $report,
         ], 201);
     }
+
+    public function cancel(Request $request, Task $task): JsonResponse
+    {
+        abort_if(
+            $request->user()->role !== 'pemilik',
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat membatalkan tugas.'
+        );
+
+        $validatedData = $request->validate([
+            'reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $updatedTask = $this->taskService->cancelTask($task, $request->user(), $validatedData['reason']);
+
+        return response()->json([
+            'message' => 'Tugas berhasil dibatalkan.',
+            'data'    => $updatedTask,
+        ], 200);
+    }
 }

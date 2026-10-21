@@ -24,4 +24,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tasks', TaskController::class)->only(['index', 'store']);
     Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
     Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
+    Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
 });

@@ -90,7 +90,10 @@ class ReportService
             }
 
             foreach ($task->tools as $tool) {
-                $assignedUnitIds = $tool->pivot->assigned_unit_ids ?? [];
+                $taskTool = \App\Models\TaskTool::where('task_id', $task->id)
+                    ->where('tool_id', $tool->id)
+                    ->first();
+                $assignedUnitIds = $taskTool ? $taskTool->assigned_unit_ids : [];
                 $borrowedQty     = $tool->pivot->qty;
 
                 if (!empty($assignedUnitIds)) {
