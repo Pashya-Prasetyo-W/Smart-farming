@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'openweather' => [
+    'key' => env('OPENWEATHER_API_KEY'),
+    ],
+
+    'gemini' => [
+    'key' => env('GEMINI_API_KEY'),
+    ],
+
 ];
