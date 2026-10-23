@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../services/land_service.dart';
+import 'add_land_screen.dart';
+import 'add_planting_screen.dart';
 
 class LandListScreen extends StatefulWidget {
   const LandListScreen({super.key});
@@ -30,7 +33,10 @@ class _LandListScreenState extends State<LandListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Lahan', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Daftar Lahan',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF2E7D32),
       ),
       body: _isLoading
@@ -56,20 +62,77 @@ class _LandListScreenState extends State<LandListScreen> {
                         ),
                         title: Text(
                           land['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 8),
-                            Text('Luas: ${land['area_sqm']} m²'),
-                            Text('Koordinat: ${land['location_lat']}, ${land['location_long']}'),
+                            Text(
+                              'Luas: ${double.parse(land['area_sqm'].toString()).toStringAsFixed(1)} m²',
+                            ),
+                            Text(
+                              'Koordinat: ${double.parse(land['location_lat'].toString())}, ${double.parse(land['location_long'].toString())}',
+                            ),
+                            const SizedBox(height: 8),
+                            
+                            // CEK APAKAH ADA SIKLUS AKTIF
+                            if (land['active_planting'] != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Siklus berjalan: ${land['active_planting']['crop_name']}',
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              )
+                            else
+                              OutlinedButton.icon(
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddPlantingScreen(
+                                        landId: land['id'],
+                                        landName: land['name'],
+                                      ),
+                                    ),
+                                  );
+                                  _fetchLands(); // Refresh jika kembali
+                                },
+                                icon: const Icon(Icons.eco, size: 16),
+                                label: const Text('Mulai Siklus Tanam', style: TextStyle(fontSize: 12)),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF2E7D32),
+                                ),
+                              ),
                           ],
                         ),
                       ),
                     );
                   },
                 ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddLandScreen()),
+          );
+          _fetchLands(); // Refresh list saat kembali
+        },
+        backgroundColor: const Color(0xFF2E7D32),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 }

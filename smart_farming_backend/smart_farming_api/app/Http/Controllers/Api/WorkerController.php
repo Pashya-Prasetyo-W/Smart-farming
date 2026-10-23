@@ -62,13 +62,50 @@ class WorkerController extends Controller
         ], 200);
     }
 
-        public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, $id): JsonResponse
     {
-        // (Sementara kita siapkan endpoint-nya dulu, logika lengkapnya bisa ditambahkan nanti)
-        return response()->json(['message' => 'Fitur edit segera hadir.']);
+        abort_if($request->user()->role !== 'pemilik', 403, 'Akses ditolak.');
+
+        $worker = \App\Models\User::where('company_id', $request->user()->company_id)
+            ->where('role', 'buruh')->findOrFail($id);
+
+        $validatedData = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $worker->id],
+            'schedule.start_time' => ['nullable', 'date_format:H:i:s'],
+            'schedule.end_time' => ['nullable', 'date_format:H:i:s'],
+            'schedule.work_days' => ['nullable', 'array'],
+            'benefit.health_insurance' => ['nullable', 'numeric'],
+            'benefit.health_insurance_desc' => ['nullable', 'string', 'max:255'],
+            'benefit.food_allowance' => ['nullable', 'numeric'],
+            'benefit.food_allowance_desc' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        \DB::transaction(function () use ($worker, $validatedData) {
+            $worker->update(['name' => $validatedData['name'], 'email' => $validatedData['email']]);
+            
+            if (isset($validatedData['schedule'])) {
+                $worker->schedule()->update([
+                    'start_time' => $validatedData['schedule']['start_time'] ?? '08:00:00',
+                    'end_time' => $validatedData['schedule']['end_time'] ?? '16:00:00',
+                    'work_days' => $validatedData['schedule']['work_days'] ?? [],
+                ]);
+            }
+
+            if (isset($validatedData['benefit'])) {
+                $worker->benefit()->update([
+                    'health_insurance' => $validatedData['benefit']['health_insurance'] ?? 0,
+                    'health_insurance_desc' => $validatedData['benefit']['health_insurance_desc'] ?? null,
+                    'food_allowance' => $validatedData['benefit']['food_allowance'] ?? 0,
+                    'food_allowance_desc' => $validatedData['benefit']['food_allowance_desc'] ?? null,
+                ]);
+            }
+        });
+
+        return response()->json(['message' => 'Data buruh berhasil diperbarui.', 'data' => $worker->load(['schedule', 'benefit'])], 200);
     }
 
-        public function destroy(Request $request, $id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
         abort_if($request->user()->role !== 'pemilik', 403, 'Akses ditolak.');
 

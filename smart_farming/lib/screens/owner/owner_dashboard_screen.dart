@@ -5,8 +5,8 @@ import '../../services/dashboard_service.dart';
 import 'land_list_screen.dart';
 import 'task_list_screen.dart';
 import '../profile/profile_screen.dart';
-import 'add_worker_screen.dart';
 import 'worker_list_screen.dart';
+import 'inventory_screen.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -132,6 +132,18 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       minimumSize: const Size(double.infinity, 48),
                     ),
                   ),
+
+                  ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const InventoryScreen()));
+                        },
+                        icon: const Icon(Icons.inventory_2, color: Colors.white),
+                        label: const Text('Manajemen Inventaris', style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange[800],
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                      ),
                   const SizedBox(height: 24),
 
                   // Grid Statistik

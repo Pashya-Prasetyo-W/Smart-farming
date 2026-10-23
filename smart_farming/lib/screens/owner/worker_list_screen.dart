@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/worker_service.dart';
 import 'add_worker_screen.dart';
+import 'edit_worker_screen.dart';
 
 class WorkerListScreen extends StatefulWidget {
   const WorkerListScreen({super.key});
@@ -122,6 +123,19 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                                   ),
                                 ],
                               ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EditWorkerScreen(worker: worker),
+                                  ),
+                                );
+                                _fetchWorkers();
+                              },
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),

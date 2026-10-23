@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,7 +29,7 @@ class TaskService {
     }
   }
 
-    Future<Map<String, dynamic>?> getTaskDetail(int taskId) async {
+  Future<Map<String, dynamic>?> getTaskDetail(int taskId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -51,7 +52,7 @@ class TaskService {
     }
   }
 
-      Future<bool> cancelTask(int taskId, String reason) async {
+  Future<bool> cancelTask(int taskId, String reason) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -76,7 +77,7 @@ class TaskService {
     }
   }
 
-    Future<bool> startTask(int taskId) async {
+  Future<bool> startTask(int taskId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -97,7 +98,11 @@ class TaskService {
     }
   }
 
-    Future<bool> submitReport(int taskId, List<Map<String, dynamic>> resources, String notes) async {
+  Future<bool> submitReport(
+    int taskId,
+    List<Map<String, dynamic>> resources,
+    String notes,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -111,18 +116,14 @@ class TaskService {
         },
         body: jsonEncode({
           // Kita gunakan URL dummy dulu karena kita belum mengimplementasikan Firebase Storage di Flutter
-          'media_urls': ['https://dummy-image.com/bukti_kerja.jpg'], 
+          'media_urls': ['https://dummy-image.com/bukti_kerja.jpg'],
           'notes': notes,
-          'resources': resources, 
+          'resources': resources,
         }),
       );
 
-      print('REPORT STATUS: ${response.statusCode}');
-      print('REPORT BODY: ${response.body}');
-      
       return response.statusCode == 201;
     } catch (e) {
-      print('REPORT ERROR: $e');
       return false;
     }
   }

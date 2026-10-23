@@ -27,6 +27,11 @@ class Land extends Model
         return $this->hasMany(Planting::class);
     }
 
+    public function activePlanting()
+    {
+        return $this->hasOne(Planting::class)->where('status', 'berjalan');
+    }
+
     public function milestones()
     {
         return $this->morphMany(Milestone::class, 'milestoneable');

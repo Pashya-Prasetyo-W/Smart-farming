@@ -15,12 +15,12 @@ class LandController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $lands = $this->landService->getLands($request->user());
+        $lands = \App\Models\Land::where('company_id', $request->user()->company_id)
+            ->with(['activePlanting'])
+            ->latest()
+            ->get();
 
-        return response()->json([
-            'message' => 'Daftar lahan berhasil diambil.',
-            'data'    => $lands,
-        ], 200);
+        return response()->json(['message' => 'Daftar lahan berhasil diambil.', 'data' => $lands], 200);
     }
 
     public function store(Request $request): JsonResponse

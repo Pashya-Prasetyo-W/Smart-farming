@@ -27,4 +27,25 @@ class LandService {
       return null;
     }
   }
+
+    Future<bool> createLand(Map<String, dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/lands'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(data),
+      );
+
+      return response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
 }
