@@ -11,7 +11,9 @@ class WorkerBenefit extends Model
 
     protected $fillable = [
         'health_insurance',
-        'food_allowance'
+        'health_insurance_desc',
+        'food_allowance',
+        'food_allowance_desc',
     ];
 
     protected function casts(): array

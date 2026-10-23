@@ -152,4 +152,15 @@ class TaskService
             return $task->load(['planting', 'assignee', 'resources', 'tools']);
         });
     }
+
+        public function getTasks(User $user): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = Task::with(['planting.land', 'assignee'])->latest();
+        
+        if ($user->role === 'pemilik') {
+            return $query->where('company_id', $user->company_id)->get();
+        }
+        
+        return $query->where('assigned_to', $user->id)->get();
+    }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ChatbotController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\UserController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -29,10 +30,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tools', ToolController::class)->only(['index', 'store']);
     Route::apiResource('resources', ResourceController::class)->only(['index', 'store']);
     Route::apiResource('plantings', PlantingController::class)->only(['index', 'store']);
-    Route::apiResource('tasks', TaskController::class)->only(['index', 'store']);
+    Route::apiResource('tasks', TaskController::class)->only(['index', 'store', 'show']);
     Route::apiResource('incidents', IncidentReportController::class)->only(['index', 'store']);
     Route::apiResource('finances', FinanceController::class)->only(['index', 'store']);
+    Route::apiResource('workers', WorkerController::class);
     Route::get('/plantings/{planting}/hpp', [FinanceController::class, 'calculateHPP']);
     Route::get('/dashboard/owner', [DashboardController::class, 'owner']);
     Route::get('/dashboard/worker', [DashboardController::class, 'worker']);
+    Route::get('/user', [UserController::class, 'show']);
 });

@@ -114,4 +114,27 @@ class TaskController extends Controller
             'data'    => $updatedTask,
         ], 200);
     }
+
+        public function index(Request $request): JsonResponse
+    {
+        $tasks = $this->taskService->getTasks($request->user());
+        return response()->json([
+            'message' => 'Daftar tugas berhasil diambil.',
+            'data'    => $tasks,
+        ], 200);
+    }
+
+        public function show(Request $request, Task $task): JsonResponse
+    {
+        // Pastikan user hanya bisa melihat tugas perusahaannya
+        abort_if($task->company_id !== $request->user()->company_id, 403, 'Akses ditolak.');
+
+        // Load semua relasi yang dibutuhkan di halaman detail
+        $task->load(['planting.land', 'assignee', 'resources', 'tools', 'report']);
+
+        return response()->json([
+            'message' => 'Detail tugas berhasil diambil.',
+            'data'    => $task,
+        ], 200);
+    }
 }

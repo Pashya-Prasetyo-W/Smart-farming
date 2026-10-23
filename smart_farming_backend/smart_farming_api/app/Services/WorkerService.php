@@ -29,7 +29,9 @@ class WorkerService
             $worker->benefit()->forceCreate([
                 'company_id'      => $pemilik->company_id,
                 'health_insurance' => $data['benefit']['health_insurance'] ?? 0,
+                'health_insurance_desc' => $data['benefit']['health_insurance_desc'] ?? null,
                 'food_allowance'  => $data['benefit']['food_allowance'] ?? 0,
+                'food_allowance_desc' => $data['benefit']['food_allowance_desc'] ?? null,
             ]);
 
             return $worker->load(['schedule', 'benefit']);
