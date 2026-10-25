@@ -7,7 +7,6 @@ import '../../utils/currency_formatter.dart';
 
 import 'package:flutter/services.dart';
 
-import '../../services/planting_service.dart';
 
 class FinanceScreen extends StatefulWidget {
   const FinanceScreen({super.key});
