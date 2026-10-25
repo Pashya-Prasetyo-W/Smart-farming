@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ChatbotController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UploadController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -26,11 +27,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
     Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
     Route::post('/chatbot', [ChatbotController::class, 'ask']);
+    Route::post('/upload', [\App\Http\Controllers\Api\UploadController::class, 'upload']);
     Route::apiResource('lands', LandController::class)->only(['index', 'store']);
     Route::apiResource('tools', ToolController::class);
     Route::apiResource('resources', ResourceController::class);
     Route::apiResource('plantings', PlantingController::class)->only(['index', 'store']);
-    Route::apiResource('tasks', TaskController::class)->only(['index', 'store', 'show']);
+    Route::apiResource('tasks', TaskController::class);
     Route::apiResource('incidents', IncidentReportController::class)->only(['index', 'store']);
     Route::apiResource('finances', FinanceController::class)->only(['index', 'store']);
     Route::apiResource('workers', WorkerController::class);

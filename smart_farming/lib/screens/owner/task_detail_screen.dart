@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/task_service.dart';
 import 'report_task_screen.dart';
+import 'edit_task_screen.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final int taskId;
@@ -69,7 +70,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                  builder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
 
                 bool success = false;
@@ -97,13 +99,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Gagal membatalkan tugas. Cek terminal untuk error.'),
+                      content: Text(
+                        'Gagal membatalkan tugas. Cek terminal untuk error.',
+                      ),
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Batalkan', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Batalkan',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -115,173 +122,278 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Tugas', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Detail Tugas',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF2E7D32),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _task == null
-              ? const Center(child: Text('Gagal memuat detail tugas.'))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Judul & Status
-                      Text(
-                        _task!['title'],
-                        style: const TextStyle(
-                          fontSize: 24,
+          ? const Center(child: Text('Gagal memuat detail tugas.'))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Judul & Status
+                  Text(
+                    _task!['title'],
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Status: ${_task!['status'].toString().toUpperCase()}'),
+                  const Divider(height: 32),
+
+                  // Info Lahan
+                  const Text(
+                    'Lokasi Lahan',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(_task!['planting']['land']['name']),
+                  const SizedBox(height: 16),
+
+                  // Info Buruh
+                  const Text(
+                    'Ditugaskan Kepada',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(_task!['assignee']?['name'] ?? 'Belum ada'),
+                  const SizedBox(height: 16),
+
+                  // Deskripsi
+                  if (_task!['description'] != null) ...[
+                    const Text(
+                      'Deskripsi',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(_task!['description']),
+                    const SizedBox(height: 16),
+                  ],
+
+                  const Text(
+                    'Bahan (Resource)',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (_task!['resources'] != null &&
+                      _task!['resources'].isNotEmpty)
+                    ...(_task!['resources'] as List).map((res) {
+                      final maxQty = res['pivot']['max_allocated_qty'];
+                      final actualQty = res['pivot']['actual_used_qty'];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 4.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('- ${res['name']}'),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12.0),
+                              child: Text(
+                                'Maks: $maxQty ${res['unit']}\nTerpakai: ${_task!['report'] != null ? actualQty : "-"} ${res['unit']}',
+                                style: TextStyle(
+                                  color: Colors.grey[700],
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    })
+                  else
+                    const Text('Tidak ada bahan.'),
+                  const SizedBox(height: 16),
+
+                  // Alat (Tools)
+                  const Text(
+                    'Alat yang Dipinjam',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (_task!['tools'] != null &&
+                      (_task!['tools'] as List).isNotEmpty)
+                    ...(_task!['tools'] as List).map(
+                      (tool) => Text(
+                        '- ${tool['name']} (Qty: ${tool['pivot']['qty']})',
+                      ),
+                    )
+                  else
+                    const Text('Tidak ada alat.'),
+
+                  const SizedBox(height: 16),
+
+                  // --- LAPORAN PEKERJAAN JIKA SUDAH SELESAI ---
+                  if (_task!['report'] != null) ...[
+                    const Divider(thickness: 2),
+                    const Text(
+                      'Laporan Pekerjaan',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Tampilkan Gambar Bukti
+                    if (_task!['report']['media_urls'] != null &&
+                        (_task!['report']['media_urls'] as List).isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          _task!['report']['media_urls'][0], // Ambil gambar pertama
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                height: 100,
+                                color: Colors.grey[300],
+                                child: const Center(
+                                  child: Text('Gagal memuat gambar'),
+                                ),
+                              ),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+
+                    // Tampilkan Catatan
+                    const Text(
+                      'Catatan Buruh:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(_task!['report']['notes'] ?? '-'),
+                    const SizedBox(height: 16),
+                  ],
+
+                  const SizedBox(height: 16),
+
+                  // --- LOGIKA TOMBOL BERDASARKAN ROLE ---
+
+                  // Tombol Edit Tugas (Untuk Pemilik saat status menunggu)
+                  if (_userRole == 'pemilik' && _task!['status'] == 'menunggu') ...[
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        // Pindah ke halaman edit, bawa data task
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditTaskScreen(task: _task!),
+                          ),
+                        );
+                        _fetchDetail(); // Refresh jika kembali
+                      },
+                      icon: const Icon(Icons.edit, color: Colors.white),
+                      label: const Text(
+                        'EDIT TUGAS',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // 1. Tombol untuk PEMILIK (Batalkan Tugas)
+                  if (_userRole == 'pemilik' &&
+                      (_task!['status'] == 'menunggu' ||
+                          _task!['status'] == 'dikerjakan'))
+                    ElevatedButton(
+                      onPressed: _showCancelDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'BATALKAN TUGAS',
+                        style: TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Status: ${_task!['status'].toString().toUpperCase()}',
-                      ),
-                      const Divider(height: 32),
+                    ),
 
-                      // Info Lahan
-                      const Text(
-                        'Lokasi Lahan',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(_task!['planting']['land']['name']),
-                      const SizedBox(height: 16),
+                  // 2. Tombol untuk BURUH (Mulai / Lapor)
+                  if (_userRole == 'buruh') ...[
+                    if (_task!['status'] == 'menunggu')
+                      ElevatedButton(
+                        onPressed: () async {
+                          bool success = await TaskService().startTask(
+                            widget.taskId,
+                          );
+                          if (!mounted) return;
 
-                      // Info Buruh
-                      const Text(
-                        'Ditugaskan Kepada',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(_task!['assignee']?['name'] ?? 'Belum ada'),
-                      const SizedBox(height: 16),
-
-                      // Deskripsi
-                      if (_task!['description'] != null) ...[
-                        const Text(
-                          'Deskripsi',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(_task!['description']),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Bahan (Resources)
-                      const Text(
-                        'Bahan yang Dibutuhkan',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      if (_task!['resources'] != null &&
-                          (_task!['resources'] as List).isNotEmpty)
-                        ...(_task!['resources'] as List).map(
-                          (res) => Text(
-                            '- ${res['name']} (Max: ${res['pivot']['max_allocated_qty']} ${res['unit']})',
-                          ),
-                        )
-                      else
-                        const Text('Tidak ada bahan.'),
-                      const SizedBox(height: 16),
-
-                      // Alat (Tools)
-                      const Text(
-                        'Alat yang Dipinjam',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      if (_task!['tools'] != null &&
-                          (_task!['tools'] as List).isNotEmpty)
-                        ...(_task!['tools'] as List).map(
-                          (tool) => Text(
-                            '- ${tool['name']} (Qty: ${tool['pivot']['qty']})',
-                          ),
-                        )
-                      else
-                        const Text('Tidak ada alat.'),
-
-                      const SizedBox(height: 32),
-
-                      // --- LOGIKA TOMBOL BERDASARKAN ROLE ---
-
-                      // 1. Tombol untuk PEMILIK (Batalkan Tugas)
-                      if (_userRole == 'pemilik' &&
-                          (_task!['status'] == 'menunggu' ||
-                              _task!['status'] == 'dikerjakan'))
-                        ElevatedButton(
-                          onPressed: _showCancelDialog,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            minimumSize: const Size(double.infinity, 48),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'BATALKAN TUGAS',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Pekerjaan dimulai!'),
+                              ),
+                            );
+                            _fetchDetail(); // Refresh data agar status berubah
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Gagal memulai pekerjaan'),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-
-                      // 2. Tombol untuk BURUH (Mulai / Lapor)
-                      if (_userRole == 'buruh') ...[
-                        if (_task!['status'] == 'menunggu')
-                          ElevatedButton(
-                            onPressed: () async {
-                              bool success = await TaskService().startTask(widget.taskId);
-                              if (!mounted) return;
-
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Pekerjaan dimulai!')),
-                                );
-                                _fetchDetail(); // Refresh data agar status berubah
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Gagal memulai pekerjaan')),
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              minimumSize: const Size(double.infinity, 48),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                        child: const Text(
+                          'MULAI KERJAKAN',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    if (_task!['status'] == 'dikerjakan')
+                      ElevatedButton(
+                        onPressed: () {
+                          // Pindah ke halaman lapor, bawa data resource dari task
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReportTaskScreen(
+                                taskId: widget.taskId,
+                                resources: _task!['resources'] ?? [],
                               ),
                             ),
-                            child: const Text(
-                              'MULAI KERJAKAN',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          ).then(
+                            (_) => _fetchDetail(),
+                          ); // Refresh status setelah lapor
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7D32),
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                        child: const Text(
+                          'LAPOR SELESAI',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
-                        if (_task!['status'] == 'dikerjakan')
-                          ElevatedButton(
-                            onPressed: () {
-                              // Pindah ke halaman lapor, bawa data resource dari task
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ReportTaskScreen(
-                                    taskId: widget.taskId,
-                                    resources: _task!['resources'] ?? [],
-                                  ),
-                                ),
-                              ).then((_) => _fetchDetail()); // Refresh status setelah lapor
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2E7D32),
-                              minimumSize: const Size(double.infinity, 48),
-                            ),
-                            child: const Text('LAPOR SELESAI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          ),
-                      ],
-                    ],
-                  ),
-                ),
+                        ),
+                      ),
+                  ],
+                ],
+              ),
+            ),
     );
   }
 }

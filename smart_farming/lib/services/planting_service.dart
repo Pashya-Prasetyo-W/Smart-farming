@@ -26,4 +26,27 @@ class PlantingService {
       return false;
     }
   }
+
+    Future<List<dynamic>?> getPlantings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/plantings'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 }

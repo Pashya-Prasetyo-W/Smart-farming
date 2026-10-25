@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../services/task_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ReportTaskScreen extends StatefulWidget {
   final int taskId;
-  final List<dynamic> resources; // Data bahan dari detail tugas
+  final List<dynamic> resources;
 
   const ReportTaskScreen({
     super.key,
@@ -20,6 +22,19 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
   // Map untuk menyimpan inputan qty per resource_id
   final Map<int, TextEditingController> _resourceControllers = {};
   bool _isLoading = false;
+
+  // --- VARIABEL STATE UNTUK GAMBAR ---
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery); // Gunakan ImageSource.camera di HP asli
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -40,42 +55,47 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
   }
 
   void _submitReport() async {
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih bukti foto terlebih dahulu!')));
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    List<Map<String, dynamic>> payloadResources = [];
+    // 1. Upload gambar ke Laravel
+    String? mediaUrl = await TaskService().uploadFile(_selectedImage!);
+    
+    if (mediaUrl == null) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengunggah foto.')));
+      return;
+    }
 
-    // Kumpulkan data bahan yang diinput
+    // 2. Kumpulkan data bahan
+    List<Map<String, dynamic>> payloadResources = [];
     for (var res in widget.resources) {
       final id = res['id'] as int;
       final inputStr = _resourceControllers[id]?.text ?? '0';
       final qty = double.tryParse(inputStr) ?? 0.0;
-
-      payloadResources.add({
-        'resource_id': id,
-        'actual_used_qty': qty,
-      });
+      payloadResources.add({'resource_id': id, 'actual_used_qty': qty});
     }
 
-    final success = await TaskService().submitReport(
+    // 3. Kirim laporan
+    final success = await TaskService().submitReportWithUrl(
       widget.taskId,
       payloadResources,
       _notesController.text,
+      mediaUrl,
     );
 
     setState(() => _isLoading = false);
-
+    
     if (!mounted) return;
-
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Laporan berhasil dikirim!')),
-      );
-      // Kembali ke halaman detail (atau langsung ke list)
-      Navigator.pop(context); 
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan berhasil dikirim!')));
+      Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal mengirim laporan.')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengirim laporan.')));
     }
   }
 
@@ -91,6 +111,35 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // --- AREA FOTO DI BAGIAN ATAS ---
+            Center(
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  height: 150,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: _selectedImage != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                        )
+                      : const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.camera_alt, size: 40, color: Colors.grey),
+                            Text('Ambil Bukti Foto', style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             const Text(
               'Penggunaan Bahan',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

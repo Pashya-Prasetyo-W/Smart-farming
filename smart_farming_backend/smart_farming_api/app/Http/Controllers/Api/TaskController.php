@@ -126,15 +126,38 @@ class TaskController extends Controller
 
         public function show(Request $request, Task $task): JsonResponse
     {
-        // Pastikan user hanya bisa melihat tugas perusahaannya
         abort_if($task->company_id !== $request->user()->company_id, 403, 'Akses ditolak.');
 
-        // Load semua relasi yang dibutuhkan di halaman detail
         $task->load(['planting.land', 'assignee', 'resources', 'tools', 'report']);
 
         return response()->json([
             'message' => 'Detail tugas berhasil diambil.',
             'data'    => $task,
+        ], 200);
+    }
+
+        public function update(Request $request, Task $task): JsonResponse
+    {
+        $validatedData = $request->validate([
+            'planting_id'                   => ['required', 'exists:plantings,id'],
+            'assigned_to'                   => ['required', 'exists:users,id'],
+            'title'                         => ['required', 'string', 'max:255'],
+            'task_date'                     => ['required', 'date'],
+            'due_date'                      => ['required', 'date', 'after_or_equal:task_date'],
+            'description'                   => ['nullable', 'string'],
+            'resources'                     => ['nullable', 'array'],
+            'resources.*.resource_id'       => ['required', 'exists:resources,id'],
+            'resources.*.max_allocated_qty' => ['required', 'numeric', 'min:0'],
+            'tools'                         => ['nullable', 'array'],
+            'tools.*.tool_id'               => ['required', 'exists:tools,id'],
+            'tools.*.qty'                   => ['required', 'integer', 'min:1'],
+        ]);
+
+        $updatedTask = $this->taskService->updateTask($task, $validatedData);
+
+        return response()->json([
+            'message' => 'Tugas berhasil diperbarui.',
+            'data'    => $updatedTask,
         ], 200);
     }
 }

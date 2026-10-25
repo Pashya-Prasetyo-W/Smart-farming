@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../services/land_service.dart';
+
+import 'package:flutter/services.dart';
+
+import '../../utils/currency_formatter.dart';
 
 class AddLandScreen extends StatefulWidget {
   const AddLandScreen({super.key});
@@ -25,17 +30,23 @@ class _AddLandScreenState extends State<AddLandScreen> {
   }
 
   void _submit() async {
-    if (_nameController.text.isEmpty || _areaController.text.isEmpty || 
-        _latController.text.isEmpty || _longController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Semua kolom wajib diisi!')));
+    if (_nameController.text.isEmpty ||
+        _areaController.text.isEmpty ||
+        _latController.text.isEmpty ||
+        _longController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Semua kolom wajib diisi!')));
       return;
     }
 
     setState(() => _isLoading = true);
 
+    final cleanArea = _areaController.text.replaceAll('.', '');
+
     final data = {
       'name': _nameController.text.trim(),
-      'area_sqm': double.tryParse(_areaController.text) ?? 0.0,
+      'area_sqm': double.tryParse(cleanArea) ?? 0.0,
       'location_lat': double.tryParse(_latController.text) ?? 0.0,
       'location_long': double.tryParse(_longController.text) ?? 0.0,
     };
@@ -47,10 +58,14 @@ class _AddLandScreenState extends State<AddLandScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lahan berhasil ditambahkan!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lahan berhasil ditambahkan!')),
+      );
       Navigator.pop(context); // Kembali ke list lahan
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menambahkan lahan.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal menambahkan lahan.')));
     }
   }
 
@@ -58,7 +73,10 @@ class _AddLandScreenState extends State<AddLandScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Lahan', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Tambah Lahan',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -67,40 +85,71 @@ class _AddLandScreenState extends State<AddLandScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Informasi Lahan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Informasi Lahan',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nama Lahan (contoh: Lahan Cabai B)', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: 'Nama Lahan (contoh: Lahan Cabai B)',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _areaController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Luas Area (m²)', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                ThousandsSeparatorInputFormatter(),
+              ],
+              decoration: const InputDecoration(
+                labelText: 'Luas Area (m²)',
+                border: OutlineInputBorder(),
+              ),
             ),
-            
+
             const Divider(height: 32),
-            
-            const Text('Koordinat Lokasi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+            const Text(
+              'Koordinat Lokasi',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            const Text('Masukkan koordinat manual (Nanti bisa diganti dengan Mapbox):', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const Text(
+              'Masukkan koordinat manual (Nanti bisa diganti dengan Mapbox):',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _latController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                    decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder()),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                      signed: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Latitude',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
                     controller: _longController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                    decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder()),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                      signed: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Longitude',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
               ],
@@ -113,10 +162,16 @@ class _AddLandScreenState extends State<AddLandScreen> {
                 backgroundColor: const Color(0xFF2E7D32),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white) 
-                  : const Text('SIMPAN LAHAN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            )
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      'SIMPAN LAHAN',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
           ],
         ),
       ),

@@ -7,6 +7,7 @@ import 'task_list_screen.dart';
 import '../profile/profile_screen.dart';
 import 'worker_list_screen.dart';
 import 'inventory_screen.dart';
+import 'add_task_screen.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -95,102 +96,136 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _stats == null
           ? const Center(child: Text('Gagal memuat data dashboard.'))
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Selamat Datang,',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-                  Text(
-                    _userName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Selamat Datang,',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
-                  ),
-                  const SizedBox(height: 24),
+                    Text(
+                      _userName,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const WorkerListScreen(),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WorkerListScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.people, color: Colors.white),
+                      label: const Text(
+                        'Manajemen Buruh',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E7D32),
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const InventoryScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.inventory_2, color: Colors.white),
+                      label: const Text(
+                        'Manajemen Inventaris',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[800],
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddTaskScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.assignment_add,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Buat Tugas Baru',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[800],
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Grid Statistik
+                    Row(
+                      children: [
+                        _buildStatCard(
+                          'Pemasukan',
+                          'Rp ${_stats!['total_income']}',
+                          Colors.green,
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.people, color: Colors.white),
-                    label: const Text(
-                      'Manajemen Buruh',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                  ),
-
-                  ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const InventoryScreen()));
-                        },
-                        icon: const Icon(Icons.inventory_2, color: Colors.white),
-                        label: const Text('Manajemen Inventaris', style: TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange[800],
-                          minimumSize: const Size(double.infinity, 48),
+                        const SizedBox(width: 16),
+                        _buildStatCard(
+                          'Pengeluaran',
+                          'Rp ${_stats!['total_expense']}',
+                          Colors.red,
                         ),
-                      ),
-                  const SizedBox(height: 24),
-
-                  // Grid Statistik
-                  Row(
-                    children: [
-                      _buildStatCard(
-                        'Pemasukan',
-                        'Rp ${_stats!['total_income']}',
-                        Colors.green,
-                      ),
-                      const SizedBox(width: 16),
-                      _buildStatCard(
-                        'Pengeluaran',
-                        'Rp ${_stats!['total_expense']}',
-                        Colors.red,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _buildStatCard(
-                        'Laba Bersih',
-                        'Rp ${_stats!['net_profit']}',
-                        Colors.blue,
-                      ),
-                      const SizedBox(width: 16),
-                      _buildStatCard(
-                        'Lahan Aktif',
-                        '${_stats!['total_lands']}',
-                        Colors.orange,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _buildStatCard(
-                        'Tugas Aktif',
-                        '${_stats!['active_tasks']}',
-                        Colors.purple,
-                      ),
-                      const SizedBox(width: 16),
-                      const Expanded(child: SizedBox()),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _buildStatCard(
+                          'Laba Bersih',
+                          'Rp ${_stats!['net_profit']}',
+                          Colors.blue,
+                        ),
+                        const SizedBox(width: 16),
+                        _buildStatCard(
+                          'Lahan Aktif',
+                          '${_stats!['total_lands']}',
+                          Colors.orange,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _buildStatCard(
+                          'Tugas Aktif',
+                          '${_stats!['active_tasks']}',
+                          Colors.purple,
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(child: SizedBox()),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
     );

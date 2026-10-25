@@ -5,6 +5,12 @@ import '../../services/resource_service.dart';
 import 'add_tool_screen.dart';
 import 'add_resource_screen.dart';
 
+import 'package:flutter/services.dart';
+
+import '../../utils/currency_formatter.dart';
+
+import 'package:intl/intl.dart';
+
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
 
@@ -300,26 +306,31 @@ class _ResourceTabState extends State<_ResourceTab> {
               TextField(
                 controller: priceController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  ThousandsSeparatorInputFormatter(),
+                ],
                 decoration: const InputDecoration(labelText: 'Harga'),
               ),
             ],
           ),
         ),
-                actions: [
+        actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Batal'),
           ),
           ElevatedButton(
-            onPressed: () async {
+                        onPressed: () async {
               Navigator.pop(dialogContext);
               
-              // GANTI BAGIAN INI: Gunakan updateResource, bukan deleteResource
+              final cleanPriceStr = priceController.text.replaceAll('.', '');
+              
               final success = await ResourceService().updateResource(res['id'], {
                 'name': nameController.text,
                 'unit': unitController.text,
                 'stock_qty': double.tryParse(stockController.text) ?? 0,
-                'unit_price': double.tryParse(priceController.text) ?? 0,
+                'unit_price': double.tryParse(cleanPriceStr) ?? 0,
               });
 
               if (success && context.mounted) {
@@ -334,7 +345,9 @@ class _ResourceTabState extends State<_ResourceTab> {
               }
             },
             // GANTI WARNA DAN TEKS TOMBOL MENJADI SEPERTI INI
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)), 
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E7D32),
+            ),
             child: const Text('Simpan', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -404,7 +417,11 @@ class _ResourceTabState extends State<_ResourceTab> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Rp ${res['unit_price']}',
+                          NumberFormat.currency(
+                            locale: 'id_ID',
+                            symbol: 'Rp ',
+                            decimalDigits: 0,
+                          ).format(double.parse(res['unit_price'].toString())),
                           style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
