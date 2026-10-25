@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-
-import '../../services/land_service.dart';
-
 import 'package:flutter/services.dart';
-
+import '../../services/land_service.dart';
 import '../../utils/currency_formatter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class AddLandScreen extends StatefulWidget {
   const AddLandScreen({super.key});
@@ -19,6 +18,17 @@ class _AddLandScreenState extends State<AddLandScreen> {
   final _latController = TextEditingController();
   final _longController = TextEditingController();
   bool _isLoading = false;
+
+  // --- TAMBAHAN VARIABEL STATE UNTUK PETA ---
+  LatLng _selectedLocation = const LatLng(-6.200000, 106.816666); // Default Jakarta
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi awal nilai controller dengan titik default peta
+    _latController.text = _selectedLocation.latitude.toStringAsFixed(6);
+    _longController.text = _selectedLocation.longitude.toStringAsFixed(6);
+  }
 
   @override
   void dispose() {
@@ -119,22 +129,68 @@ class _AddLandScreenState extends State<AddLandScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Masukkan koordinat manual (Nanti bisa diganti dengan Mapbox):',
+              'Pilih titik lokasi lahan dengan mengetuk pada peta di bawah:',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 16),
+
+            // --- WIDGET PETA INTERAKTIF ---
+            Container(
+              height: 250,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: FlutterMap(
+                  options: MapOptions(
+                    initialCenter: _selectedLocation,
+                    initialZoom: 14.0,
+                    onTap: (tapPosition, point) {
+                      // Saat peta diklik, ubah titik marker dan isi TextController otomatis
+                      setState(() {
+                        _selectedLocation = point;
+                        _latController.text = point.latitude.toStringAsFixed(6);
+                        _longController.text = point.longitude.toStringAsFixed(6);
+                      });
+                    },
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.smart_farming_app',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: _selectedLocation,
+                          width: 40,
+                          height: 40,
+                          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text('Titik dipilih: ${_selectedLocation.latitude.toStringAsFixed(6)}, ${_selectedLocation.longitude.toStringAsFixed(6)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+            
+            const SizedBox(height: 16),
+            
+            // Kolom Lat & Long (opsional untuk ditampilkan atau disembunyikan/read-only jika ingin menggunakan peta sepenuhnya)
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _latController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                      signed: true,
-                    ),
+                    readOnly: true,
                     decoration: const InputDecoration(
                       labelText: 'Latitude',
                       border: OutlineInputBorder(),
+                      isDense: true,
                     ),
                   ),
                 ),
@@ -142,13 +198,11 @@ class _AddLandScreenState extends State<AddLandScreen> {
                 Expanded(
                   child: TextField(
                     controller: _longController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                      signed: true,
-                    ),
+                    readOnly: true,
                     decoration: const InputDecoration(
                       labelText: 'Longitude',
                       border: OutlineInputBorder(),
+                      isDense: true,
                     ),
                   ),
                 ),

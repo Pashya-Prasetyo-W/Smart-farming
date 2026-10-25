@@ -110,4 +110,27 @@ class WorkerService {
       return false;
     }
   }
+
+    Future<Map<String, dynamic>?> getProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/worker/profile'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data']; // Mengembalikan data user, schedule, & benefit
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 }

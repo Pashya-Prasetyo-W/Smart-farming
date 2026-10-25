@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "102816286923",
+    "project_id": "tani-pintar-4734a",
+    "storage_bucket": "tani-pintar-4734a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:102816286923:android:68b096464fd874ae30b34e",
+        "android_client_info": {
+          "package_name": "com.example.smart_farming"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsJo2z61tHwV8EJT7RebOqR_WhKEJ6h1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

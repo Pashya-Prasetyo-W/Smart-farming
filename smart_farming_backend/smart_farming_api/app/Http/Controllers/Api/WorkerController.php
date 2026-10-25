@@ -117,4 +117,15 @@ class WorkerController extends Controller
 
         return response()->json(['message' => 'Akun buruh berhasil dihapus.'], 200);
     }
+
+        public function getProfile(Request $request): JsonResponse
+    {
+        $user = \App\Models\User::with(['schedule', 'benefit'])
+            ->find($request->user()->id);
+
+        return response()->json([
+            'message' => 'Profil buruh berhasil diambil.',
+            'data'    => $user,
+        ], 200);
+    }
 }

@@ -43,7 +43,7 @@ class FinanceService
 
     public function getFinances(User $pemilik, ?int $month = null, ?int $year = null): Collection
     {
-            return Finance::where('company_id', $pemilik->company_id)
+        return Finance::where('company_id', $pemilik->company_id)
             ->with('planting')
             ->when($month, function ($query, $month) {
                 return $query->whereMonth('record_date', $month);
@@ -51,7 +51,7 @@ class FinanceService
             ->when($year, function ($query, $year) {
                 return $query->whereYear('record_date', $year);
             })
-            ->latest('record_date')
+            ->latest('id')
             ->get();
     }
 }

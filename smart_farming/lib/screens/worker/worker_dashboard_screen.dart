@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/worker_service.dart';
 import '../owner/task_list_screen.dart';
 import '../profile/profile_screen.dart';
+import 'add_incident_screen.dart';
 
 class WorkerDashboardScreen extends StatefulWidget {
   const WorkerDashboardScreen({super.key});
@@ -70,7 +71,7 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _stats == null
               ? const Center(child: Text('Gagal memuat data.'))
-              : Padding(
+              : SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,6 +86,26 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
                           const SizedBox(width: 16),
                           _buildStatCard('Selesai Bulan Ini', '${_stats!['completed_this_month']}', Colors.green),
                         ],
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      const Text('Aksi Cepat', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 12),
+                      
+                      // TOMBOL LAPOR INSIDEN
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AddIncidentScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                        label: const Text('Laporkan Insiden di Lahan', style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red[800],
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
                       ),
                     ],
                   ),

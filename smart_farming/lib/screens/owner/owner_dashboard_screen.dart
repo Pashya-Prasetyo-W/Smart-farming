@@ -8,6 +8,10 @@ import '../profile/profile_screen.dart';
 import 'worker_list_screen.dart';
 import 'inventory_screen.dart';
 import 'add_task_screen.dart';
+import 'incident_list_screen.dart';
+import 'finance_screen.dart';
+import 'failure_log_screen.dart';
+import '../../services/land_service.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -21,12 +25,41 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   bool _isLoading = true;
   int _currentIndex = 0;
   Map<String, dynamic>? _stats;
+  Map<String, dynamic>? _weatherData;
+  List<dynamic> _lands = [];
+  int? _selectedLandIdForWeather;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _fetchStats();
+    _fetchWeather();
+    _fetchLandsForWeather();
+  }
+
+  void _fetchLandsForWeather() async {
+    final lands = await LandService().getLands();
+    if (mounted) {
+      setState(() {
+        _lands = lands ?? [];
+        if (_lands.isNotEmpty) {
+          _selectedLandIdForWeather = _lands[0]['id'];
+          _fetchWeather(); // Ambil cuaca untuk lahan pertama
+        }
+      });
+    }
+  }
+
+  void _fetchWeather() async {
+    final data = await DashboardService().getWeather(
+      landId: _selectedLandIdForWeather,
+    );
+    if (mounted) {
+      setState(() {
+        _weatherData = data;
+      });
+    }
   }
 
   void _loadUserData() async {
@@ -113,6 +146,122 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 16),
+
+                    // --- CARD CUACA ---
+                    if (_weatherData != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0288D1), Color(0xFF4FC3F7)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        // UBAH MENJADI COLUMN
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // 1. Dropdown Pilih Lahan
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<int>(
+                                  value: _selectedLandIdForWeather,
+                                  isExpanded:
+                                      true, // Agar mengambil seluruh lebar
+                                  isDense: true,
+                                  icon: const Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Colors.white,
+                                  ),
+                                  dropdownColor: const Color(0xFF0288D1),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                  ),
+                                  items: _lands.map((land) {
+                                    return DropdownMenuItem<int>(
+                                      value: land['id'],
+                                      child: Text(
+                                        'Cuaca di ${land['name']}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setState(() {
+                                        _selectedLandIdForWeather = val;
+                                      });
+                                      _fetchWeather();
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // 2. Suhu dan Icon
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${_weatherData!['temperature'].toStringAsFixed(1)} °C',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${_weatherData!['description'].toString().toUpperCase()} • Kelembapan ${_weatherData!['humidity']}%',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Icon(
+                                  _weatherData!['condition'] == 'Rain'
+                                      ? Icons.umbrella
+                                      : _weatherData!['condition'] == 'Clouds'
+                                      ? Icons.cloud
+                                      : Icons.wb_sunny,
+                                  size: 60,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
                     const SizedBox(height: 24),
 
                     ElevatedButton.icon(
@@ -178,6 +327,75 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                         minimumSize: const Size(double.infinity, 48),
                       ),
                     ),
+
+                    const SizedBox(height: 16),
+                    // --- TOMBOL LAPORAN INSIDEN ---
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const IncidentListScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Lihat Laporan Insiden',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[800],
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // --- TOMBOL KEUANGAN ---
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FinanceScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.account_balance_wallet,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Keuangan & Kalkulasi HPP',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal[700],
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FailureLogScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.warning, color: Colors.white),
+                      label: const Text(
+                        'Cek Risiko Gagal Panen',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[800],
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
                     const SizedBox(height: 24),
 
                     // Grid Statistik
@@ -236,13 +454,13 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     // Daftar halaman yang akan ditampilkan sesuai tab
     final List<Widget> pages = [
       _buildHomeTab(), // Tab 0: Dashboard
-      const LandListScreen(), // Tab 1: Lahan
-      const TaskListScreen(), // Tab 2: Tugas
+      const LandListScreen(),
+      const TaskListScreen(),
       const ProfileScreen(),
     ];
 
     return Scaffold(
-      body: pages[_currentIndex],
+      body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {

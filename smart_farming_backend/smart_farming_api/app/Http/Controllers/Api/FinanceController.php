@@ -56,13 +56,17 @@ class FinanceController extends Controller
             'harvest_kg' => ['required', 'numeric', 'min:0.01'],
         ]);
 
-        $hppPerKg = $this->financeService->calculateHPP($planting, (float) $validatedData['harvest_kg']);
+        $totalCost = \App\Models\Finance::where('planting_id', $planting->id)
+            ->where('type', 'pengeluaran')
+            ->sum('amount');
+
+        $hppPerKg = $totalCost / (float) $validatedData['harvest_kg'];
 
         return response()->json([
             'message' => 'Perhitungan HPP berhasil dilakukan.',
             'data'    => [
-                'hpp_per_kg' => $hppPerKg,
-                'total_cost' => (float) $planting->total_cost,
+                'hpp_per_kg' => (float) $hppPerKg,
+                'total_cost' => (float) $totalCost,
                 'harvest_kg' => (float) $validatedData['harvest_kg'],
             ],
         ], 200);

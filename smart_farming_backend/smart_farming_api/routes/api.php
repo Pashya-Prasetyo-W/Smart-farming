@@ -10,10 +10,10 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\IncidentReportController;
 use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\ChatbotController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\FailureLogController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -26,8 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
     Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
     Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
-    Route::post('/chatbot', [ChatbotController::class, 'ask']);
-    Route::post('/upload', [\App\Http\Controllers\Api\UploadController::class, 'upload']);
+    Route::post('/upload', [UploadController::class, 'upload']);
     Route::apiResource('lands', LandController::class)->only(['index', 'store']);
     Route::apiResource('tools', ToolController::class);
     Route::apiResource('resources', ResourceController::class);
@@ -39,5 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/plantings/{planting}/hpp', [FinanceController::class, 'calculateHPP']);
     Route::get('/dashboard/owner', [DashboardController::class, 'owner']);
     Route::get('/dashboard/worker', [DashboardController::class, 'worker']);
+    Route::get('/worker/profile', [WorkerController::class, 'getProfile']);
     Route::get('/user', [UserController::class, 'show']);
+    Route::get('/failure-logs', [FailureLogController::class, 'index']);
+    Route::get('/dashboard/weather', [DashboardController::class, 'weather']);
 });
