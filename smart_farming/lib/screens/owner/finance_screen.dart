@@ -7,7 +7,6 @@ import '../../utils/currency_formatter.dart';
 
 import 'package:flutter/services.dart';
 
-
 class FinanceScreen extends StatefulWidget {
   const FinanceScreen({super.key});
 
@@ -70,12 +69,19 @@ class _FinanceListTabState extends State<_FinanceListTab> {
     _fetchPlantings();
   }
 
-  void _fetchPlantings() async {
+    void _fetchPlantings() async {
     final data = await PlantingService().getPlantings();
     setState(() {
       _plantings = (data ?? [])
-          .where((p) => p['status'] == 'berjalan')
+          .where(
+            (p) =>
+                p['status'] == 'berjalan' ||
+                p['status'] == 'panen' ||
+                p['status'] == 'gagal',
+          )
           .toList();
+
+      _isLoading = false;
     });
   }
 
@@ -303,11 +309,16 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
   void _fetchPlantings() async {
     final data = await PlantingService().getPlantings();
     setState(() {
-      _activePlantings = (data ?? [])
-          .where((p) => p['status'] == 'berjalan')
-          .toList();
-      if (_activePlantings.isNotEmpty)
+      // Tampilkan yang berjalan, panen, dan gagal
+      _activePlantings = (data ?? []).where((p) => 
+        p['status'] == 'berjalan' || 
+        p['status'] == 'panen' || 
+        p['status'] == 'gagal'
+      ).toList();
+      
+      if (_activePlantings.isNotEmpty) {
         _selectedPlantingId = _activePlantings[0]['id'];
+      }
       _isLoading = false;
     });
   }
@@ -352,9 +363,13 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
             value: _selectedPlantingId,
             decoration: const InputDecoration(border: OutlineInputBorder()),
             items: _activePlantings.map<DropdownMenuItem<int>>((p) {
+              // Tampilkan nama komoditas, nama lahan, dan statusnya
+              final statusLabel = p['status'].toString().toUpperCase();
               return DropdownMenuItem<int>(
                 value: p['id'],
-                child: Text('${p['crop_name']} - ${p['land']['name']}'),
+                child: Text(
+                  '${p['crop_name']} - ${p['land']['name']} ($statusLabel)',
+                ),
               );
             }).toList(),
             onChanged: (val) => setState(() => _selectedPlantingId = val),

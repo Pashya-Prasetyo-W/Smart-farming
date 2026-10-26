@@ -27,6 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
     Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
     Route::post('/upload', [UploadController::class, 'upload']);
+    Route::post('/plantings/{planting}/harvest', [PlantingController::class, 'harvest']);
+    Route::post('/plantings/{planting}/cancel', [PlantingController::class, 'cancelPlanting']);
     Route::apiResource('lands', LandController::class)->only(['index', 'store']);
     Route::apiResource('tools', ToolController::class);
     Route::apiResource('resources', ResourceController::class);

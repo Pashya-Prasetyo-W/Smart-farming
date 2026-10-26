@@ -39,4 +39,36 @@ class PlantingController extends Controller
             'data'    => $planting,
         ], 201);
     }
+
+    public function harvest(Request $request, \App\Models\Planting $planting): JsonResponse
+    {
+        if ($planting->status !== 'berjalan') {
+            return response()->json(['message' => 'Siklus ini sudah selesai atau dibatalkan.'], 400);
+        }
+
+        $request->validate([
+            'harvest_kg' => 'required|numeric|min:0.1',
+        ]);
+
+        $planting->update(['status' => 'panen']);
+
+        return response()->json([
+            'message' => 'Siklus tanam berhasil diselesaikan (Panen).',
+            'data'    => $planting
+        ], 200);
+    }
+
+    public function cancelPlanting(Request $request, \App\Models\Planting $planting): JsonResponse
+    {
+        if ($planting->status !== 'berjalan') {
+            return response()->json(['message' => 'Siklus ini sudah selesai atau dibatalkan.'], 400);
+        }
+
+        $planting->update(['status' => 'gagal']);
+
+        return response()->json([
+            'message' => 'Siklus tanam berhasil dibatalkan (Gagal).',
+            'data'    => $planting
+        ], 200);
+    }
 }

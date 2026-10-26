@@ -82,17 +82,16 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo / Icon
-                const Icon(
-                  Icons.eco_rounded,
-                  size: 80,
-                  color: Color(0xFF2E7D32), // Hijau Pertanian
+                Image.asset(
+                  'assets/tani-pintar-logo.png',
+                  height: 120,
+                  width: 120,
                 ),
                 const SizedBox(height: 16),
 
                 // Judul
                 const Text(
-                  'Smart Farming',
+                  'Tani Pintar',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Logo Tani Pintar">
+  <title>Tani Pintar</title>
+  <!-- Latar ikon aplikasi -->
+  <rect width="1024" height="1024" rx="230" fill="#1E8A3C"/>
+
+  <!-- Akar bergaya sirkuit -->
+  <path d="M300 800 H724" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" fill="none"/>
+  <circle cx="300" cy="800" r="26" fill="#FFFFFF"/>
+  <circle cx="724" cy="800" r="26" fill="#FFFFFF"/>
+  <circle cx="512" cy="800" r="26" fill="#FFFFFF"/>
+
+  <!-- Batang -->
+  <rect x="494" y="470" width="36" height="330" rx="18" fill="#FFFFFF"/>
+
+  <!-- Daun kiri -->
+  <path d="M512 610 C 400 620 300 560 290 430 C 410 420 500 480 512 610 Z" fill="#FFFFFF"/>
+
+  <!-- Daun kanan (lebih besar) -->
+  <path d="M512 520 C 520 360 620 265 765 250 C 775 395 665 510 512 520 Z" fill="#B8F08A"/>
+
+  <!-- Tulang daun sebagai jalur sirkuit -->
+  <path d="M545 490 L690 330" stroke="#1E8A3C" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <path d="M605 425 H675" stroke="#1E8A3C" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <circle cx="700" cy="318" r="22" fill="#1E8A3C"/>
+  <circle cx="690" cy="425" r="16" fill="#1E8A3C"/>
+</svg>

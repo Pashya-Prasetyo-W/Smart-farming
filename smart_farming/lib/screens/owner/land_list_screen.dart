@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/land_service.dart';
 import 'add_land_screen.dart';
 import 'add_planting_screen.dart';
+import '../../services/planting_service.dart';
 
 import 'package:intl/intl.dart';
 
@@ -29,6 +30,85 @@ class _LandListScreenState extends State<LandListScreen> {
       _lands = data;
       _isLoading = false;
     });
+  }
+
+  void _showHarvestDialog(int plantingId) {
+    final harvestController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Selesaikan Siklus (Panen)'),
+        content: TextField(
+          controller: harvestController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Total Hasil Panen (kg)',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final kg = double.tryParse(harvestController.text) ?? 0;
+              if (kg <= 0) return;
+
+              Navigator.pop(dialogContext);
+              final success = await PlantingService().harvestPlanting(
+                plantingId,
+                kg,
+              );
+              if (success) {
+                _fetchLands(); // Refresh data lahan
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Siklus berhasil dipanen!')),
+                );
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCancelDialog(int plantingId) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Batalkan Siklus'),
+        content: const Text(
+          'Apakah Anda yakin ingin membatalkan siklus tanam ini? Status akan berubah menjadi GAGAL.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Tutup'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              final success = await PlantingService().cancelPlanting(
+                plantingId,
+              );
+              if (success) {
+                _fetchLands();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Siklus dibatalkan.')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text(
+              'Ya, Batalkan',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -84,25 +164,70 @@ class _LandListScreenState extends State<LandListScreen> {
                         // CEK APAKAH ADA SIKLUS AKTIF
                         if (land['active_planting'] != null)
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
+                              color: Colors.green.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.green),
                             ),
-                            child: Text(
-                              'Siklus berjalan: ${land['active_planting']['crop_name']}',
-                              style: const TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Siklus berjalan: ${land['active_planting']['crop_name']}',
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    // TOMBOL PANEN
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () => _showHarvestDialog(
+                                          land['active_planting']['id'],
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                        ),
+                                        child: const Text(
+                                          'PANEN',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    // TOMBOL GAGAL
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () => _showCancelDialog(
+                                          land['active_planting']['id'],
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                        ),
+                                        child: const Text(
+                                          'GAGAL',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           )
                         else
                           OutlinedButton.icon(
+                            // ... (Kode tombol Mulai Siklus Tanam biarkan sama) ...
                             onPressed: () async {
                               await Navigator.push(
                                 context,
