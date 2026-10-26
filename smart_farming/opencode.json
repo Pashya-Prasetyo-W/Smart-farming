@@ -1,0 +1,28 @@
+{
+  "model": "opencode/big-pickle",
+  "permission": {
+    "read": {
+      "*": "deny",
+      "lib/screens/**": "allow",
+      "lib/utils/currency_formatter.dart": "allow",
+      "lib/services/**": "allow",
+      "lib/main.dart": "allow",
+      "pubspec.yaml": "allow",
+      "analysis_options.yaml": "allow"
+    },
+    "edit": {
+      "*": "deny",
+      "lib/screens/**": "allow"
+    },
+    "glob": "ask",
+    "grep": "ask",
+    "list": "ask",
+    "bash": {
+      "*": "deny",
+      "dart format lib/screens": "allow",
+      "flutter analyze": "allow"
+    },
+    "webfetch": "deny",
+    "external_directory": "deny"
+  }
+}

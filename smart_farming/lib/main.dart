@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/auth/login_screen.dart'; // Import halaman login
+import 'screens/auth/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32)),
         useMaterial3: true,
-        fontFamily: 'Inter', // Opsional: Gunakan font yang lebih modern
+        fontFamily: 'Inter',
       ),
       home: const LoginScreen(), // Set halaman awal ke Login
     );
