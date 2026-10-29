@@ -27,7 +27,7 @@ class PlantingService {
     }
   }
 
-    Future<List<dynamic>?> getPlantings() async {
+  Future<List<dynamic>?> getPlantings() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -50,7 +50,7 @@ class PlantingService {
     }
   }
 
-    Future<bool> harvestPlanting(int plantingId, double harvestKg) async {
+  Future<bool> harvestPlanting(int plantingId, double harvestKg) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');

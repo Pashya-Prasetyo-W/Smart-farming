@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dart:io';
 
 class TaskService {
@@ -99,7 +100,7 @@ class TaskService {
     }
   }
 
-    Future<bool> updateTask(int taskId, Map<String, dynamic> data) async {
+  Future<bool> updateTask(int taskId, Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -119,29 +120,34 @@ class TaskService {
     }
   }
 
-  Future<bool> submitReportWithUrl(int taskId, List<Map<String, dynamic>> resources, String notes, String mediaUrl) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+  Future<bool> submitReportWithUrl(
+    int taskId,
+    List<Map<String, dynamic>> resources,
+    String notes,
+    String mediaUrl,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/tasks/$taskId/report'),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'media_urls': [mediaUrl],
-        'notes': notes,
-        'resources': resources,
-      }),
-    );
-    return response.statusCode == 201;
-  } catch (e) {
-    return false;
+      final response = await http.post(
+        Uri.parse('$baseUrl/tasks/$taskId/report'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'media_urls': [mediaUrl],
+          'notes': notes,
+          'resources': resources,
+        }),
+      );
+      return response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
   }
-}
 
   Future<bool> createTask(Map<String, dynamic> data) async {
     try {
@@ -185,7 +191,7 @@ class TaskService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['url']; // Mengembalikan URL dari Laravel
+        return data['url'];
       }
       return null;
     } catch (e) {

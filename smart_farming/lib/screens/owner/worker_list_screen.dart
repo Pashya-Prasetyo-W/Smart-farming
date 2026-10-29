@@ -42,20 +42,17 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              // 1. Tutup dialog DULU
               Navigator.pop(dialogContext);
 
-              // 2. Panggil API hapus
               final success = await WorkerService().deleteWorker(id);
 
               if (!mounted) return;
 
-              // 3. Jika sukses, refresh list
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Buruh berhasil dihapus.')),
                 );
-                _fetchWorkers(); // Memanggil ulang API agar list ter-update
+                _fetchWorkers();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Gagal menghapus buruh.')),
@@ -187,7 +184,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
             context,
             MaterialPageRoute(builder: (context) => const AddWorkerScreen()),
           );
-          _fetchWorkers(); // Refresh list saat kembali
+          _fetchWorkers();
         },
         backgroundColor: const Color(0xFF2E7D32),
         child: const Icon(Icons.add, color: Colors.white),

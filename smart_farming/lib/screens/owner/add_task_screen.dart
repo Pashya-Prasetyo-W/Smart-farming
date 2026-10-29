@@ -22,17 +22,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
 
-  // Data Referensi
   List<dynamic> _activePlantings = [];
   List<dynamic> _workers = [];
   List<dynamic> _resources = [];
   List<dynamic> _tools = [];
 
-  // Pilihan User
   int? _selectedPlantingId;
   int? _selectedWorkerId;
 
-  // List Bahan & Alat yang dipilih
   List<Map<String, dynamic>> _selectedResources = [];
   List<Map<String, dynamic>> _selectedTools = [];
 
@@ -49,7 +46,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     final toolsData = await ToolService().getTools();
 
     setState(() {
-      // Filter HANYA planting yang statusnya 'berjalan'
       _activePlantings = (plantingsData ?? [])
           .where((p) => p['status'] == 'berjalan')
           .toList();
@@ -107,7 +103,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
-  // --- DIALOG PILIH BAHAN ---
   void _showAddResourceDialog() {
     if (_resources.isEmpty) return;
     int? selectedId = _resources[0]['id'];
@@ -143,7 +138,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                // Tampilkan info stok
+
                 Text(
                   'Stok tersedia: ${selectedResource['stock_qty']} ${selectedResource['unit']}',
                   style: const TextStyle(
@@ -194,17 +189,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     }
 
                     setState(() {
-                      // CEK APAKAH BAHAN SUDAH ADA DI LIST
                       int existingIndex = _selectedResources.indexWhere(
                         (res) => res['resource_id'] == selectedId,
                       );
 
                       if (existingIndex != -1) {
-                        // Jika sudah ada, UPDATE qty-nya
                         _selectedResources[existingIndex]['max_allocated_qty'] =
                             inputQty;
                       } else {
-                        // Jika belum ada, TAMBAHKAN baris baru
                         _selectedResources.add({
                           'resource_id': selectedId,
                           'max_allocated_qty': inputQty,
@@ -223,8 +215,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
-  // --- DIALOG PILIH ALAT ---
-  // --- UI UNTUK MEMILIH ALAT ---
   void _showAddToolDialog() {
     if (_tools.isEmpty) return;
     int? selectedId = _tools[0]['id'];
@@ -233,10 +223,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) {
-        // Gunakan StatefulBuilder agar dialog bisa di-refresh saat dropdown berubah
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            // Cari data alat yang sedang dipilih untuk mendapatkan available_qty
             final selectedTool = _tools.firstWhere(
               (t) => t['id'] == selectedId,
             );
@@ -263,7 +251,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     },
                   ),
                   const SizedBox(height: 8),
-                  // TAMPILKAN SISA STOK SECARA DINAMIS
+
                   Text(
                     'Ketersediaan: $availableQty ${selectedTool['unit_label'] ?? 'buah'}',
                     style: const TextStyle(
@@ -306,16 +294,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       }
 
                       setState(() {
-                        // CEK APAKAH ALAT SUDAH ADA DI LIST
                         int existingIndex = _selectedTools.indexWhere(
                           (tool) => tool['tool_id'] == selectedId,
                         );
 
                         if (existingIndex != -1) {
-                          // Jika sudah ada, UPDATE qty-nya
                           _selectedTools[existingIndex]['qty'] = inputQty;
                         } else {
-                          // Jika belum ada, TAMBAHKAN baris baru
                           _selectedTools.add({
                             'tool_id': selectedId,
                             'qty': inputQty,
@@ -371,7 +356,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Dropdown Lahan (Planting)
                   _activePlantings.isEmpty
                       ? const Text(
                           'Tidak ada siklus tanam aktif. Buat siklus tanam terlebih dahulu!',
@@ -398,7 +382,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         ),
                   const SizedBox(height: 12),
 
-                  // Dropdown Buruh
                   DropdownButtonFormField<int>(
                     value: _selectedWorkerId,
                     decoration: const InputDecoration(
@@ -415,7 +398,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Tanggal
                   Row(
                     children: [
                       Expanded(
@@ -452,7 +434,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ),
                   const Divider(height: 32),
 
-                  // Bahan
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -490,7 +471,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
                   const Divider(height: 32),
 
-                  // Alat
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,13 +17,14 @@ class IncidentService {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
-      // 1. Upload Gambar ke Local Storage Laravel
       var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
       request.headers.addAll({
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
       });
-      request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+      request.files.add(
+        await http.MultipartFile.fromPath('file', imageFile.path),
+      );
 
       var streamedResponse = await request.send();
       var uploadResponse = await http.Response.fromStream(streamedResponse);
@@ -34,7 +36,6 @@ class IncidentService {
 
       final mediaUrl = jsonDecode(uploadResponse.body)['url'];
 
-      // 2. Kirim Data Insiden
       final response = await http.post(
         Uri.parse('$baseUrl/incidents'),
         headers: {
@@ -60,7 +61,7 @@ class IncidentService {
     }
   }
 
-    Future<List<dynamic>?> getIncidents() async {
+  Future<List<dynamic>?> getIncidents() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');

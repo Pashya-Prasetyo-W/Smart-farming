@@ -51,7 +51,6 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 }
 
-// --- WIDGET TAB ALAT ---
 class _ToolTab extends StatefulWidget {
   @override
   State<_ToolTab> createState() => _ToolTabState();
@@ -126,7 +125,7 @@ class _ToolTabState extends State<_ToolTab> {
               });
 
               if (success && context.mounted) {
-                _fetch(); // Panggil fetch
+                _fetch();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Alat berhasil diupdate!')),
                 );
@@ -248,7 +247,6 @@ class _ToolTabState extends State<_ToolTab> {
   }
 }
 
-// --- WIDGET TAB BAHAN ---
 class _ResourceTab extends StatefulWidget {
   @override
   State<_ResourceTab> createState() => _ResourceTabState();
@@ -321,17 +319,20 @@ class _ResourceTabState extends State<_ResourceTab> {
             child: const Text('Batal'),
           ),
           ElevatedButton(
-                        onPressed: () async {
+            onPressed: () async {
               Navigator.pop(dialogContext);
-              
+
               final cleanPriceStr = priceController.text.replaceAll('.', '');
-              
-              final success = await ResourceService().updateResource(res['id'], {
-                'name': nameController.text,
-                'unit': unitController.text,
-                'stock_qty': double.tryParse(stockController.text) ?? 0,
-                'unit_price': double.tryParse(cleanPriceStr) ?? 0,
-              });
+
+              final success = await ResourceService().updateResource(
+                res['id'],
+                {
+                  'name': nameController.text,
+                  'unit': unitController.text,
+                  'stock_qty': double.tryParse(stockController.text) ?? 0,
+                  'unit_price': double.tryParse(cleanPriceStr) ?? 0,
+                },
+              );
 
               if (success && context.mounted) {
                 _fetch();
@@ -344,7 +345,7 @@ class _ResourceTabState extends State<_ResourceTab> {
                 );
               }
             },
-            // GANTI WARNA DAN TEKS TOMBOL MENJADI SEPERTI INI
+
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
             ),

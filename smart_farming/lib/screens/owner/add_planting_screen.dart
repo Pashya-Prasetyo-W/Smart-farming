@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../services/planting_service.dart';
 
 class AddPlantingScreen extends StatefulWidget {
   final int landId;
   final String landName;
-  
+
   const AddPlantingScreen({
     super.key,
     required this.landId,
@@ -18,7 +19,7 @@ class AddPlantingScreen extends StatefulWidget {
 class _AddPlantingScreenState extends State<AddPlantingScreen> {
   final _cropNameController = TextEditingController();
   DateTime _plantDate = DateTime.now();
-  DateTime _harvestDate = DateTime.now().add(const Duration(days: 90)); // Default 3 bulan
+  DateTime _harvestDate = DateTime.now().add(const Duration(days: 90));
   bool _isLoading = false;
 
   @override
@@ -42,7 +43,7 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
     setState(() => _isLoading = true);
 
     final data = {
-      'land_id': widget.landId, // <-- Otomatis dari parameter
+      'land_id': widget.landId,
       'crop_name': _cropNameController.text.trim(),
       'plant_date': _formatDate(_plantDate),
       'est_harvest_date': _formatDate(_harvestDate),
@@ -61,7 +62,11 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal membuat siklus tanam. Pastikan lahan belum memiliki siklus aktif.')),
+        const SnackBar(
+          content: Text(
+            'Gagal membuat siklus tanam. Pastikan lahan belum memiliki siklus aktif.',
+          ),
+        ),
       );
     }
   }
@@ -70,7 +75,10 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mulai Siklus Tanam', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Mulai Siklus Tanam',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -79,7 +87,6 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // TAMPILKAN NAMA LAHAN (READ ONLY)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -93,7 +100,7 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             TextField(
               controller: _cropNameController,
               decoration: const InputDecoration(
@@ -104,9 +111,12 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
 
             const Divider(height: 32),
 
-            const Text('Tanggal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Tanggal',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
-            
+
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Tanggal Tanam'),
@@ -122,7 +132,7 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
                 if (date != null) setState(() => _plantDate = date);
               },
             ),
-            
+
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Estimasi Panen'),
@@ -140,16 +150,22 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
             ),
 
             const SizedBox(height: 32),
-            
+
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2E7D32),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white) 
-                  : const Text('MULAI TANAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      'MULAI TANAM',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ],
         ),

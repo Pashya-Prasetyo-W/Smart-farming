@@ -61,7 +61,7 @@ class _LandListScreenState extends State<LandListScreen> {
                 kg,
               );
               if (success) {
-                _fetchLands(); // Refresh data lahan
+                _fetchLands();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Siklus berhasil dipanen!')),
                 );
@@ -161,7 +161,6 @@ class _LandListScreenState extends State<LandListScreen> {
                         ),
                         const SizedBox(height: 8),
 
-                        // CEK APAKAH ADA SIKLUS AKTIF
                         if (land['active_planting'] != null)
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -183,7 +182,6 @@ class _LandListScreenState extends State<LandListScreen> {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    // TOMBOL PANEN
                                     Expanded(
                                       child: ElevatedButton(
                                         onPressed: () => _showHarvestDialog(
@@ -202,7 +200,7 @@ class _LandListScreenState extends State<LandListScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    // TOMBOL GAGAL
+
                                     Expanded(
                                       child: ElevatedButton(
                                         onPressed: () => _showCancelDialog(
@@ -227,7 +225,6 @@ class _LandListScreenState extends State<LandListScreen> {
                           )
                         else
                           OutlinedButton.icon(
-                            // ... (Kode tombol Mulai Siklus Tanam biarkan sama) ...
                             onPressed: () async {
                               await Navigator.push(
                                 context,
@@ -238,7 +235,7 @@ class _LandListScreenState extends State<LandListScreen> {
                                   ),
                                 ),
                               );
-                              _fetchLands(); // Refresh jika kembali
+                              _fetchLands();
                             },
                             icon: const Icon(Icons.eco, size: 16),
                             label: const Text(
@@ -261,7 +258,7 @@ class _LandListScreenState extends State<LandListScreen> {
             context,
             MaterialPageRoute(builder: (context) => const AddLandScreen()),
           );
-          _fetchLands(); // Refresh list saat kembali
+          _fetchLands();
         },
         backgroundColor: const Color(0xFF2E7D32),
         child: const Icon(Icons.add, color: Colors.white),

@@ -21,7 +21,7 @@ class DashboardService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['data']; // Mengembalikan isi statistik (income, expense, dll)
+        return data['data'];
       } else {
         return null;
       }
@@ -35,7 +35,6 @@ class DashboardService {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
-      // Jika landId ada, tambahkan ke URL
       String url = '$baseUrl/dashboard/weather';
       if (landId != null) {
         url += '?land_id=$landId';

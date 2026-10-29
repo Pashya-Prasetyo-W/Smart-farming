@@ -3,16 +3,18 @@ import 'package:flutter/services.dart';
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.text.isEmpty) {
       return newValue.copyWith(text: '');
     }
 
-    // Hapus semua karakter selain angka
-    final intValue = int.tryParse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
+    final intValue = int.tryParse(
+      newValue.text.replaceAll(RegExp(r'[^0-9]'), ''),
+    );
     if (intValue == null) return oldValue;
 
-    // Format dengan titik setiap 3 digit
     final stringValue = intValue.toString();
     final buffer = StringBuffer();
     int offset = stringValue.length % 3;

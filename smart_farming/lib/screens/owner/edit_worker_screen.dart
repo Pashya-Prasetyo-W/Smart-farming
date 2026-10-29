@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../services/worker_service.dart';
 
 class EditWorkerScreen extends StatefulWidget {
@@ -38,11 +39,12 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // Inisialisasi controller dengan data worker yang ada
+
     _nameController = TextEditingController(text: widget.worker['name'] ?? '');
-    _emailController = TextEditingController(text: widget.worker['email'] ?? '');
-    
+    _emailController = TextEditingController(
+      text: widget.worker['email'] ?? '',
+    );
+
     final benefit = widget.worker['benefit'];
     _healthInsurance = benefit != null && benefit['health_insurance'] == true;
     _foodAllowance = benefit != null && benefit['food_allowance'] == true;
@@ -54,7 +56,6 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
       text: benefit?['food_allowance_desc'] ?? '',
     );
 
-    // Parse jam kerja jika ada
     final schedule = widget.worker['schedule'];
     if (schedule != null) {
       if (schedule['start_time'] != null) {
@@ -76,7 +77,6 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
         }
       }
 
-      // Parse hari kerja jika ada
       if (schedule['work_days'] != null) {
         final List<dynamic> days = schedule['work_days'];
         for (var day in days) {
@@ -139,7 +139,6 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
       },
     };
 
-    // Jika password diisi, sertakan ke dalam data pembaruan
     if (_passwordController.text.isNotEmpty) {
       data['password'] = _passwordController.text.trim();
     }
@@ -158,7 +157,9 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal memperbarui data buruh. Cek console.')),
+        const SnackBar(
+          content: Text('Gagal memperbarui data buruh. Cek console.'),
+        ),
       );
     }
   }
@@ -167,10 +168,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Edit Buruh',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Edit Buruh', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
       ),

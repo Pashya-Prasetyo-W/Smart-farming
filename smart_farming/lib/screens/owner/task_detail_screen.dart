@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../services/task_service.dart';
 import 'report_task_screen.dart';
 import 'edit_task_screen.dart';
@@ -39,7 +40,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     });
   }
 
-  // Fungsi untuk menampilkan Dialog Input Alasan Pembatalan
   void _showCancelDialog() {
     final reasonController = TextEditingController();
 
@@ -64,9 +64,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               onPressed: () async {
                 if (reasonController.text.isEmpty) return;
 
-                Navigator.pop(dialogContext); // Tutup dialog input
+                Navigator.pop(dialogContext);
 
-                // Tampilkan loading
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -83,7 +82,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 } catch (e) {
                   print("Error saat cancel: $e");
                 } finally {
-                  // Pastikan loading tertutup menggunakan rootNavigator
                   if (mounted) {
                     Navigator.of(context, rootNavigator: true).pop();
                   }
@@ -95,7 +93,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Tugas berhasil dibatalkan')),
                   );
-                  Navigator.pop(context); // Kembali ke list tugas
+                  Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -137,7 +135,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Judul & Status
                   Text(
                     _task!['title'],
                     style: const TextStyle(
@@ -149,7 +146,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Text('Status: ${_task!['status'].toString().toUpperCase()}'),
                   const Divider(height: 32),
 
-                  // Info Lahan
                   const Text(
                     'Lokasi Lahan',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -157,7 +153,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Text(_task!['planting']['land']['name']),
                   const SizedBox(height: 16),
 
-                  // Info Buruh
                   const Text(
                     'Ditugaskan Kepada',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -165,7 +160,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Text(_task!['assignee']?['name'] ?? 'Belum ada'),
                   const SizedBox(height: 16),
 
-                  // Deskripsi
                   if (_task!['description'] != null) ...[
                     const Text(
                       'Deskripsi',
@@ -209,7 +203,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     const Text('Tidak ada bahan.'),
                   const SizedBox(height: 16),
 
-                  // Alat (Tools)
                   const Text(
                     'Alat yang Dipinjam',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -226,7 +219,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
                   const SizedBox(height: 16),
 
-                  // --- LAPORAN PEKERJAAN JIKA SUDAH SELESAI ---
                   if (_task!['report'] != null) ...[
                     const Divider(thickness: 2),
                     const Text(
@@ -239,13 +231,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Tampilkan Gambar Bukti
                     if (_task!['report']['media_urls'] != null &&
                         (_task!['report']['media_urls'] as List).isNotEmpty)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          _task!['report']['media_urls'][0], // Ambil gambar pertama
+                          _task!['report']['media_urls'][0],
                           height: 200,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -261,7 +252,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       ),
                     const SizedBox(height: 12),
 
-                    // Tampilkan Catatan
                     const Text(
                       'Catatan Buruh:',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -272,20 +262,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
                   const SizedBox(height: 16),
 
-                  // --- LOGIKA TOMBOL BERDASARKAN ROLE ---
-
-                  // Tombol Edit Tugas (Untuk Pemilik saat status menunggu)
-                  if (_userRole == 'pemilik' && _task!['status'] == 'menunggu') ...[
+                  if (_userRole == 'pemilik' &&
+                      _task!['status'] == 'menunggu') ...[
                     ElevatedButton.icon(
                       onPressed: () async {
-                        // Pindah ke halaman edit, bawa data task
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => EditTaskScreen(task: _task!),
                           ),
                         );
-                        _fetchDetail(); // Refresh jika kembali
+                        _fetchDetail();
                       },
                       icon: const Icon(Icons.edit, color: Colors.white),
                       label: const Text(
@@ -300,7 +287,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     const SizedBox(height: 12),
                   ],
 
-                  // 1. Tombol untuk PEMILIK (Batalkan Tugas)
                   if (_userRole == 'pemilik' &&
                       (_task!['status'] == 'menunggu' ||
                           _task!['status'] == 'dikerjakan'))
@@ -322,7 +308,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       ),
                     ),
 
-                  // 2. Tombol untuk BURUH (Mulai / Lapor)
                   if (_userRole == 'buruh') ...[
                     if (_task!['status'] == 'menunggu')
                       ElevatedButton(
@@ -338,7 +323,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                 content: Text('Pekerjaan dimulai!'),
                               ),
                             );
-                            _fetchDetail(); // Refresh data agar status berubah
+                            _fetchDetail();
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -365,7 +350,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     if (_task!['status'] == 'dikerjakan')
                       ElevatedButton(
                         onPressed: () {
-                          // Pindah ke halaman lapor, bawa data resource dari task
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -374,9 +358,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                 resources: _task!['resources'] ?? [],
                               ),
                             ),
-                          ).then(
-                            (_) => _fetchDetail(),
-                          ); // Refresh status setelah lapor
+                          ).then((_) => _fetchDetail());
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2E7D32),

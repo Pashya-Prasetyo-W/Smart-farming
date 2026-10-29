@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../services/task_service.dart';
+
 import 'package:image_picker/image_picker.dart';
+
 import 'dart:io';
 
 class ReportTaskScreen extends StatefulWidget {
@@ -19,16 +22,15 @@ class ReportTaskScreen extends StatefulWidget {
 
 class _ReportTaskScreenState extends State<ReportTaskScreen> {
   final _notesController = TextEditingController();
-  // Map untuk menyimpan inputan qty per resource_id
+
   final Map<int, TextEditingController> _resourceControllers = {};
   bool _isLoading = false;
 
-  // --- VARIABEL STATE UNTUK GAMBAR ---
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery); // Gunakan ImageSource.camera di HP asli
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
         _selectedImage = File(image.path);
@@ -39,7 +41,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
   @override
   void initState() {
     super.initState();
-    // Inisialisasi text controller untuk setiap bahan
+
     for (var res in widget.resources) {
       _resourceControllers[res['id']] = TextEditingController();
     }
@@ -56,22 +58,24 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
 
   void _submitReport() async {
     if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih bukti foto terlebih dahulu!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih bukti foto terlebih dahulu!')),
+      );
       return;
     }
 
     setState(() => _isLoading = true);
 
-    // 1. Upload gambar ke Laravel
     String? mediaUrl = await TaskService().uploadFile(_selectedImage!);
-    
+
     if (mediaUrl == null) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengunggah foto.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal mengunggah foto.')));
       return;
     }
 
-    // 2. Kumpulkan data bahan
     List<Map<String, dynamic>> payloadResources = [];
     for (var res in widget.resources) {
       final id = res['id'] as int;
@@ -80,7 +84,6 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
       payloadResources.add({'resource_id': id, 'actual_used_qty': qty});
     }
 
-    // 3. Kirim laporan
     final success = await TaskService().submitReportWithUrl(
       widget.taskId,
       payloadResources,
@@ -89,13 +92,17 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
     );
 
     setState(() => _isLoading = false);
-    
+
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Laporan berhasil dikirim!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Laporan berhasil dikirim!')),
+      );
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengirim laporan.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal mengirim laporan.')));
     }
   }
 
@@ -111,7 +118,6 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- AREA FOTO DI BAGIAN ATAS ---
             Center(
               child: GestureDetector(
                 onTap: _pickImage,
@@ -131,8 +137,15 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                       : const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.camera_alt, size: 40, color: Colors.grey),
-                            Text('Ambil Bukti Foto', style: TextStyle(color: Colors.grey)),
+                            Icon(
+                              Icons.camera_alt,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                            Text(
+                              'Ambil Bukti Foto',
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ],
                         ),
                 ),
@@ -147,8 +160,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
             const SizedBox(height: 8),
             const Text('Masukkan jumlah bahan yang benar-benar terpakai:'),
             const SizedBox(height: 16),
-            
-            // Looping form input untuk setiap bahan
+
             ...widget.resources.map((res) {
               final id = res['id'] as int;
               return Padding(
@@ -160,8 +172,17 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${res['name']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Text('Maks: ${res['pivot']['max_allocated_qty']} ${res['unit']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(
+                            '${res['name']}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Maks: ${res['pivot']['max_allocated_qty']} ${res['unit']}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -169,7 +190,9 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                       flex: 1,
                       child: TextField(
                         controller: _resourceControllers[id],
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: '0.0',
@@ -185,7 +208,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
             }),
 
             const Divider(height: 32),
-            
+
             const Text(
               'Catatan Pekerjaan',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -199,9 +222,9 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                 hintText: 'Contoh: Semua daun sudah disemprot rata...',
               ),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             ElevatedButton(
               onPressed: _isLoading ? null : _submitReport,
               style: ElevatedButton.styleFrom(
@@ -210,8 +233,14 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
               ),
               child: _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('KIRIM LAPORAN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            )
+                  : const Text(
+                      'KIRIM LAPORAN',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
           ],
         ),
       ),

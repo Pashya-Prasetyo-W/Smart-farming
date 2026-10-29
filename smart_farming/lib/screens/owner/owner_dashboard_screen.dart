@@ -13,13 +13,12 @@ import 'finance_screen.dart';
 import 'failure_log_screen.dart';
 import '../../services/land_service.dart';
 
-/// Palet warna aplikasi (tema pertanian: hijau daun, emas panen, tanah).
 class _Palette {
   static const primary = Color(0xFF2E7D32);
   static const primaryDark = Color(0xFF1B5E20);
   static const primaryLight = Color(0xFF66BB6A);
-  static const accent = Color(0xFFF9A825); // emas panen
-  static const soil = Color(0xFF8D6E63); // tanah
+  static const accent = Color(0xFFF9A825);
+  static const soil = Color(0xFF8D6E63);
   static const teal = Color(0xFF00796B);
   static const danger = Color(0xFFC62828);
   static const background = Color(0xFFF3F7F1);
@@ -61,7 +60,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
         _selectedLandIdForWeather = _lands[0]['id'];
       }
     });
-    _fetchWeather(); // Ambil cuaca untuk lahan pertama
+    _fetchWeather();
   }
 
   Future<void> _fetchWeather() async {
@@ -111,9 +110,6 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     return 'Rp ${n < 0 ? '-' : ''}$buf';
   }
 
-  // ---------------------------------------------------------------------------
-  // HEADER
-  // ---------------------------------------------------------------------------
   Widget _buildHeader() {
     final initial = _userName.isNotEmpty ? _userName[0].toUpperCase() : 'P';
     return Container(
@@ -188,9 +184,6 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // CUACA
-  // ---------------------------------------------------------------------------
   Widget _buildWeatherCard() {
     final w = _weatherData!;
     final condition = w['condition'];
@@ -223,7 +216,6 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Dropdown pilih lahan
           if (_lands.isNotEmpty)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -280,7 +272,6 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             ),
           if (_lands.isNotEmpty) const SizedBox(height: 16),
 
-          // Suhu dan ikon
           Row(
             children: [
               Expanded(
@@ -341,9 +332,6 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // STATISTIK
-  // ---------------------------------------------------------------------------
   Widget _buildProfitCard() {
     return Container(
       width: double.infinity,
@@ -509,9 +497,6 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // MENU CEPAT
-  // ---------------------------------------------------------------------------
   Widget _buildSectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -627,9 +612,6 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // HOME TAB
-  // ---------------------------------------------------------------------------
   Widget _buildHomeTab() {
     return Scaffold(
       backgroundColor: _Palette.background,
@@ -682,19 +664,16 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Cuaca
                           if (_weatherData != null) ...[
                             _buildSectionTitle('Cuaca Lahan'),
                             _buildWeatherCard(),
                             const SizedBox(height: 24),
                           ],
 
-                          // Statistik
                           _buildSectionTitle('Ringkasan'),
                           _buildStatsSection(),
                           const SizedBox(height: 24),
 
-                          // Menu cepat
                           _buildSectionTitle('Menu Cepat'),
                           _buildMenuGrid(),
                         ],
@@ -709,9 +688,8 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Daftar halaman yang akan ditampilkan sesuai tab
     final List<Widget> pages = [
-      _buildHomeTab(), // Tab 0: Dashboard
+      _buildHomeTab(),
       const LandListScreen(),
       const TaskListScreen(),
       const ProfileScreen(),

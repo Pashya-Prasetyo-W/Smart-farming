@@ -51,7 +51,6 @@ class _FinanceScreenState extends State<FinanceScreen>
   }
 }
 
-// --- TAB 1: RIWAYAT KAS ---
 class _FinanceListTab extends StatefulWidget {
   @override
   State<_FinanceListTab> createState() => _FinanceListTabState();
@@ -69,7 +68,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
     _fetchPlantings();
   }
 
-    void _fetchPlantings() async {
+  void _fetchPlantings() async {
     final data = await PlantingService().getPlantings();
     setState(() {
       _plantings = (data ?? [])
@@ -95,7 +94,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
 
   void _showAddFinanceDialog() {
     String type = 'pemasukan';
-    int? selectedPlantingId; // <-- Variabel untuk menyimpan pilihan
+    int? selectedPlantingId;
     final amountController = TextEditingController();
     final descController = TextEditingController();
 
@@ -125,7 +124,6 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                   ),
                   const SizedBox(height: 12),
 
-                  // --- TAMBAHKAN DROPDOWN PLANTING DI SINI ---
                   DropdownButtonFormField<int?>(
                     value: selectedPlantingId,
                     decoration: const InputDecoration(
@@ -149,7 +147,6 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                         setDialogState(() => selectedPlantingId = val),
                   ),
                   const SizedBox(height: 12),
-                  // -------------------------------------------
 
                   TextField(
                     controller: amountController,
@@ -185,12 +182,11 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                       'type': type,
                       'amount': amount,
                       'description': descController.text,
-                      'planting_id':
-                          selectedPlantingId, // <-- Kirim ID Planting ke API
+                      'planting_id': selectedPlantingId,
                     });
                     if (success) {
                       _fetchFinances();
-                      _fetchPlantings(); // Refresh data
+                      _fetchPlantings();
                     }
                   }
                 },
@@ -209,7 +205,6 @@ class _FinanceListTabState extends State<_FinanceListTab> {
     if (_finances == null || _finances!.isEmpty)
       return const Center(child: Text('Belum ada catatan keuangan.'));
 
-    // Hitung Total Pemasukan & Pengeluaran
     double totalIncome = 0;
     double totalExpense = 0;
     for (var f in _finances!) {
@@ -221,7 +216,6 @@ class _FinanceListTabState extends State<_FinanceListTab> {
     return Scaffold(
       body: Column(
         children: [
-          // Ringkasan Kas
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.green[50],
@@ -233,7 +227,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
               ],
             ),
           ),
-          // List Transaksi
+
           Expanded(
             child: ListView.builder(
               itemCount: _finances!.length,
@@ -285,7 +279,6 @@ class _FinanceListTabState extends State<_FinanceListTab> {
   }
 }
 
-// --- TAB 2: KALKULATOR HPP ---
 class _HppCalculatorTab extends StatefulWidget {
   @override
   State<_HppCalculatorTab> createState() => _HppCalculatorTabState();
@@ -309,13 +302,15 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
   void _fetchPlantings() async {
     final data = await PlantingService().getPlantings();
     setState(() {
-      // Tampilkan yang berjalan, panen, dan gagal
-      _activePlantings = (data ?? []).where((p) => 
-        p['status'] == 'berjalan' || 
-        p['status'] == 'panen' || 
-        p['status'] == 'gagal'
-      ).toList();
-      
+      _activePlantings = (data ?? [])
+          .where(
+            (p) =>
+                p['status'] == 'berjalan' ||
+                p['status'] == 'panen' ||
+                p['status'] == 'gagal',
+          )
+          .toList();
+
       if (_activePlantings.isNotEmpty) {
         _selectedPlantingId = _activePlantings[0]['id'];
       }
@@ -363,7 +358,6 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
             value: _selectedPlantingId,
             decoration: const InputDecoration(border: OutlineInputBorder()),
             items: _activePlantings.map<DropdownMenuItem<int>>((p) {
-              // Tampilkan nama komoditas, nama lahan, dan statusnya
               final statusLabel = p['status'].toString().toUpperCase();
               return DropdownMenuItem<int>(
                 value: p['id'],
@@ -384,8 +378,8 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
             controller: _harvestController,
             keyboardType: TextInputType.number,
             inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly, // <-- Tambahkan ini
-              ThousandsSeparatorInputFormatter(), // <-- Agar muncul titik otomatis
+              FilteringTextInputFormatter.digitsOnly,
+              ThousandsSeparatorInputFormatter(),
             ],
             decoration: const InputDecoration(
               border: OutlineInputBorder(),

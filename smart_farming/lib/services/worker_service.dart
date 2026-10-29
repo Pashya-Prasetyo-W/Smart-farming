@@ -111,7 +111,7 @@ class WorkerService {
     }
   }
 
-    Future<Map<String, dynamic>?> getProfile() async {
+  Future<Map<String, dynamic>?> getProfile() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -126,7 +126,7 @@ class WorkerService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['data']; // Mengembalikan data user, schedule, & benefit
+        return data['data'];
       }
       return null;
     } catch (e) {

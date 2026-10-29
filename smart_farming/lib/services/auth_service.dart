@@ -1,9 +1,9 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  // Gunakan 127.0.0.1 karena kita pakai Flutter Web
   final String baseUrl = 'http://192.168.1.5:8000/api';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -14,16 +14,12 @@ class AuthService {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        // Simpan token dan role ke local storage (SharedPreferences)
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['data']['token']);
         await prefs.setString('role', data['data']['user']['role']);
@@ -33,7 +29,7 @@ class AuthService {
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? 'Email atau password salah.'
+          'message': data['message'] ?? 'Email atau password salah.',
         };
       }
     } catch (e) {
@@ -41,7 +37,12 @@ class AuthService {
     }
   }
 
-    Future<Map<String, dynamic>> register(String name, String email, String password, String companyName) async {
+  Future<Map<String, dynamic>> register(
+    String name,
+    String email,
+    String password,
+    String companyName,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
@@ -64,7 +65,7 @@ class AuthService {
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? 'Registrasi gagal.'
+          'message': data['message'] ?? 'Registrasi gagal.',
         };
       }
     } catch (e) {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../../services/land_service.dart';
 import '../../utils/currency_formatter.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -19,13 +21,12 @@ class _AddLandScreenState extends State<AddLandScreen> {
   final _longController = TextEditingController();
   bool _isLoading = false;
 
-  // --- TAMBAHAN VARIABEL STATE UNTUK PETA ---
-  LatLng _selectedLocation = const LatLng(-6.200000, 106.816666); // Default Jakarta
+  LatLng _selectedLocation = const LatLng(-6.200000, 106.816666);
 
   @override
   void initState() {
     super.initState();
-    // Inisialisasi awal nilai controller dengan titik default peta
+
     _latController.text = _selectedLocation.latitude.toStringAsFixed(6);
     _longController.text = _selectedLocation.longitude.toStringAsFixed(6);
   }
@@ -71,7 +72,7 @@ class _AddLandScreenState extends State<AddLandScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Lahan berhasil ditambahkan!')),
       );
-      Navigator.pop(context); // Kembali ke list lahan
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(
         context,
@@ -134,7 +135,6 @@ class _AddLandScreenState extends State<AddLandScreen> {
             ),
             const SizedBox(height: 16),
 
-            // --- WIDGET PETA INTERAKTIF ---
             Container(
               height: 250,
               decoration: BoxDecoration(
@@ -148,17 +148,19 @@ class _AddLandScreenState extends State<AddLandScreen> {
                     initialCenter: _selectedLocation,
                     initialZoom: 14.0,
                     onTap: (tapPosition, point) {
-                      // Saat peta diklik, ubah titik marker dan isi TextController otomatis
                       setState(() {
                         _selectedLocation = point;
                         _latController.text = point.latitude.toStringAsFixed(6);
-                        _longController.text = point.longitude.toStringAsFixed(6);
+                        _longController.text = point.longitude.toStringAsFixed(
+                          6,
+                        );
                       });
                     },
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.smart_farming_app',
                     ),
                     MarkerLayer(
@@ -167,7 +169,11 @@ class _AddLandScreenState extends State<AddLandScreen> {
                           point: _selectedLocation,
                           width: 40,
                           height: 40,
-                          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40,
+                          ),
                         ),
                       ],
                     ),
@@ -176,11 +182,13 @@ class _AddLandScreenState extends State<AddLandScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text('Titik dipilih: ${_selectedLocation.latitude.toStringAsFixed(6)}, ${_selectedLocation.longitude.toStringAsFixed(6)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-            
+            Text(
+              'Titik dipilih: ${_selectedLocation.latitude.toStringAsFixed(6)}, ${_selectedLocation.longitude.toStringAsFixed(6)}',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+
             const SizedBox(height: 16),
-            
-            // Kolom Lat & Long (opsional untuk ditampilkan atau disembunyikan/read-only jika ingin menggunakan peta sepenuhnya)
+
             Row(
               children: [
                 Expanded(

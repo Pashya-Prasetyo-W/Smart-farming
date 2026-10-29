@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -26,11 +27,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _handleRegister() async {
-    if (_nameController.text.isEmpty || _companyController.text.isEmpty || 
-        _emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua kolom wajib diisi!')),
-      );
+    if (_nameController.text.isEmpty ||
+        _companyController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Semua kolom wajib diisi!')));
       return;
     }
 
@@ -51,11 +54,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registrasi Berhasil! Silakan Login.')),
       );
-      Navigator.pop(context); // Kembali ke halaman Login
+      Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'])),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(result['message'])));
     }
   }
 
@@ -64,7 +66,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
-        title: const Text('Daftar Pemilik', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Daftar Pemilik',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -89,45 +94,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 32),
-                
-                // Input Nama Pemilik
+
                 TextFormField(
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: 'Nama Lengkap',
                     prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true, fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // Input Nama Perusahaan
                 TextFormField(
                   controller: _companyController,
                   decoration: InputDecoration(
                     labelText: 'Nama Perusahaan / Kebun',
                     prefixIcon: const Icon(Icons.business),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true, fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // Input Email
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true, fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // Input Password
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _isObscure,
@@ -144,8 +154,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         });
                       },
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true, fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -156,11 +169,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     backgroundColor: const Color(0xFF2E7D32),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('DAFTAR SEKARANG', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'DAFTAR SEKARANG',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ],
             ),

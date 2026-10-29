@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,7 +21,7 @@ class LandService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['data']; // Mengembalikan list lahan
+        return data['data'];
       }
       return null;
     } catch (e) {
@@ -28,7 +29,7 @@ class LandService {
     }
   }
 
-    Future<bool> createLand(Map<String, dynamic> data) async {
+  Future<bool> createLand(Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');

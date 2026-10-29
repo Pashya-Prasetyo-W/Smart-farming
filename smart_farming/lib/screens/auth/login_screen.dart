@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../services/auth_service.dart';
 import 'register_screen.dart';
 import '../owner/owner_dashboard_screen.dart';
@@ -14,8 +15,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isObscure = true; // Untuk toggle show/hide password
-  bool _isLoading = false; // Untuk indikator loading saat proses login
+  bool _isObscure = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -46,38 +47,36 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (result['success']) {
-       if (!mounted) return;
-       
-       if (result['role'] == 'pemilik') {
-         Navigator.pushReplacement(
-           context,
-           MaterialPageRoute(builder: (context) => const OwnerDashboardScreen()),
-         );
-       } else {
-         // Arahkan ke Worker Dashboard
-         Navigator.pushReplacement(
-           context,
-           MaterialPageRoute(builder: (context) => const WorkerDashboardScreen()),
-         );
-       }
-     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'])),
-      );
+      if (!mounted) return;
+
+      if (result['role'] == 'pemilik') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OwnerDashboardScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const WorkerDashboardScreen(),
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(result['message'])));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA), // Background putih tulang
+      backgroundColor: const Color(0xFFFAFAFA),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 400,
-            ), // Agar di web tidak terlalu lebar
+            constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,7 +88,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Judul
                 const Text(
                   'Tani Pintar',
                   textAlign: TextAlign.center,
@@ -107,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // Input Email
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -123,7 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Input Password
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _isObscure,
@@ -149,7 +145,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Tombol Login
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
@@ -180,7 +175,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Teks Daftar
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -189,7 +183,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
                         );
                       },
                       child: const Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../services/tool_service.dart';
 
 class AddToolScreen extends StatefulWidget {
@@ -29,32 +30,66 @@ class _AddToolScreenState extends State<AddToolScreen> {
 
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alat berhasil ditambahkan!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Alat berhasil ditambahkan!')),
+      );
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menambahkan alat.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal menambahkan alat.')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tambah Alat'), backgroundColor: const Color(0xFF2E7D32)),
+      appBar: AppBar(
+        title: const Text('Tambah Alat'),
+        backgroundColor: const Color(0xFF2E7D32),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Nama Alat (contoh: Cangkul)', border: OutlineInputBorder())),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Nama Alat (contoh: Cangkul)',
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 16),
-            TextField(controller: _labelController, decoration: const InputDecoration(labelText: 'Satuan (contoh: buah, set)', border: OutlineInputBorder())),
+            TextField(
+              controller: _labelController,
+              decoration: const InputDecoration(
+                labelText: 'Satuan (contoh: buah, set)',
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 16),
-            TextField(controller: _qtyController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Jumlah Total', border: OutlineInputBorder())),
+            TextField(
+              controller: _qtyController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Jumlah Total',
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32), minimumSize: const Size(double.infinity, 50)),
-              child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('SIMPAN ALAT', style: TextStyle(color: Colors.white)),
-            )
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      'SIMPAN ALAT',
+                      style: TextStyle(color: Colors.white),
+                    ),
+            ),
           ],
         ),
       ),

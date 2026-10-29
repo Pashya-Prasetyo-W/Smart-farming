@@ -19,7 +19,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   TimeOfDay _startTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 16, minute: 0);
 
-  // Default hari kerja: Senin - Jumat
   final Map<String, bool> _workDays = {
     'senin': true,
     'selasa': true,
@@ -46,7 +45,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   }
 
   String _formatTime(TimeOfDay time) {
-    // Format ke HH:mm:ss untuk API
     final h = time.hour.toString().padLeft(2, '0');
     final m = time.minute.toString().padLeft(2, '0');
     return '$h:$m:00';
@@ -64,7 +62,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
 
     setState(() => _isLoading = true);
 
-    // Siapkan data hari kerja yang dipilih
     List<String> selectedDays = _workDays.entries
         .where((e) => e.value)
         .map((e) => e.key)
@@ -235,7 +232,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
               activeThumbColor: const Color(0xFF2E7D32),
               onChanged: (val) => setState(() => _healthInsurance = val),
             ),
-            // Tampilkan TextField jika Switch ON
+
             if (_healthInsurance)
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
@@ -254,7 +251,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
               activeThumbColor: const Color(0xFF2E7D32),
               onChanged: (val) => setState(() => _foodAllowance = val),
             ),
-            // Tampilkan TextField jika Switch ON
+
             if (_foodAllowance)
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),

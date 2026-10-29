@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -49,7 +50,10 @@ class FinanceService {
     }
   }
 
-  Future<Map<String, dynamic>?> calculateHpp(int plantingId, double harvestKg) async {
+  Future<Map<String, dynamic>?> calculateHpp(
+    int plantingId,
+    double harvestKg,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -64,7 +68,7 @@ class FinanceService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['data']; // Berisi hpp_per_kg, total_cost, harvest_kg
+        return data['data'];
       }
       return null;
     } catch (e) {
