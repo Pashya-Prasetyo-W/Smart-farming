@@ -104,7 +104,7 @@ class _AddLandScreenState extends State<AddLandScreen> {
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Nama Lahan (contoh: Lahan Cabai B)',
+                labelText: 'Nama Lahan',
                 border: OutlineInputBorder(),
               ),
             ),

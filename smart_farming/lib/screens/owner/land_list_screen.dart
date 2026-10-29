@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/land_service.dart';
 import 'add_land_screen.dart';
-import 'add_planting_screen.dart';
-import '../../services/planting_service.dart';
+import 'land_detail_screen.dart'; // <-- Pastikan file ini sudah ada
 
 import 'package:intl/intl.dart';
 
@@ -32,85 +31,6 @@ class _LandListScreenState extends State<LandListScreen> {
     });
   }
 
-  void _showHarvestDialog(int plantingId) {
-    final harvestController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Selesaikan Siklus (Panen)'),
-        content: TextField(
-          controller: harvestController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Total Hasil Panen (kg)',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final kg = double.tryParse(harvestController.text) ?? 0;
-              if (kg <= 0) return;
-
-              Navigator.pop(dialogContext);
-              final success = await PlantingService().harvestPlanting(
-                plantingId,
-                kg,
-              );
-              if (success) {
-                _fetchLands();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Siklus berhasil dipanen!')),
-                );
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCancelDialog(int plantingId) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Batalkan Siklus'),
-        content: const Text(
-          'Apakah Anda yakin ingin membatalkan siklus tanam ini? Status akan berubah menjadi GAGAL.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Tutup'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              final success = await PlantingService().cancelPlanting(
-                plantingId,
-              );
-              if (success) {
-                _fetchLands();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Siklus dibatalkan.')),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text(
-              'Ya, Batalkan',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,127 +46,66 @@ class _LandListScreenState extends State<LandListScreen> {
           : _lands == null || _lands!.isEmpty
           ? const Center(child: Text('Belum ada lahan yang ditambahkan.'))
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: _lands!.length,
               itemBuilder: (context, index) {
                 final land = _lands![index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    leading: const CircleAvatar(
-                      backgroundColor: Color(0xFFC8E6C9),
-                      child: Icon(Icons.landscape, color: Color(0xFF2E7D32)),
-                    ),
-                    title: Text(
-                      land['name'],
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                return InkWell(
+                  onTap: () async {
+                    // Pindah ke Detail Lahan dan tunggu hingga kembali untuk melakukan refresh
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LandDetailScreen(land: land),
                       ),
+                    );
+                    _fetchLands(); // Refresh data saat kembali
+                  },
+                  child: Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        Text(
-                          'Luas: ${NumberFormat.decimalPattern('id_ID').format(double.parse(land['area_sqm'].toString()))} m²',
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(16),
+                      leading: const CircleAvatar(
+                        backgroundColor: Color(0xFFC8E6C9),
+                        child: Icon(Icons.landscape, color: Color(0xFF2E7D32)),
+                      ),
+                      title: Text(
+                        land['name'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
-                        Text(
-                          'Koordinat: ${double.parse(land['location_lat'].toString())}, ${double.parse(land['location_long'].toString())}',
-                        ),
-                        const SizedBox(height: 8),
-
-                        if (land['active_planting'] != null)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.green),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Siklus berjalan: ${land['active_planting']['crop_name']}',
-                                  style: const TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () => _showHarvestDialog(
-                                          land['active_planting']['id'],
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                        ),
-                                        child: const Text(
-                                          'PANEN',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () => _showCancelDialog(
-                                          land['active_planting']['id'],
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.red,
-                                        ),
-                                        child: const Text(
-                                          'GAGAL',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          OutlinedButton.icon(
-                            onPressed: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddPlantingScreen(
-                                    landId: land['id'],
-                                    landName: land['name'],
-                                  ),
-                                ),
-                              );
-                              _fetchLands();
-                            },
-                            icon: const Icon(Icons.eco, size: 16),
-                            label: const Text(
-                              'Mulai Siklus Tanam',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF2E7D32),
-                            ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            'Luas: ${NumberFormat.decimalPattern('id_ID').format(double.parse(land['area_sqm'].toString()))} m²',
                           ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'Koordinat: ${double.parse(land['location_lat'].toString())}, ${double.parse(land['location_long'].toString())}',
+                          ),
+                          const SizedBox(height: 8),
+                          if (land['active_planting'] != null)
+                            Text(
+                              'Siklus aktif: ${land['active_planting']['crop_name']}',
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     ),
                   ),
                 );

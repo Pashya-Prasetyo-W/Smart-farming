@@ -92,19 +92,16 @@ class _ToolTabState extends State<_ToolTab> {
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Nama Alat'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             TextField(
               controller: labelController,
               decoration: const InputDecoration(labelText: 'Satuan'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             TextField(
               controller: qtyController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Total Alat',
-                helperText: 'Mengurangi/menambah unit otomatis',
-              ),
+              decoration: const InputDecoration(labelText: 'Total Alat'),
             ),
           ],
         ),
@@ -292,15 +289,18 @@ class _ResourceTabState extends State<_ResourceTab> {
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Nama Bahan'),
               ),
+              const SizedBox(height: 12),
               TextField(
                 controller: unitController,
                 decoration: const InputDecoration(labelText: 'Satuan'),
               ),
+              const SizedBox(height: 12),
               TextField(
                 controller: stockController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Stok'),
               ),
+              const SizedBox(height: 12),
               TextField(
                 controller: priceController,
                 keyboardType: TextInputType.number,

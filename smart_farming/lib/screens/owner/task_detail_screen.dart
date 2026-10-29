@@ -50,10 +50,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           title: const Text('Batalkan Tugas'),
           content: TextField(
             controller: reasonController,
-            decoration: const InputDecoration(
-              labelText: 'Alasan Pembatalan',
-              hintText: 'Contoh: Cuaca buruk, alat rusak...',
-            ),
+            decoration: const InputDecoration(labelText: 'Alasan Pembatalan'),
           ),
           actions: [
             TextButton(

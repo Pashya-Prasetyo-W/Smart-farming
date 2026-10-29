@@ -33,8 +33,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user != null && user['role'] == 'buruh') {
       final wData = await WorkerService().getProfile();
 
-      print('DATA WORKER: $wData');
-
       if (mounted) {
         setState(() {
           _workerData = wData;

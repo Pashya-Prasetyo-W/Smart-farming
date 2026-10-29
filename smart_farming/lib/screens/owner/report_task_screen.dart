@@ -217,10 +217,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
             TextField(
               controller: _notesController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Contoh: Semua daun sudah disemprot rata...',
-              ),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
 
             const SizedBox(height: 32),

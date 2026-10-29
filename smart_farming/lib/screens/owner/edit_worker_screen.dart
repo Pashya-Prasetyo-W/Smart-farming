@@ -293,7 +293,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
                 child: TextField(
                   controller: _healthDescController,
                   decoration: const InputDecoration(
-                    labelText: 'Detail Jaminan (misal: BPJS, Nominal)',
+                    labelText: 'Detail Jaminan',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -311,7 +311,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
                 child: TextField(
                   controller: _foodDescController,
                   decoration: const InputDecoration(
-                    labelText: 'Detail Tunjangan (misal: Rp 20.000/hari)',
+                    labelText: 'Detail Tunjangan',
                     border: OutlineInputBorder(),
                   ),
                 ),

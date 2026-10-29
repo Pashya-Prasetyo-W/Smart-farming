@@ -157,11 +157,10 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                     ],
                     decoration: const InputDecoration(labelText: 'Jumlah (Rp)'),
                   ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: descController,
-                    decoration: const InputDecoration(
-                      labelText: 'Keterangan (misal: Jual Panen)',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Keterangan'),
                   ),
                 ],
               ),
@@ -383,7 +382,6 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
             ],
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              hintText: 'Contoh: 1.000',
               suffixText: 'kg',
             ),
           ),

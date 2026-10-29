@@ -29,7 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [UploadController::class, 'upload']);
     Route::post('/plantings/{planting}/harvest', [PlantingController::class, 'harvest']);
     Route::post('/plantings/{planting}/cancel', [PlantingController::class, 'cancelPlanting']);
-    Route::apiResource('lands', LandController::class)->only(['index', 'store']);
+    Route::apiResource('lands', LandController::class);
     Route::apiResource('tools', ToolController::class);
     Route::apiResource('resources', ResourceController::class);
     Route::apiResource('plantings', PlantingController::class)->only(['index', 'store']);

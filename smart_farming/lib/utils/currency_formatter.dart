@@ -34,3 +34,17 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
     );
   }
 }
+
+class DecimalTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final regEx = RegExp(r'^\d*[\.,]?\d*$');
+    if (newValue.text.isEmpty || regEx.hasMatch(newValue.text)) {
+      return newValue;
+    }
+    return oldValue;
+  }
+}

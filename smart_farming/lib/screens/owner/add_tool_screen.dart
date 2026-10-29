@@ -55,7 +55,7 @@ class _AddToolScreenState extends State<AddToolScreen> {
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Nama Alat (contoh: Cangkul)',
+                labelText: 'Nama Alat',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -63,7 +63,7 @@ class _AddToolScreenState extends State<AddToolScreen> {
             TextField(
               controller: _labelController,
               decoration: const InputDecoration(
-                labelText: 'Satuan (contoh: buah, set)',
+                labelText: 'Satuan',
                 border: OutlineInputBorder(),
               ),
             ),

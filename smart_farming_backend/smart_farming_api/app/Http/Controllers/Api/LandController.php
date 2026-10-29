@@ -39,4 +39,18 @@ class LandController extends Controller
             'data'    => $land,
         ], 201);
     }
+
+    public function update(Request $request, \App\Models\Land $land): JsonResponse
+    {
+        $validatedData = $request->validate([
+            'name'          => ['required', 'string', 'max:255'],
+            'area_sqm'      => ['required', 'numeric', 'min:0'],
+            'location_lat'  => ['required', 'numeric', 'between:-90,90'],
+            'location_long' => ['required', 'numeric', 'between:-180,180'],
+        ]);
+
+        $land->update($validatedData);
+
+        return response()->json(['message' => 'Lahan berhasil diperbarui.', 'data' => $land], 200);
+    }
 }

@@ -64,7 +64,7 @@ class _AddResourceScreenState extends State<AddResourceScreen> {
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Nama Bahan (contoh: Pupuk NPK)',
+                labelText: 'Nama Bahan',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -72,7 +72,7 @@ class _AddResourceScreenState extends State<AddResourceScreen> {
             TextField(
               controller: _unitController,
               decoration: const InputDecoration(
-                labelText: 'Satuan (contoh: kg, liter)',
+                labelText: 'Satuan',
                 border: OutlineInputBorder(),
               ),
             ),

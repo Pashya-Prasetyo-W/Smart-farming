@@ -69,12 +69,8 @@ class TaskService {
         body: jsonEncode({'reason': reason}),
       );
 
-      print('CANCEL STATUS: ${response.statusCode}');
-      print('CANCEL BODY: ${response.body}');
-
       return response.statusCode == 200;
     } catch (e) {
-      print('CANCEL ERROR: $e');
       return false;
     }
   }
@@ -92,10 +88,8 @@ class TaskService {
         },
       );
 
-      print('START STATUS: ${response.statusCode}');
       return response.statusCode == 200;
     } catch (e) {
-      print('START ERROR: $e');
       return false;
     }
   }
@@ -164,8 +158,6 @@ class TaskService {
         body: jsonEncode(data),
       );
 
-      print('CREATE TASK STATUS: ${response.statusCode}');
-      print('CREATE TASK BODY: ${response.body}');
       return response.statusCode == 201;
     } catch (e) {
       return false;
@@ -195,7 +187,6 @@ class TaskService {
       }
       return null;
     } catch (e) {
-      print('UPLOAD ERROR: $e');
       return null;
     }
   }

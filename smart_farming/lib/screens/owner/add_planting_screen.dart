@@ -104,7 +104,7 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
             TextField(
               controller: _cropNameController,
               decoration: const InputDecoration(
-                labelText: 'Nama Komoditas (contoh: Cabai Rawit)',
+                labelText: 'Nama Komoditas',
                 border: OutlineInputBorder(),
               ),
             ),

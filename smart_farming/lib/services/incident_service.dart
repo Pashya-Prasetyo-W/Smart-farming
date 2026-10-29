@@ -30,7 +30,6 @@ class IncidentService {
       var uploadResponse = await http.Response.fromStream(streamedResponse);
 
       if (uploadResponse.statusCode != 200) {
-        print('UPLOAD GAGAL: ${uploadResponse.body}');
         return false;
       }
 
@@ -51,12 +50,8 @@ class IncidentService {
         }),
       );
 
-      print('INCIDENT STATUS: ${response.statusCode}');
-      print('INCIDENT BODY: ${response.body}');
-
       return response.statusCode == 201;
     } catch (e) {
-      print('INCIDENT ERROR: $e');
       return false;
     }
   }
