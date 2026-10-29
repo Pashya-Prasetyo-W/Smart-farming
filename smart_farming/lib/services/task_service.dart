@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 class TaskService {
-  final String baseUrl = 'http://192.168.1.5:8000/api';
+  final String baseUrl = 'http://127.0.0.1:8000/api';
 
   Future<List<dynamic>?> getTasks() async {
     try {

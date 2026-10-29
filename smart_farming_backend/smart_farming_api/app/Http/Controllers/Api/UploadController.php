@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Api\Upload\UploadApi;
 
 class UploadController extends Controller
 {
@@ -15,14 +16,33 @@ class UploadController extends Controller
         ]);
 
         if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('reports', 'public');
-            
-            $url = asset('storage/' . $path);
+            try {
+                Configuration::instance([
+                    'cloud' => [
+                        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                        'api_key'    => env('CLOUDINARY_API_KEY'),
+                        'api_secret' => env('CLOUDINARY_API_SECRET'),
+                    ],
+                    'url' => [
+                        'secure' => true
+                    ]
+                ]);
 
-            return response()->json([
-                'message' => 'File berhasil diunggah.',
-                'url' => $url,
-            ], 200);
+                $upload = (new UploadApi())->upload(
+                    $request->file('file')->getRealPath(),
+                    ['folder' => 'tani_pintar_reports']
+                );
+
+                return response()->json([
+                    'message' => 'File berhasil diunggah ke Cloudinary.',
+                    'url' => $upload['secure_url'],
+                ], 200);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Gagal upload: ' . $e->getMessage()
+                ], 500);
+            }
         }
 
         return response()->json(['message' => 'File tidak ditemukan.'], 400);
