@@ -3,10 +3,9 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_farming/config/api_config.dart';
 
 class IncidentService {
-  final String baseUrl = 'http://127.0.0.1:8000/api';
-
   Future<bool> createIncident({
     required int landId,
     required String type,
@@ -17,7 +16,10 @@ class IncidentService {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${ApiConfig.baseUrl}/upload'),
+      );
       request.headers.addAll({
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
@@ -36,7 +38,7 @@ class IncidentService {
       final mediaUrl = jsonDecode(uploadResponse.body)['url'];
 
       final response = await http.post(
-        Uri.parse('$baseUrl/incidents'),
+        Uri.parse('${ApiConfig.baseUrl}/incidents'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -62,7 +64,7 @@ class IncidentService {
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/incidents'),
+        Uri.parse('${ApiConfig.baseUrl}/incidents'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',

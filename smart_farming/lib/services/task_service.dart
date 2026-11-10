@@ -2,19 +2,18 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_farming/config/api_config.dart';
 
 import 'dart:io';
 
 class TaskService {
-  final String baseUrl = 'http://127.0.0.1:8000/api';
-
   Future<List<dynamic>?> getTasks() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/tasks'),
+        Uri.parse('${ApiConfig.baseUrl}/tasks'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -37,7 +36,7 @@ class TaskService {
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/tasks/$taskId'),
+        Uri.parse('${ApiConfig.baseUrl}/tasks/$taskId'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -60,7 +59,7 @@ class TaskService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/tasks/$taskId/cancel'),
+        Uri.parse('${ApiConfig.baseUrl}/tasks/$taskId/cancel'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -81,7 +80,7 @@ class TaskService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/tasks/$taskId/start'),
+        Uri.parse('${ApiConfig.baseUrl}/tasks/$taskId/start'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -100,7 +99,7 @@ class TaskService {
       final token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse('$baseUrl/tasks/$taskId'),
+        Uri.parse('${ApiConfig.baseUrl}/tasks/$taskId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -125,7 +124,7 @@ class TaskService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/tasks/$taskId/report'),
+        Uri.parse('${ApiConfig.baseUrl}/tasks/$taskId/report'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -149,7 +148,7 @@ class TaskService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/tasks'),
+        Uri.parse('${ApiConfig.baseUrl}/tasks'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -169,7 +168,10 @@ class TaskService {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${ApiConfig.baseUrl}/upload'),
+      );
 
       request.headers.addAll({
         'Accept': 'application/json',

@@ -2,17 +2,16 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_farming/config/api_config.dart';
 
 class PlantingService {
-  final String baseUrl = 'http://127.0.0.1:8000/api';
-
   Future<bool> createPlanting(Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/plantings'),
+        Uri.parse('${ApiConfig.baseUrl}/plantings'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -33,7 +32,7 @@ class PlantingService {
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/plantings'),
+        Uri.parse('${ApiConfig.baseUrl}/plantings'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -56,7 +55,7 @@ class PlantingService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/plantings/$plantingId/harvest'),
+        Uri.parse('${ApiConfig.baseUrl}/plantings/$plantingId/harvest'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -76,7 +75,7 @@ class PlantingService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/plantings/$plantingId/cancel'),
+        Uri.parse('${ApiConfig.baseUrl}/plantings/$plantingId/cancel'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',

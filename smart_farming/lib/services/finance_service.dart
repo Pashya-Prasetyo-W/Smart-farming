@@ -2,17 +2,16 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_farming/config/api_config.dart';
 
 class FinanceService {
-  final String baseUrl = 'http://127.0.0.1:8000/api';
-
   Future<List<dynamic>?> getFinances() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/finances'),
+        Uri.parse('${ApiConfig.baseUrl}/finances'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -35,7 +34,7 @@ class FinanceService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/finances'),
+        Uri.parse('${ApiConfig.baseUrl}/finances'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -59,7 +58,9 @@ class FinanceService {
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/plantings/$plantingId/hpp?harvest_kg=$harvestKg'),
+        Uri.parse(
+          '${ApiConfig.baseUrl}/plantings/$plantingId/hpp?harvest_kg=$harvestKg',
+        ),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',

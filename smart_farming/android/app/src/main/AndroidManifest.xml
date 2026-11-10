@@ -4,6 +4,7 @@
     
     <application
         android:label="Tani Pintar"
+        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

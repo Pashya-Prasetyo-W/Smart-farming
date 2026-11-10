@@ -2,17 +2,16 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_farming/config/api_config.dart';
 
 class LandService {
-  final String baseUrl = 'http://127.0.0.1:8000/api';
-
   Future<List<dynamic>?> getLands() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/lands'),
+        Uri.parse('${ApiConfig.baseUrl}/lands'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -35,7 +34,7 @@ class LandService {
       final token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/lands'),
+        Uri.parse('${ApiConfig.baseUrl}/lands'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -56,7 +55,7 @@ class LandService {
       final token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse('$baseUrl/lands/$id'),
+        Uri.parse('${ApiConfig.baseUrl}/lands/$id'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
