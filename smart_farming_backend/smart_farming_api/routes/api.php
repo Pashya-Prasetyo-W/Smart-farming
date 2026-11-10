@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\WorkerController;
 use App\Http\Controllers\Api\LandController;
+use App\Http\Controllers\Api\MilestoneController;
 use App\Http\Controllers\Api\ToolController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\PlantingController;
@@ -29,6 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [UploadController::class, 'upload']);
     Route::post('/plantings/{planting}/harvest', [PlantingController::class, 'harvest']);
     Route::post('/plantings/{planting}/cancel', [PlantingController::class, 'cancelPlanting']);
+    Route::post('/lands/{land}/milestones', [MilestoneController::class, 'store']);
+    Route::post('/lands/{land}/milestones', [MilestoneController::class, 'store']);
     Route::apiResource('lands', LandController::class);
     Route::apiResource('tools', ToolController::class);
     Route::apiResource('resources', ResourceController::class);
@@ -44,4 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'show']);
     Route::get('/failure-logs', [FailureLogController::class, 'index']);
     Route::get('/dashboard/weather', [DashboardController::class, 'weather']);
+    Route::get('/lands/{land}/milestones', [MilestoneController::class, 'index']);
+    Route::get('/lands/{land}/milestones', [MilestoneController::class, 'index']);
+    Route::put('/milestones/{milestone}', [MilestoneController::class, 'update']);
+    Route::put('/milestones/{milestone}', [MilestoneController::class, 'update']);
+    Route::put('/milestones/{milestone}/progress', [MilestoneController::class, 'updateProgress']);
+    Route::delete('/milestones/{milestone}', [MilestoneController::class, 'destroy']);
 });
