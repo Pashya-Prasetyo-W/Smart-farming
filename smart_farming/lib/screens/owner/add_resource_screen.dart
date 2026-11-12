@@ -27,10 +27,12 @@ class _AddResourceScreenState extends State<AddResourceScreen> {
     final priceString = _priceController.text.replaceAll('.', '');
     final unitPrice = double.tryParse(priceString) ?? 0.0;
 
+    final cleanStock = _stockController.text.replaceAll('.', ''); 
+
     final data = {
       'name': _nameController.text.trim(),
       'unit': _unitController.text.trim(),
-      'stock_qty': double.tryParse(_stockController.text) ?? 0.0,
+      'stock_qty': double.tryParse(cleanStock) ?? 0.0,
       'unit_price': unitPrice,
     };
 
@@ -80,6 +82,10 @@ class _AddResourceScreenState extends State<AddResourceScreen> {
             TextField(
               controller: _stockController,
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                ThousandsSeparatorInputFormatter(),
+              ],
               decoration: const InputDecoration(
                 labelText: 'Stok Awal',
                 border: OutlineInputBorder(),

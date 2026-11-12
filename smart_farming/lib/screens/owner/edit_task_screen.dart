@@ -75,6 +75,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     final resourcesData = await ResourceService().getResources();
     final toolsData = await ToolService().getTools();
 
+    if (!mounted) return;
+
     setState(() {
       _activePlantings = (plantingsData ?? [])
           .where((p) => p['status'] == 'berjalan')

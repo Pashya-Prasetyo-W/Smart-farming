@@ -70,6 +70,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
 
   void _fetchPlantings() async {
     final data = await PlantingService().getPlantings();
+    if (!mounted) return;
     setState(() {
       _plantings = (data ?? [])
           .where(
@@ -86,6 +87,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
 
   void _fetchFinances() async {
     final data = await FinanceService().getFinances();
+    if (!mounted) return;
     setState(() {
       _finances = data;
       _isLoading = false;
@@ -97,6 +99,8 @@ class _FinanceListTabState extends State<_FinanceListTab> {
     int? selectedPlantingId;
     final amountController = TextEditingController();
     final descController = TextEditingController();
+
+    final messenger = ScaffoldMessenger.of(context);
 
     showDialog(
       context: context,
@@ -134,14 +138,23 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                         value: null,
                         child: Text('Biaya Umum (Tanpa Lahan)'),
                       ),
-                      ..._plantings.map(
-                        (p) => DropdownMenuItem<int?>(
+                      ..._plantings.map((p) {
+                        final dateStr = p['plant_date'].toString().substring(
+                          0,
+                          10,
+                        );
+                        final statusLabel = p['status']
+                            .toString()
+                            .toUpperCase();
+
+                        return DropdownMenuItem<int?>(
                           value: p['id'] as int,
                           child: Text(
-                            '${p['crop_name']} - ${p['land']['name']}',
+                            '${p['crop_name']} - ${p['land']['name']} ($statusLabel, $dateStr)',
+                            style: const TextStyle(fontSize: 13),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                     ],
                     onChanged: (val) =>
                         setDialogState(() => selectedPlantingId = val),
@@ -177,16 +190,40 @@ class _FinanceListTabState extends State<_FinanceListTab> {
 
                   if (amount > 0 && descController.text.isNotEmpty) {
                     Navigator.pop(dialogContext);
+
                     final success = await FinanceService().createFinance({
                       'type': type,
                       'amount': amount,
                       'description': descController.text,
                       'planting_id': selectedPlantingId,
                     });
+
+                    if (!mounted) return;
+
                     if (success) {
                       _fetchFinances();
                       _fetchPlantings();
+
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Transaksi berhasil disimpan!'),
+                        ),
+                      );
+                    } else {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Gagal menyimpan transaksi. Cek koneksi.',
+                          ),
+                        ),
+                      );
                     }
+                  } else {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Jumlah dan Keterangan wajib diisi!'),
+                      ),
+                    );
                   }
                 },
                 child: const Text('Simpan'),
@@ -200,65 +237,73 @@ class _FinanceListTabState extends State<_FinanceListTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-    if (_finances == null || _finances!.isEmpty)
-      return const Center(child: Text('Belum ada catatan keuangan.'));
-
-    double totalIncome = 0;
-    double totalExpense = 0;
-    for (var f in _finances!) {
-      final amount = double.parse(f['amount'].toString());
-      if (f['type'] == 'pemasukan') totalIncome += amount;
-      if (f['type'] == 'pengeluaran') totalExpense += amount;
-    }
-
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.green[50],
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : (_finances == null || _finances!.isEmpty)
+          ? const Center(child: Text('Belum ada catatan keuangan.'))
+          : Column(
               children: [
-                _buildSummary('Pemasukan', totalIncome, Colors.green),
-                _buildSummary('Pengeluaran', totalExpense, Colors.red),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.green[50],
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildSummary(
+                        'Pemasukan',
+                        _calculateTotal('pemasukan'),
+                        Colors.green,
+                      ),
+                      _buildSummary(
+                        'Pengeluaran',
+                        _calculateTotal('pengeluaran'),
+                        Colors.red,
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _finances!.length,
+                    itemBuilder: (context, index) {
+                      final f = _finances![index];
+                      final isIncome = f['type'] == 'pemasukan';
+                      return ListTile(
+                        leading: Icon(
+                          isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                          color: isIncome ? Colors.green : Colors.red,
+                        ),
+                        title: Text(f['description']),
+                        subtitle: Text(
+                          f['record_date'].toString().substring(0, 10),
+                        ),
+                        trailing: Text(
+                          '${isIncome ? "+" : "-"} Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(double.parse(f['amount'].toString()))}',
+                          style: TextStyle(
+                            color: isIncome ? Colors.green : Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
-          ),
-
-          Expanded(
-            child: ListView.builder(
-              itemCount: _finances!.length,
-              itemBuilder: (context, index) {
-                final f = _finances![index];
-                final isIncome = f['type'] == 'pemasukan';
-                return ListTile(
-                  leading: Icon(
-                    isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: isIncome ? Colors.green : Colors.red,
-                  ),
-                  title: Text(f['description']),
-                  subtitle: Text(f['record_date'].toString().substring(0, 10)),
-                  trailing: Text(
-                    '${isIncome ? "+" : "-"} Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(double.parse(f['amount'].toString()))}',
-                    style: TextStyle(
-                      color: isIncome ? Colors.green : Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddFinanceDialog,
         backgroundColor: const Color(0xFF2E7D32),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
+  }
+
+  double _calculateTotal(String type) {
+    if (_finances == null) return 0;
+    return _finances!
+        .where((f) => f['type'] == type)
+        .fold(0.0, (sum, f) => sum + double.parse(f['amount'].toString()));
   }
 
   Widget _buildSummary(String title, double amount, Color color) {
@@ -300,6 +345,7 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
 
   void _fetchPlantings() async {
     final data = await PlantingService().getPlantings();
+    if (!mounted) return;
     setState(() {
       _activePlantings = (data ?? [])
           .where(
@@ -330,6 +376,8 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
       _selectedPlantingId!,
       harvestKg,
     );
+    
+    if (!mounted) return;
 
     setState(() {
       _hppResult = result;
@@ -358,10 +406,13 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
             decoration: const InputDecoration(border: OutlineInputBorder()),
             items: _activePlantings.map<DropdownMenuItem<int>>((p) {
               final statusLabel = p['status'].toString().toUpperCase();
+              final dateStr = p['plant_date'].toString().substring(0, 10);
+
               return DropdownMenuItem<int>(
                 value: p['id'],
                 child: Text(
-                  '${p['crop_name']} - ${p['land']['name']} ($statusLabel)',
+                  '${p['crop_name']} - ${p['land']['name']} ($statusLabel, $dateStr)',
+                  style: const TextStyle(fontSize: 13),
                 ),
               );
             }).toList(),

@@ -22,6 +22,9 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
 
   void _fetchIncidents() async {
     final data = await IncidentService().getIncidents();
+    
+    if (!mounted) return;
+    
     setState(() {
       _incidents = data;
       _isLoading = false;

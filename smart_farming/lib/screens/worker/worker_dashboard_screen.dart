@@ -30,6 +30,7 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
     _userName = prefs.getString('name') ?? 'Buruh';
 
     final data = await WorkerService().getWorkerStats();
+    if (!mounted) return;
 
     setState(() {
       _stats = data;

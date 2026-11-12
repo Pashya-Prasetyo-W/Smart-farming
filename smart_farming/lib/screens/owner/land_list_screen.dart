@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/land_service.dart';
 import 'add_land_screen.dart';
-import 'land_detail_screen.dart'; // <-- Pastikan file ini sudah ada
+import 'land_detail_screen.dart';
 
 import 'package:intl/intl.dart';
 
@@ -25,6 +25,7 @@ class _LandListScreenState extends State<LandListScreen> {
 
   void _fetchLands() async {
     final data = await LandService().getLands();
+    if (!mounted) return;
     setState(() {
       _lands = data;
       _isLoading = false;
@@ -52,14 +53,13 @@ class _LandListScreenState extends State<LandListScreen> {
                 final land = _lands![index];
                 return InkWell(
                   onTap: () async {
-                    // Pindah ke Detail Lahan dan tunggu hingga kembali untuk melakukan refresh
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => LandDetailScreen(land: land),
                       ),
                     );
-                    _fetchLands(); // Refresh data saat kembali
+                    _fetchLands();
                   },
                   child: Card(
                     elevation: 2,

@@ -22,6 +22,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   void _fetchTasks() async {
     final data = await TaskService().getTasks();
+    if (!mounted) return;
     setState(() {
       _tasks = data;
       _isLoading = false;

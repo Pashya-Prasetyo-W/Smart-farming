@@ -45,6 +45,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     final resourcesData = await ResourceService().getResources();
     final toolsData = await ToolService().getTools();
 
+    if (!mounted) return;
+
     setState(() {
       _activePlantings = (plantingsData ?? [])
           .where((p) => p['status'] == 'berjalan')

@@ -25,7 +25,7 @@ class WorkerController extends Controller
             'name'                          => ['required', 'string', 'max:255'],
             'email'                         => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password'                      => ['required', 'string', 'min:8'],
-            
+
             'schedule'                      => ['nullable', 'array'],
             'schedule.start_time'           => ['nullable', 'date_format:H:i:s'],
             'schedule.end_time'             => ['nullable', 'date_format:H:i:s'],
@@ -47,7 +47,7 @@ class WorkerController extends Controller
         ], 201);
     }
 
-        public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         abort_if($request->user()->role !== 'pemilik', 403, 'Akses ditolak.');
 
@@ -72,6 +72,7 @@ class WorkerController extends Controller
         $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $worker->id],
+            'password' => ['nullable', 'string', 'min:8'],
             'schedule.start_time' => ['nullable', 'date_format:H:i:s'],
             'schedule.end_time' => ['nullable', 'date_format:H:i:s'],
             'schedule.work_days' => ['nullable', 'array'],
@@ -82,27 +83,39 @@ class WorkerController extends Controller
         ]);
 
         \DB::transaction(function () use ($worker, $validatedData) {
-            $worker->update(['name' => $validatedData['name'], 'email' => $validatedData['email']]);
-            
+            $updateData = [
+                'name'  => $validatedData['name'],
+                'email' => $validatedData['email'],
+            ];
+
+            if (!empty($validatedData['password'])) {
+                $updateData['password'] = $validatedData['password'];
+            }
+
+            $worker->update($updateData);
+
             if (isset($validatedData['schedule'])) {
                 $worker->schedule()->update([
                     'start_time' => $validatedData['schedule']['start_time'] ?? '08:00:00',
-                    'end_time' => $validatedData['schedule']['end_time'] ?? '16:00:00',
-                    'work_days' => $validatedData['schedule']['work_days'] ?? [],
+                    'end_time'   => $validatedData['schedule']['end_time'] ?? '16:00:00',
+                    'work_days'  => $validatedData['schedule']['work_days'] ?? [],
                 ]);
             }
 
             if (isset($validatedData['benefit'])) {
                 $worker->benefit()->update([
-                    'health_insurance' => $validatedData['benefit']['health_insurance'] ?? 0,
+                    'health_insurance'      => $validatedData['benefit']['health_insurance'] ?? 0,
                     'health_insurance_desc' => $validatedData['benefit']['health_insurance_desc'] ?? null,
-                    'food_allowance' => $validatedData['benefit']['food_allowance'] ?? 0,
-                    'food_allowance_desc' => $validatedData['benefit']['food_allowance_desc'] ?? null,
+                    'food_allowance'        => $validatedData['benefit']['food_allowance'] ?? 0,
+                    'food_allowance_desc'   => $validatedData['benefit']['food_allowance_desc'] ?? null,
                 ]);
             }
         });
 
-        return response()->json(['message' => 'Data buruh berhasil diperbarui.', 'data' => $worker->load(['schedule', 'benefit'])], 200);
+        return response()->json([
+            'message' => 'Data buruh berhasil diperbarui.',
+            'data'    => $worker->load(['schedule', 'benefit']),
+        ], 200);
     }
 
     public function destroy(Request $request, $id): JsonResponse
@@ -118,7 +131,7 @@ class WorkerController extends Controller
         return response()->json(['message' => 'Akun buruh berhasil dihapus.'], 200);
     }
 
-        public function getProfile(Request $request): JsonResponse
+    public function getProfile(Request $request): JsonResponse
     {
         $user = \App\Models\User::with(['schedule', 'benefit'])
             ->find($request->user()->id);

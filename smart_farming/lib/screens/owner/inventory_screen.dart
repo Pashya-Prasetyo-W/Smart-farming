@@ -68,6 +68,7 @@ class _ToolTabState extends State<_ToolTab> {
 
   void _fetch() async {
     final data = await ToolService().getTools();
+    if (!mounted) return;
     setState(() {
       _tools = data;
       _isLoading = false;
@@ -158,15 +159,17 @@ class _ToolTabState extends State<_ToolTab> {
             onPressed: () async {
               Navigator.pop(dialogContext);
               final success = await ToolService().deleteTool(tool['id']);
+              
+              if (!mounted) return;
+
               if (success) {
                 _fetch();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Alat berhasil dihapus!')),
+                );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Gagal menghapus. Alat mungkin sedang dipinjam.',
-                    ),
-                  ),
+                  const SnackBar(content: Text('Gagal menghapus. Alat mungkin sedang dipinjam.')),
                 );
               }
             },
@@ -261,6 +264,7 @@ class _ResourceTabState extends State<_ResourceTab> {
 
   void _fetch() async {
     final data = await ResourceService().getResources();
+    if (!mounted) return;
     setState(() {
       _resources = data;
       _isLoading = false;
@@ -323,13 +327,14 @@ class _ResourceTabState extends State<_ResourceTab> {
               Navigator.pop(dialogContext);
 
               final cleanPriceStr = priceController.text.replaceAll('.', '');
+              final cleanStock = stockController.text.replaceAll('.', '');
 
               final success = await ResourceService().updateResource(
                 res['id'],
                 {
                   'name': nameController.text,
                   'unit': unitController.text,
-                  'stock_qty': double.tryParse(stockController.text) ?? 0,
+                  'stock_qty': double.tryParse(cleanStock) ?? 0,
                   'unit_price': double.tryParse(cleanPriceStr) ?? 0,
                 },
               );

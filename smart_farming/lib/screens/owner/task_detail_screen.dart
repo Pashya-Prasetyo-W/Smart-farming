@@ -27,6 +27,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   void _fetchDetail() async {
     final data = await TaskService().getTaskDetail(widget.taskId);
+    if (!mounted) return;
     setState(() {
       _task = data;
       _isLoading = false;

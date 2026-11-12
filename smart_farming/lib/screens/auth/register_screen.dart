@@ -45,6 +45,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _passwordController.text.trim(),
       _companyController.text.trim(),
     );
+    
+    if (!mounted) return;
 
     setState(() => _isLoading = false);
 

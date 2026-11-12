@@ -23,6 +23,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
 
   void _fetchWorkers() async {
     final data = await WorkerService().getWorkers();
+    if (!mounted) return;
     setState(() {
       _workers = data;
       _isLoading = false;

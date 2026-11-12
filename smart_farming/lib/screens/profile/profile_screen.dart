@@ -25,6 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _fetchProfile() async {
     final user = await UserService().getUserProfile();
+    if (!mounted) return;
     setState(() {
       _user = user;
       _isLoading = false;
