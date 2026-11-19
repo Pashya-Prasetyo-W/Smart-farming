@@ -33,7 +33,7 @@ class WorkerController extends Controller
         return [
             'wage'                => ['nullable', 'array'],
             'wage.wage_type'      => ['required_with:wage', Rule::in(WorkerWage::typesFor($role))],
-            'wage.amount'         => ['required_with:wage', 'numeric', 'min:0', 'max:1000000000'],
+            'wage.amount'         => ['required_with:wage', 'exclude_if:wage.wage_type,borongan', 'numeric', 'min:0', 'max:1000000000'],
             'allowances'          => ['nullable', 'array', 'max:20'],
             'allowances.*.name'   => ['required', 'string', 'max:100'],
             'allowances.*.amount' => ['required', 'numeric', 'min:0', 'max:1000000000'],
@@ -109,10 +109,17 @@ class WorkerController extends Controller
 
         $workers = User::where('company_id', $actor->company_id)
             ->whereIn('role', $this->manageableRoles($actor))
-            ->with(array_merge(['schedule', 'benefits', 'creator:id,name'], $this->payrollRelations($actor)))
+            ->with(array_unique(array_merge(['schedule', 'benefits', 'creator:id,name', 'wage'], $this->payrollRelations($actor))))
             ->orderBy('role')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->each(function (User $worker) use ($actor) {
+                $worker->setAttribute('wage_type', $worker->wage?->wage_type);
+
+                if (! $actor->hasRole(UserRole::Pemilik->value)) {
+                    $worker->unsetRelation('wage');
+                }
+            });
 
         return response()->json([
             'message' => 'Daftar karyawan berhasil diambil.',

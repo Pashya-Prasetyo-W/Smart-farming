@@ -66,6 +66,17 @@ class WageTest extends TestCase
         ]))->assertUnprocessable()->assertJsonValidationErrors('wage.wage_type');
     }
 
+    public function test_upah_borongan_tidak_menyimpan_nominal(): void
+    {
+        Sanctum::actingAs($this->t['owner']);
+
+        $response = $this->postJson('/api/workers', $this->account('Buruh Borong', 'buruh', [
+            'wage' => ['wage_type' => 'borongan'],
+        ]))->assertCreated()->assertJsonPath('data.wage.wage_type', 'borongan');
+
+        $this->assertEquals(0, WorkerWage::where('user_id', $response->json('data.id'))->value('amount'));
+    }
+
     public function test_mandor_wajib_bulanan_dengan_tunjangan_tetap(): void
     {
         Sanctum::actingAs($this->t['owner']);
@@ -133,6 +144,7 @@ class WageTest extends TestCase
         $row = $this->getJson('/api/workers')->assertOk()->json('data.0');
         $this->assertArrayNotHasKey('wage', $row);
         $this->assertArrayNotHasKey('allowances', $row);
+        $this->assertSame('harian', $row['wage_type']);
 
         Sanctum::actingAs($this->t['owner']);
         $row = collect($this->getJson('/api/workers')->assertOk()->json('data'))
@@ -158,7 +170,7 @@ class WageTest extends TestCase
         ])->assertOk()->assertJsonPath('data.wage.wage_type', 'borongan');
 
         $this->assertSame(1, WorkerWage::where('user_id', $this->t['buruh']->id)->count());
-        $this->assertEquals(120000, WorkerWage::where('user_id', $this->t['buruh']->id)->value('amount'));
+        $this->assertEquals(0, WorkerWage::where('user_id', $this->t['buruh']->id)->value('amount'));
     }
 
     public function test_ubah_data_tanpa_upah_tidak_menghapus_upah_dan_tunjangan(): void

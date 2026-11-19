@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/task_service.dart';
+import '../../utils/rupiah.dart';
 import 'task_detail_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -117,6 +118,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             'Pelaksana: ${task['assignee']?['name'] ?? 'Belum ada'}',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
+                          if (task['wage_amount'] != null)
+                            Text(
+                              'Upah tugas: ${Rupiah.format(task['wage_amount'])}',
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
                           const Divider(),
                           Text(
                             'Deadline: ${task['due_date'].toString().substring(0, 10)}',

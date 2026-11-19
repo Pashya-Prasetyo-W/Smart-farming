@@ -56,7 +56,7 @@ class WorkerService
             'company_id' => $worker->company_id,
             'user_id'    => $worker->id,
             'wage_type'  => $wage['wage_type'],
-            'amount'     => $wage['amount'],
+            'amount'     => $wage['wage_type'] === WorkerWage::TYPE_BORONGAN ? 0 : $wage['amount'],
         ])->save();
     }
 

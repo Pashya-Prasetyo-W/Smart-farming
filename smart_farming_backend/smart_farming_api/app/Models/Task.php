@@ -19,6 +19,7 @@ class Task extends Model
         'task_date',
         'due_date',
         'status',
+        'wage_amount',
         'cancel_reason'
     ];
 

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Services\TaskService;
 use App\Services\ReportService;
 use App\Models\Task;
+use App\Models\WorkerWage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TaskController extends Controller
 {
@@ -38,6 +40,7 @@ class TaskController extends Controller
             'task_date'                     => ['required', 'date'],
             'due_date'                      => ['required', 'date', 'after_or_equal:task_date'],
             'description'                   => ['nullable', 'string'],
+            'wage_amount'                   => ['nullable', 'numeric', 'min:1', 'max:1000000000'],
             'resources'                     => ['nullable', 'array'],
             'resources.*.resource_id'       => ['required', $sameCompany('resources')],
             'resources.*.max_allocated_qty' => ['required', 'numeric', 'min:0'],
@@ -47,9 +50,30 @@ class TaskController extends Controller
         ];
     }
 
+    private function validateTask(Request $request): array
+    {
+        $data = $request->validate($this->taskRules($request));
+
+        $isBorongan = WorkerWage::where('user_id', $data['assigned_to'])
+            ->where('wage_type', WorkerWage::TYPE_BORONGAN)
+            ->exists();
+
+        if ($isBorongan && empty($data['wage_amount'])) {
+            throw ValidationException::withMessages([
+                'wage_amount' => ['Upah tugas wajib diisi untuk pelaksana dengan upah borongan.'],
+            ]);
+        }
+
+        if (! $isBorongan) {
+            $data['wage_amount'] = null;
+        }
+
+        return $data;
+    }
+
     public function store(Request $request): JsonResponse
     {
-        $validatedData = $request->validate($this->taskRules($request));
+        $validatedData = $this->validateTask($request);
 
         $task = $this->taskService->createTask($validatedData, $request->user());
 
@@ -163,7 +187,7 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task): JsonResponse
     {
-        $validatedData = $request->validate($this->taskRules($request));
+        $validatedData = $this->validateTask($request);
 
         $updatedTask = $this->taskService->updateTask($task, $validatedData);
 

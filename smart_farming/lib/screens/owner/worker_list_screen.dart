@@ -55,16 +55,9 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
   String _wageLabel(dynamic wage) {
     if (wage is! Map) return 'Upah belum diatur';
     final type = wage['wage_type']?.toString();
-    final label = type == 'borongan'
-        ? 'Borongan'
-        : type == 'bulanan'
-        ? 'Bulanan'
-        : 'Harian';
-    final suffix = type == 'borongan'
-        ? '/tugas'
-        : type == 'bulanan'
-        ? '/bln'
-        : '/hari';
+    if (type == 'borongan') return 'Borongan (per tugas)';
+    final label = type == 'bulanan' ? 'Bulanan' : 'Harian';
+    final suffix = type == 'bulanan' ? '/bln' : '/hari';
     return '$label ${Rupiah.format(wage['amount'])}$suffix';
   }
 

@@ -78,6 +78,7 @@ class WageDraft {
   bool get hasInvalidAllowance => allowances.any((entry) => entry.isInvalid);
 
   Map<String, dynamic>? payload() {
+    if (type == 'borongan') return {'wage_type': type};
     final amount = Rupiah.parse(amountController.text);
     if (amount == null) return null;
     return {'wage_type': type, 'amount': amount};
@@ -117,8 +118,6 @@ class _WageEditorState extends State<WageEditor> {
 
   String get _amountLabel {
     switch (widget.draft.type) {
-      case 'borongan':
-        return 'Tarif per Tugas Selesai';
       case 'bulanan':
         return 'Gaji Pokok per Bulan';
       default:
@@ -128,8 +127,6 @@ class _WageEditorState extends State<WageEditor> {
 
   String? get _amountHelper {
     switch (widget.draft.type) {
-      case 'borongan':
-        return 'Dibayarkan untuk setiap tugas yang selesai dan terverifikasi.';
       case 'bulanan':
         return 'Gaji tetap, dibayar setiap bulan.';
       default:
@@ -174,7 +171,7 @@ class _WageEditorState extends State<WageEditor> {
               DropdownMenuItem(value: 'harian', child: Text('Harian')),
               DropdownMenuItem(
                 value: 'borongan',
-                child: Text('Borongan (per tugas selesai)'),
+                child: Text('Borongan (upah ditentukan per tugas)'),
               ),
             ],
             onChanged: (value) {
@@ -182,21 +179,34 @@ class _WageEditorState extends State<WageEditor> {
             },
           ),
         const SizedBox(height: 12),
-        TextField(
-          controller: draft.amountController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            ThousandsSeparatorInputFormatter(),
-          ],
-          decoration: InputDecoration(
-            labelText: _amountLabel,
-            prefixText: 'Rp ',
-            helperText: _amountHelper,
-            helperMaxLines: 2,
-            border: const OutlineInputBorder(),
+        if (draft.type == 'borongan')
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.amber[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Tarif borongan tidak diisi di sini. Upah ditentukan pada setiap tugas saat tugas dibuat, sesuai tingkat kesulitan dan lama pengerjaannya.',
+            ),
+          )
+        else
+          TextField(
+            controller: draft.amountController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              ThousandsSeparatorInputFormatter(),
+            ],
+            decoration: InputDecoration(
+              labelText: _amountLabel,
+              prefixText: 'Rp ',
+              helperText: _amountHelper,
+              helperMaxLines: 2,
+              border: const OutlineInputBorder(),
+            ),
           ),
-        ),
         if (_isMandor) ...[
           const SizedBox(height: 16),
           const Text(

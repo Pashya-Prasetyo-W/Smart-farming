@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../services/task_service.dart';
 import '../../services/planting_service.dart';
 import '../../services/worker_service.dart';
 import '../../services/tool_service.dart';
 import '../../services/resource_service.dart';
+import '../../utils/currency_formatter.dart';
+import '../../utils/rupiah.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -16,6 +19,7 @@ class AddTaskScreen extends StatefulWidget {
 class _AddTaskScreenState extends State<AddTaskScreen> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
+  final _wageController = TextEditingController();
   DateTime _taskDate = DateTime.now();
   DateTime _dueDate = DateTime.now().add(const Duration(days: 1));
 
@@ -37,6 +41,22 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   void initState() {
     super.initState();
     _fetchReferences();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    _wageController.dispose();
+    super.dispose();
+  }
+
+  bool get _isBorongan {
+    return _workers.any(
+      (worker) =>
+          worker['id'] == _selectedWorkerId &&
+          worker['wage_type'] == 'borongan',
+    );
   }
 
   void _fetchReferences() async {
@@ -74,9 +94,18 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       return;
     }
 
+    if (_isBorongan && (Rupiah.parse(_wageController.text) ?? 0) <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Upah tugas wajib diisi untuk pelaksana borongan.'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
 
-    final data = {
+    final Map<String, dynamic> data = {
       'planting_id': _selectedPlantingId,
       'assigned_to': _selectedWorkerId,
       'title': _titleController.text.trim(),
@@ -85,6 +114,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       'due_date': _formatDate(_dueDate),
       'resources': _selectedResources,
       'tools': _selectedTools,
+      if (_isBorongan) 'wage_amount': Rupiah.parse(_wageController.text),
     };
 
     final success = await TaskService().createTask(data);
@@ -393,11 +423,34 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     items: _workers.map<DropdownMenuItem<int>>((worker) {
                       return DropdownMenuItem<int>(
                         value: worker['id'],
-                        child: Text(worker['name']),
+                        child: Text(
+                          worker['wage_type'] == 'borongan'
+                              ? '${worker['name']} (borongan)'
+                              : worker['name'],
+                        ),
                       );
                     }).toList(),
                     onChanged: (val) => setState(() => _selectedWorkerId = val),
                   ),
+                  if (_isBorongan) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _wageController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        ThousandsSeparatorInputFormatter(),
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: 'Upah Tugas (Borongan)',
+                        prefixText: 'Rp ',
+                        helperText:
+                            'Tentukan sesuai tingkat kesulitan dan lama pengerjaan tugas ini.',
+                        helperMaxLines: 2,
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
 
                   Row(

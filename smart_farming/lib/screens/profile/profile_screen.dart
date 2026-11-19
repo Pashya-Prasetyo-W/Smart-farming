@@ -98,16 +98,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final type = wage['wage_type']?.toString();
-    final typeLabel = type == 'borongan'
-        ? 'Borongan (per tugas selesai)'
-        : type == 'bulanan'
-        ? 'Bulanan'
-        : 'Harian';
-    final suffix = type == 'borongan'
-        ? '/tugas'
-        : type == 'bulanan'
-        ? '/bulan'
-        : '/hari';
+
+    if (type == 'borongan') {
+      return const Card(
+        color: Color(0xFFFFF8E1),
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tipe: Borongan'),
+              SizedBox(height: 4),
+              Text(
+                'Upah ditentukan pada setiap tugas dan ditampilkan di detail tugas.',
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final typeLabel = type == 'bulanan' ? 'Bulanan' : 'Harian';
+    final suffix = type == 'bulanan' ? '/bulan' : '/hari';
     final num allowanceTotal = allowances.fold<num>(
       0,
       (sum, item) => sum + (num.tryParse(item['amount'].toString()) ?? 0),

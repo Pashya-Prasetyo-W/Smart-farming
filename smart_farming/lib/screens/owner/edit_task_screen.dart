@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../services/task_service.dart';
 import '../../services/planting_service.dart';
 import '../../services/worker_service.dart';
 import '../../services/tool_service.dart';
 import '../../services/resource_service.dart';
+import '../../utils/currency_formatter.dart';
+import '../../utils/rupiah.dart';
 
 class EditTaskScreen extends StatefulWidget {
   final Map<String, dynamic> task;
@@ -17,6 +20,7 @@ class EditTaskScreen extends StatefulWidget {
 class _EditTaskScreenState extends State<EditTaskScreen> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
+  final _wageController = TextEditingController();
   DateTime _taskDate = DateTime.now();
   DateTime _dueDate = DateTime.now().add(const Duration(days: 1));
 
@@ -43,6 +47,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     _selectedPlantingId = widget.task['planting_id'];
     _selectedWorkerId = widget.task['assigned_to'];
 
+    final taskWage = num.tryParse(widget.task['wage_amount']?.toString() ?? '');
+    if (taskWage != null) {
+      _wageController.text = Rupiah.grouped(taskWage);
+    }
+
     _taskDate = DateTime.parse(widget.task['task_date']);
     _dueDate = DateTime.parse(widget.task['due_date']);
 
@@ -67,6 +76,22 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
 
     _fetchReferences();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    _wageController.dispose();
+    super.dispose();
+  }
+
+  bool get _isBorongan {
+    return _workers.any(
+      (worker) =>
+          worker['id'] == _selectedWorkerId &&
+          worker['wage_type'] == 'borongan',
+    );
   }
 
   void _fetchReferences() async {
@@ -104,9 +129,18 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       return;
     }
 
+    if (_isBorongan && (Rupiah.parse(_wageController.text) ?? 0) <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Upah tugas wajib diisi untuk pelaksana borongan.'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
 
-    final data = {
+    final Map<String, dynamic> data = {
       'planting_id': _selectedPlantingId,
       'assigned_to': _selectedWorkerId,
       'title': _titleController.text.trim(),
@@ -115,6 +149,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       'due_date': _formatDate(_dueDate),
       'resources': _selectedResources,
       'tools': _selectedTools,
+      if (_isBorongan) 'wage_amount': Rupiah.parse(_wageController.text),
     };
 
     final success = await TaskService().updateTask(widget.task['id'], data);
@@ -418,11 +453,34 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     items: _workers.map<DropdownMenuItem<int>>((worker) {
                       return DropdownMenuItem<int>(
                         value: worker['id'],
-                        child: Text(worker['name']),
+                        child: Text(
+                          worker['wage_type'] == 'borongan'
+                              ? '${worker['name']} (borongan)'
+                              : worker['name'],
+                        ),
                       );
                     }).toList(),
                     onChanged: (val) => setState(() => _selectedWorkerId = val),
                   ),
+                  if (_isBorongan) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _wageController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        ThousandsSeparatorInputFormatter(),
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: 'Upah Tugas (Borongan)',
+                        prefixText: 'Rp ',
+                        helperText:
+                            'Tentukan sesuai tingkat kesulitan dan lama pengerjaan tugas ini.',
+                        helperMaxLines: 2,
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
 
                   Row(

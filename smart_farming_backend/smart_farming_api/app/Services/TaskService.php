@@ -57,6 +57,7 @@ class TaskService
                 'description' => $data['description'] ?? null,
                 'task_date'   => $data['task_date'],
                 'due_date'    => $data['due_date'],
+                'wage_amount' => $data['wage_amount'] ?? null,
                 'status'      => TaskStatus::Menunggu,
             ]);
             
@@ -121,6 +122,7 @@ class TaskService
                 'description' => $data['description'] ?? null,
                 'task_date'   => $data['task_date'],
                 'due_date'    => $data['due_date'],
+                'wage_amount' => $data['wage_amount'] ?? null,
             ]);
 
             $task->resources()->detach();

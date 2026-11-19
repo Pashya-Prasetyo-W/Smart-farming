@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/task_service.dart';
+import '../../utils/rupiah.dart';
 import 'report_task_screen.dart';
 import 'edit_task_screen.dart';
 
@@ -167,6 +168,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ),
                   Text(_task!['assignee']?['name'] ?? 'Belum ada'),
                   const SizedBox(height: 16),
+
+                  if (_task!['wage_amount'] != null) ...[
+                    const Text(
+                      'Upah Tugas (Borongan)',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(Rupiah.format(_task!['wage_amount'])),
+                    const SizedBox(height: 16),
+                  ],
 
                   if (_task!['description'] != null) ...[
                     const Text(

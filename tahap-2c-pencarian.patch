@@ -1,0 +1,690 @@
+diff --git a/smart_farming/lib/screens/owner/failure_log_screen.dart b/smart_farming/lib/screens/owner/failure_log_screen.dart
+index f1caac9..7b4d1a3 100644
+--- a/smart_farming/lib/screens/owner/failure_log_screen.dart
++++ b/smart_farming/lib/screens/owner/failure_log_screen.dart
+@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
+ 
+ import '../../services/failure_log_service.dart';
+ import '../../services/incident_service.dart';
++import '../../utils/search.dart';
++import '../../widgets/search_field.dart';
+ 
+ class FailureLogScreen extends StatefulWidget {
+   const FailureLogScreen({super.key});
+@@ -56,6 +58,7 @@ class _WeatherRiskTab extends StatefulWidget {
+ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
+   bool _isLoading = true;
+   List<dynamic>? _logs;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -73,6 +76,17 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
+     }
+   }
+ 
++  List<dynamic> get _filteredLogs {
++    return (_logs ?? []).where((log) {
++      return matchesSearch(_query, [
++        log['planting']?['crop_name'],
++        log['planting']?['land']?['name'],
++        log['reason'],
++        log['risk_score'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     if (_isLoading) return const Center(child: CircularProgressIndicator());
+@@ -85,6 +99,7 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
+         .map((e) => double.parse(e['risk_score'].toString()))
+         .reduce((a, b) => a > b ? a : b);
+     final isHighRisk = highestRisk > 70;
++    final logs = _filteredLogs;
+ 
+     return Column(
+       children: [
+@@ -132,12 +147,19 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
+             ],
+           ),
+         ),
++        SearchField(
++          hint: 'Cari tanaman, lahan, alasan...',
++          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
++          onChanged: (value) => setState(() => _query = value),
++        ),
+         Expanded(
+-          child: ListView.builder(
++          child: logs.isEmpty
++              ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
++              : ListView.builder(
+             padding: const EdgeInsets.all(16),
+-            itemCount: _logs!.length,
++            itemCount: logs.length,
+             itemBuilder: (context, index) {
+-              final log = _logs![index];
++              final log = logs[index];
+               final score = double.parse(log['risk_score'].toString());
+               final isHigh = score > 70;
+               final date = DateTime.parse(log['created_at']);
+@@ -209,6 +231,7 @@ class _IncidentRiskTab extends StatefulWidget {
+ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
+   bool _isLoading = true;
+   List<dynamic>? _incidents;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -226,6 +249,17 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
+     }
+   }
+ 
++  List<dynamic> get _filteredIncidents {
++    return (_incidents ?? []).where((incident) {
++      return matchesSearch(_query, [
++        incident['type'],
++        incident['description'],
++        incident['land']?['name'],
++        incident['reporter']?['name'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     if (_isLoading) return const Center(child: CircularProgressIndicator());
+@@ -234,11 +268,24 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
+         child: Text('Belum ada laporan insiden dari lapangan.'),
+       );
+ 
+-    return ListView.builder(
++    final incidents = _filteredIncidents;
++
++    return Scaffold(
++      appBar: PreferredSize(
++        preferredSize: const Size.fromHeight(68),
++        child: SearchField(
++          hint: 'Cari jenis, lahan, pelapor, deskripsi...',
++          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
++          onChanged: (value) => setState(() => _query = value),
++        ),
++      ),
++      body: incidents.isEmpty
++          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
++          : ListView.builder(
+       padding: const EdgeInsets.all(16),
+-      itemCount: _incidents!.length,
++      itemCount: incidents.length,
+       itemBuilder: (context, index) {
+-        final incident = _incidents![index];
++        final incident = incidents[index];
+         final mediaUrls = incident['media_urls'] as List<dynamic>;
+         final imageUrl = mediaUrls.isNotEmpty ? mediaUrls[0] : null;
+         final date = DateTime.parse(incident['reported_at']);
+@@ -320,6 +367,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
+           ),
+         );
+       },
++    ),
+     );
+   }
+ }
+diff --git a/smart_farming/lib/screens/owner/finance_screen.dart b/smart_farming/lib/screens/owner/finance_screen.dart
+index a92207f..af5cda9 100644
+--- a/smart_farming/lib/screens/owner/finance_screen.dart
++++ b/smart_farming/lib/screens/owner/finance_screen.dart
+@@ -6,6 +6,8 @@ import '../../services/planting_service.dart';
+ import '../../utils/currency_formatter.dart';
+ 
+ import 'package:flutter/services.dart';
++import '../../utils/search.dart';
++import '../../widgets/search_field.dart';
+ 
+ class FinanceScreen extends StatefulWidget {
+   const FinanceScreen({super.key});
+@@ -59,6 +61,7 @@ class _FinanceListTab extends StatefulWidget {
+ class _FinanceListTabState extends State<_FinanceListTab> {
+   bool _isLoading = true;
+   List<dynamic>? _finances;
++  String _query = '';
+   List<dynamic> _plantings = [];
+ 
+   @override
+@@ -235,9 +238,29 @@ class _FinanceListTabState extends State<_FinanceListTab> {
+     );
+   }
+ 
++  List<dynamic> get _filteredFinances {
++    return (_finances ?? []).where((f) {
++      return matchesSearch(_query, [
++        f['description'],
++        f['type'],
++        f['record_date'],
++        f['amount'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
++    final finances = _filteredFinances;
+     return Scaffold(
++      appBar: PreferredSize(
++        preferredSize: const Size.fromHeight(68),
++        child: SearchField(
++          hint: 'Cari keterangan, jenis, tanggal...',
++          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
++          onChanged: (value) => setState(() => _query = value),
++        ),
++      ),
+       body: _isLoading
+           ? const Center(child: CircularProgressIndicator())
+           : (_finances == null || _finances!.isEmpty)
+@@ -264,10 +287,12 @@ class _FinanceListTabState extends State<_FinanceListTab> {
+                   ),
+                 ),
+                 Expanded(
+-                  child: ListView.builder(
+-                    itemCount: _finances!.length,
++                  child: finances.isEmpty
++                      ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
++                      : ListView.builder(
++                    itemCount: finances.length,
+                     itemBuilder: (context, index) {
+-                      final f = _finances![index];
++                      final f = finances[index];
+                       final isIncome = f['type'] == 'pemasukan';
+                       return ListTile(
+                         leading: Icon(
+diff --git a/smart_farming/lib/screens/owner/incident_list_screen.dart b/smart_farming/lib/screens/owner/incident_list_screen.dart
+index 12966be..de78392 100644
+--- a/smart_farming/lib/screens/owner/incident_list_screen.dart
++++ b/smart_farming/lib/screens/owner/incident_list_screen.dart
+@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
+ import 'package:intl/intl.dart';
+ 
+ import '../../services/incident_service.dart';
++import '../../utils/search.dart';
++import '../../widgets/search_field.dart';
+ 
+ class IncidentListScreen extends StatefulWidget {
+   const IncidentListScreen({super.key});
+@@ -13,6 +15,7 @@ class IncidentListScreen extends StatefulWidget {
+ class _IncidentListScreenState extends State<IncidentListScreen> {
+   bool _isLoading = true;
+   List<dynamic>? _incidents;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -31,8 +34,20 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
+     });
+   }
+ 
++  List<dynamic> get _filteredIncidents {
++    return (_incidents ?? []).where((incident) {
++      return matchesSearch(_query, [
++        incident['type'],
++        incident['description'],
++        incident['land']?['name'],
++        incident['reporter']?['name'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
++    final incidents = _filteredIncidents;
+     return Scaffold(
+       appBar: AppBar(
+         title: const Text(
+@@ -40,17 +55,26 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
+           style: TextStyle(color: Colors.white),
+         ),
+         backgroundColor: const Color(0xFF2E7D32),
++        bottom: PreferredSize(
++          preferredSize: const Size.fromHeight(64),
++          child: SearchField(
++            hint: 'Cari jenis, lahan, pelapor, deskripsi...',
++            onChanged: (value) => setState(() => _query = value),
++          ),
++        ),
+         iconTheme: const IconThemeData(color: Colors.white),
+       ),
+       body: _isLoading
+           ? const Center(child: CircularProgressIndicator())
+           : _incidents == null || _incidents!.isEmpty
+           ? const Center(child: Text('Belum ada laporan insiden.'))
++          : incidents.isEmpty
++          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+           : ListView.builder(
+               padding: const EdgeInsets.all(16),
+-              itemCount: _incidents!.length,
++              itemCount: incidents.length,
+               itemBuilder: (context, index) {
+-                final incident = _incidents![index];
++                final incident = incidents[index];
+                 final mediaUrls = incident['media_urls'] as List<dynamic>;
+                 final imageUrl = mediaUrls.isNotEmpty ? mediaUrls[0] : null;
+ 
+diff --git a/smart_farming/lib/screens/owner/inventory_screen.dart b/smart_farming/lib/screens/owner/inventory_screen.dart
+index 1399464..458b7c8 100644
+--- a/smart_farming/lib/screens/owner/inventory_screen.dart
++++ b/smart_farming/lib/screens/owner/inventory_screen.dart
+@@ -10,6 +10,8 @@ import 'package:flutter/services.dart';
+ import '../../utils/currency_formatter.dart';
+ 
+ import 'package:intl/intl.dart';
++import '../../utils/search.dart';
++import '../../widgets/search_field.dart';
+ 
+ class InventoryScreen extends StatefulWidget {
+   const InventoryScreen({super.key});
+@@ -59,6 +61,7 @@ class _ToolTab extends StatefulWidget {
+ class _ToolTabState extends State<_ToolTab> {
+   bool _isLoading = true;
+   List<dynamic>? _tools;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -181,17 +184,37 @@ class _ToolTabState extends State<_ToolTab> {
+     );
+   }
+ 
++  List<dynamic> get _filteredTools {
++    return (_tools ?? []).where((tool) {
++      return matchesSearch(_query, [
++        tool['name'],
++        tool['unit_label'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
++    final tools = _filteredTools;
+     return Scaffold(
++      appBar: PreferredSize(
++        preferredSize: const Size.fromHeight(68),
++        child: SearchField(
++          hint: 'Cari alat...',
++          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
++          onChanged: (value) => setState(() => _query = value),
++        ),
++      ),
+       body: _isLoading
+           ? const Center(child: CircularProgressIndicator())
+           : _tools == null || _tools!.isEmpty
+           ? const Center(child: Text('Belum ada alat.'))
++          : tools.isEmpty
++          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+           : ListView.builder(
+-              itemCount: _tools!.length,
++              itemCount: tools.length,
+               itemBuilder: (context, index) {
+-                final tool = _tools![index];
++                final tool = tools[index];
+                 return Card(
+                   margin: const EdgeInsets.symmetric(
+                     horizontal: 16,
+@@ -255,6 +278,7 @@ class _ResourceTab extends StatefulWidget {
+ class _ResourceTabState extends State<_ResourceTab> {
+   bool _isLoading = true;
+   List<dynamic>? _resources;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -396,17 +420,37 @@ class _ResourceTabState extends State<_ResourceTab> {
+     );
+   }
+ 
++  List<dynamic> get _filteredResources {
++    return (_resources ?? []).where((res) {
++      return matchesSearch(_query, [
++        res['name'],
++        res['unit'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
++    final resources = _filteredResources;
+     return Scaffold(
++      appBar: PreferredSize(
++        preferredSize: const Size.fromHeight(68),
++        child: SearchField(
++          hint: 'Cari bahan...',
++          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
++          onChanged: (value) => setState(() => _query = value),
++        ),
++      ),
+       body: _isLoading
+           ? const Center(child: CircularProgressIndicator())
+           : _resources == null || _resources!.isEmpty
+           ? const Center(child: Text('Belum ada bahan.'))
++          : resources.isEmpty
++          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+           : ListView.builder(
+-              itemCount: _resources!.length,
++              itemCount: resources.length,
+               itemBuilder: (context, index) {
+-                final res = _resources![index];
++                final res = resources[index];
+                 return Card(
+                   margin: const EdgeInsets.symmetric(
+                     horizontal: 16,
+diff --git a/smart_farming/lib/screens/owner/land_list_screen.dart b/smart_farming/lib/screens/owner/land_list_screen.dart
+index 1d515fd..c7c1bdf 100644
+--- a/smart_farming/lib/screens/owner/land_list_screen.dart
++++ b/smart_farming/lib/screens/owner/land_list_screen.dart
+@@ -5,6 +5,8 @@ import 'add_land_screen.dart';
+ import 'land_detail_screen.dart';
+ 
+ import 'package:intl/intl.dart';
++import '../../utils/search.dart';
++import '../../widgets/search_field.dart';
+ 
+ class LandListScreen extends StatefulWidget {
+   const LandListScreen({super.key});
+@@ -16,6 +18,7 @@ class LandListScreen extends StatefulWidget {
+ class _LandListScreenState extends State<LandListScreen> {
+   bool _isLoading = true;
+   List<dynamic>? _lands;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -32,8 +35,18 @@ class _LandListScreenState extends State<LandListScreen> {
+     });
+   }
+ 
++  List<dynamic> get _filteredLands {
++    return (_lands ?? []).where((land) {
++      return matchesSearch(_query, [
++        land['name'],
++        land['active_planting']?['crop_name'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
++    final lands = _filteredLands;
+     return Scaffold(
+       appBar: AppBar(
+         title: const Text(
+@@ -41,16 +54,25 @@ class _LandListScreenState extends State<LandListScreen> {
+           style: TextStyle(color: Colors.white),
+         ),
+         backgroundColor: const Color(0xFF2E7D32),
++        bottom: PreferredSize(
++          preferredSize: const Size.fromHeight(64),
++          child: SearchField(
++            hint: 'Cari lahan atau tanaman...',
++            onChanged: (value) => setState(() => _query = value),
++          ),
++        ),
+       ),
+       body: _isLoading
+           ? const Center(child: CircularProgressIndicator())
+           : _lands == null || _lands!.isEmpty
+           ? const Center(child: Text('Belum ada lahan yang ditambahkan.'))
++          : lands.isEmpty
++          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+           : ListView.builder(
+               padding: const EdgeInsets.symmetric(vertical: 8),
+-              itemCount: _lands!.length,
++              itemCount: lands.length,
+               itemBuilder: (context, index) {
+-                final land = _lands![index];
++                final land = lands[index];
+                 return InkWell(
+                   onTap: () async {
+                     await Navigator.push(
+diff --git a/smart_farming/lib/screens/owner/task_list_screen.dart b/smart_farming/lib/screens/owner/task_list_screen.dart
+index 1ad115d..9a3e4d0 100644
+--- a/smart_farming/lib/screens/owner/task_list_screen.dart
++++ b/smart_farming/lib/screens/owner/task_list_screen.dart
+@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
+ import '../../services/task_service.dart';
+ import '../../utils/rupiah.dart';
+ import 'task_detail_screen.dart';
++import '../../utils/search.dart';
++import '../../widgets/search_field.dart';
+ 
+ class TaskListScreen extends StatefulWidget {
+   const TaskListScreen({super.key});
+@@ -14,6 +16,7 @@ class TaskListScreen extends StatefulWidget {
+ class _TaskListScreenState extends State<TaskListScreen> {
+   bool _isLoading = true;
+   List<dynamic>? _tasks;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -30,8 +33,22 @@ class _TaskListScreenState extends State<TaskListScreen> {
+     });
+   }
+ 
++  List<dynamic> get _filteredTasks {
++    return (_tasks ?? []).where((task) {
++      return matchesSearch(_query, [
++        task['title'],
++        task['description'],
++        task['status'],
++        task['assignee']?['name'],
++        task['planting']?['crop_name'],
++        task['planting']?['land']?['name'],
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
++    final tasks = _filteredTasks;
+     return Scaffold(
+       appBar: AppBar(
+         title: const Text(
+@@ -39,16 +56,25 @@ class _TaskListScreenState extends State<TaskListScreen> {
+           style: TextStyle(color: Colors.white),
+         ),
+         backgroundColor: const Color(0xFF2E7D32),
++        bottom: PreferredSize(
++          preferredSize: const Size.fromHeight(64),
++          child: SearchField(
++            hint: 'Cari tugas, pelaksana, lahan, status...',
++            onChanged: (value) => setState(() => _query = value),
++          ),
++        ),
+       ),
+       body: _isLoading
+           ? const Center(child: CircularProgressIndicator())
+           : _tasks == null || _tasks!.isEmpty
+           ? const Center(child: Text('Belum ada tugas.'))
++          : tasks.isEmpty
++          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+           : ListView.builder(
+               padding: const EdgeInsets.all(16),
+-              itemCount: _tasks!.length,
++              itemCount: tasks.length,
+               itemBuilder: (context, index) {
+-                final task = _tasks![index];
++                final task = tasks[index];
+ 
+                 Color statusColor = Colors.grey;
+                 if (task['status'] == 'menunggu') statusColor = Colors.orange;
+diff --git a/smart_farming/lib/screens/owner/worker_list_screen.dart b/smart_farming/lib/screens/owner/worker_list_screen.dart
+index b17d1a6..bc19c0e 100644
+--- a/smart_farming/lib/screens/owner/worker_list_screen.dart
++++ b/smart_farming/lib/screens/owner/worker_list_screen.dart
+@@ -4,6 +4,8 @@ import '../../services/worker_service.dart';
+ import '../../utils/rupiah.dart';
+ import 'add_worker_screen.dart';
+ import 'edit_worker_screen.dart';
++import '../../utils/search.dart';
++import '../../widgets/search_field.dart';
+ 
+ class WorkerListScreen extends StatefulWidget {
+   const WorkerListScreen({super.key});
+@@ -15,6 +17,7 @@ class WorkerListScreen extends StatefulWidget {
+ class _WorkerListScreenState extends State<WorkerListScreen> {
+   bool _isLoading = true;
+   List<dynamic>? _workers;
++  String _query = '';
+ 
+   @override
+   void initState() {
+@@ -102,8 +105,22 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
+     );
+   }
+ 
++  List<dynamic> get _filteredWorkers {
++    return (_workers ?? []).where((worker) {
++      return matchesSearch(_query, [
++        worker['name'],
++        worker['email'],
++        worker['role'],
++        worker['wage_type'],
++        worker['is_active'] == false ? 'nonaktif' : null,
++        ((worker['benefits'] as List<dynamic>?) ?? []).map((item) => item['name']),
++      ]);
++    }).toList();
++  }
++
+   @override
+   Widget build(BuildContext context) {
++    final workers = _filteredWorkers;
+     return Scaffold(
+       appBar: AppBar(
+         title: const Text(
+@@ -111,16 +128,25 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
+           style: TextStyle(color: Colors.white),
+         ),
+         backgroundColor: const Color(0xFF2E7D32),
++        bottom: PreferredSize(
++          preferredSize: const Size.fromHeight(64),
++          child: SearchField(
++            hint: 'Cari nama, email, peran, tipe upah...',
++            onChanged: (value) => setState(() => _query = value),
++          ),
++        ),
+       ),
+       body: _isLoading
+           ? const Center(child: CircularProgressIndicator())
+           : _workers == null || _workers!.isEmpty
+           ? const Center(child: Text('Belum ada data karyawan.'))
++          : workers.isEmpty
++          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+           : ListView.builder(
+               padding: const EdgeInsets.all(16),
+-              itemCount: _workers!.length,
++              itemCount: workers.length,
+               itemBuilder: (context, index) {
+-                final worker = _workers![index];
++                final worker = workers[index];
+                 final schedule = worker['schedule'];
+                 final List<dynamic> benefits =
+                     (worker['benefits'] as List<dynamic>?) ?? [];
+diff --git a/smart_farming/lib/utils/search.dart b/smart_farming/lib/utils/search.dart
+new file mode 100644
+index 0000000..a7bfef4
+--- /dev/null
++++ b/smart_farming/lib/utils/search.dart
+@@ -0,0 +1,15 @@
++bool matchesSearch(String query, Iterable<dynamic> fields) {
++  final tokens = query
++      .toLowerCase()
++      .split(RegExp(r'\s+'))
++      .where((token) => token.isNotEmpty);
++
++  if (tokens.isEmpty) return true;
++
++  final haystack = fields
++      .where((field) => field != null)
++      .map((field) => field.toString().toLowerCase())
++      .join(' ');
++
++  return tokens.every(haystack.contains);
++}
+diff --git a/smart_farming/lib/widgets/search_field.dart b/smart_farming/lib/widgets/search_field.dart
+new file mode 100644
+index 0000000..07ff1bb
+--- /dev/null
++++ b/smart_farming/lib/widgets/search_field.dart
+@@ -0,0 +1,72 @@
++import 'package:flutter/material.dart';
++
++class SearchField extends StatefulWidget {
++  const SearchField({
++    super.key,
++    required this.hint,
++    required this.onChanged,
++    this.padding = const EdgeInsets.fromLTRB(16, 0, 16, 12),
++  });
++
++  final String hint;
++  final ValueChanged<String> onChanged;
++  final EdgeInsets padding;
++
++  @override
++  State<SearchField> createState() => _SearchFieldState();
++}
++
++class _SearchFieldState extends State<SearchField> {
++  final _controller = TextEditingController();
++
++  @override
++  void dispose() {
++    _controller.dispose();
++    super.dispose();
++  }
++
++  void _clear() {
++    _controller.clear();
++    widget.onChanged('');
++    setState(() {});
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final border = OutlineInputBorder(
++      borderRadius: BorderRadius.circular(12),
++      borderSide: BorderSide(color: Colors.grey.shade300),
++    );
++
++    return Padding(
++      padding: widget.padding,
++      child: TextField(
++        controller: _controller,
++        textInputAction: TextInputAction.search,
++        onChanged: (value) {
++          widget.onChanged(value);
++          setState(() {});
++        },
++        decoration: InputDecoration(
++          hintText: widget.hint,
++          prefixIcon: const Icon(Icons.search),
++          suffixIcon: _controller.text.isEmpty
++              ? null
++              : IconButton(
++                  tooltip: 'Hapus pencarian',
++                  icon: const Icon(Icons.close),
++                  onPressed: _clear,
++                ),
++          filled: true,
++          fillColor: Colors.white,
++          contentPadding: const EdgeInsets.symmetric(vertical: 0),
++          border: border,
++          enabledBorder: border,
++          focusedBorder: border.copyWith(
++            borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2),
++          ),
++        ),
++      ),
++    );
++  }
++}
