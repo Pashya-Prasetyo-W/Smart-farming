@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../services/worker_service.dart';
+import '../../utils/password_generator.dart';
+import '../../widgets/benefit_editor.dart';
 
 class EditWorkerScreen extends StatefulWidget {
   final Map<String, dynamic> worker;
@@ -15,8 +17,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   final _passwordController = TextEditingController();
-  late final TextEditingController _healthDescController;
-  late final TextEditingController _foodDescController;
+  final List<BenefitEntry> _benefits = [];
 
   TimeOfDay _startTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 16, minute: 0);
@@ -31,8 +32,6 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
     'minggu': false,
   };
 
-  bool _healthInsurance = false;
-  bool _foodAllowance = false;
   bool _isLoading = false;
   bool _isObscure = true;
 
@@ -45,16 +44,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
       text: widget.worker['email'] ?? '',
     );
 
-    final benefit = widget.worker['benefit'];
-    _healthInsurance = benefit != null && benefit['health_insurance'] == true;
-    _foodAllowance = benefit != null && benefit['food_allowance'] == true;
-
-    _healthDescController = TextEditingController(
-      text: benefit?['health_insurance_desc'] ?? '',
-    );
-    _foodDescController = TextEditingController(
-      text: benefit?['food_allowance_desc'] ?? '',
-    );
+    _benefits.addAll(BenefitEntry.fromList(widget.worker['benefits']));
 
     final schedule = widget.worker['schedule'];
     if (schedule != null) {
@@ -93,10 +83,13 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _healthDescController.dispose();
-    _foodDescController.dispose();
+    BenefitEntry.disposeAll(_benefits);
     super.dispose();
   }
+
+  bool get _isMandor => widget.worker['role'] == 'mandor';
+
+  String get _roleLabel => _isMandor ? 'Mandor' : 'Buruh';
 
   String _formatTime(TimeOfDay time) {
     final h = time.hour.toString().padLeft(2, '0');
@@ -108,6 +101,13 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
     if (_nameController.text.isEmpty || _emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Nama dan Email wajib diisi!')),
+      );
+      return;
+    }
+
+    if (_isMandor && BenefitEntry.hasBlank(_benefits)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama jaminan tidak boleh kosong.')),
       );
       return;
     }
@@ -127,16 +127,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
         'end_time': _formatTime(_endTime),
         'work_days': selectedDays,
       },
-      'benefit': {
-        'health_insurance': _healthInsurance ? 1 : 0,
-        'health_insurance_desc': _healthInsurance
-            ? _healthDescController.text.trim()
-            : null,
-        'food_allowance': _foodAllowance ? 1 : 0,
-        'food_allowance_desc': _foodAllowance
-            ? _foodDescController.text.trim()
-            : null,
-      },
+      if (_isMandor) 'benefits': BenefitEntry.payload(_benefits),
     };
 
     if (_passwordController.text.isNotEmpty) {
@@ -152,14 +143,12 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data Buruh berhasil diperbarui!')),
+        SnackBar(content: Text('Data $_roleLabel berhasil diperbarui!')),
       );
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal memperbarui data buruh. Cek console.'),
-        ),
+        SnackBar(content: Text('Gagal memperbarui data $_roleLabel.')),
       );
     }
   }
@@ -168,7 +157,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Buruh', style: TextStyle(color: Colors.white)),
+        title: Text('Edit $_roleLabel', style: const TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -184,8 +173,8 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nama Lengkap Buruh',
+              decoration: InputDecoration(
+                labelText: 'Nama Lengkap $_roleLabel',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -193,8 +182,8 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email Buruh',
+              decoration: InputDecoration(
+                labelText: 'Email $_roleLabel',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -204,6 +193,9 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
               obscureText: _isObscure,
               decoration: InputDecoration(
                 labelText: 'Password Baru (Opsional)',
+                helperText:
+                    'Password saat ini tersimpan terenkripsi sehingga tidak dapat ditampilkan. Isi hanya untuk menggantinya; pengguna wajib menggantinya lagi saat login.',
+                helperMaxLines: 3,
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -215,6 +207,18 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
                     });
                   },
                 ),
+              ),
+            ),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => setState(() {
+                  _passwordController.text = PasswordGenerator.generate();
+                  _isObscure = false;
+                }),
+                icon: const Icon(Icons.autorenew, size: 18),
+                label: const Text('Buat password acak'),
               ),
             ),
 
@@ -275,47 +279,15 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
               }).toList(),
             ),
 
-            const Divider(height: 32),
-
-            const Text(
-              'Jaminan & Benefit',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SwitchListTile(
-              title: const Text('Jaminan Kesehatan'),
-              value: _healthInsurance,
-              activeThumbColor: const Color(0xFF2E7D32),
-              onChanged: (val) => setState(() => _healthInsurance = val),
-            ),
-            if (_healthInsurance)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: TextField(
-                  controller: _healthDescController,
-                  decoration: const InputDecoration(
-                    labelText: 'Detail Jaminan',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+            if (_isMandor) ...[
+              const Divider(height: 32),
+              const Text(
+                'Jaminan & Benefit',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-
-            SwitchListTile(
-              title: const Text('Tunjangan Makan'),
-              value: _foodAllowance,
-              activeThumbColor: const Color(0xFF2E7D32),
-              onChanged: (val) => setState(() => _foodAllowance = val),
-            ),
-            if (_foodAllowance)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: TextField(
-                  controller: _foodDescController,
-                  decoration: const InputDecoration(
-                    labelText: 'Detail Tunjangan',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 8),
+              BenefitEditor(entries: _benefits),
+            ],
 
             const SizedBox(height: 24),
 

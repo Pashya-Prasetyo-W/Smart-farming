@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Models\WorkerBenefitItem;
 use Illuminate\Support\Facades\DB;
 
 class WorkerService
@@ -31,15 +32,27 @@ class WorkerService
                 'work_days'  => $data['schedule']['work_days'] ?? ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'],
             ]);
 
-            $worker->benefit()->forceCreate([
-                'company_id'            => $creator->company_id,
-                'health_insurance'      => $data['benefit']['health_insurance'] ?? 0,
-                'health_insurance_desc' => $data['benefit']['health_insurance_desc'] ?? null,
-                'food_allowance'        => $data['benefit']['food_allowance'] ?? 0,
-                'food_allowance_desc'   => $data['benefit']['food_allowance_desc'] ?? null,
-            ]);
+            $this->syncBenefits($worker, $data['benefits'] ?? []);
 
-            return $worker->load(['schedule', 'benefit']);
+            return $worker->load(['schedule', 'benefits']);
         });
+    }
+
+    public function syncBenefits(User $worker, array $items): void
+    {
+        WorkerBenefitItem::where('user_id', $worker->id)->delete();
+
+        if ($worker->role !== UserRole::Mandor->value) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            $worker->benefits()->forceCreate([
+                'company_id'  => $worker->company_id,
+                'type'        => $item['type'],
+                'name'        => $item['name'],
+                'description' => $item['description'] ?? null,
+            ]);
+        }
     }
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/worker_service.dart';
+import '../../utils/password_generator.dart';
+import '../../widgets/benefit_editor.dart';
 
 class AddWorkerScreen extends StatefulWidget {
   const AddWorkerScreen({super.key});
@@ -14,8 +16,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _healthDescController = TextEditingController();
-  final _foodDescController = TextEditingController();
+  final List<BenefitEntry> _benefits = [];
 
   TimeOfDay _startTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 16, minute: 0);
@@ -30,8 +31,6 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
     'minggu': false,
   };
 
-  bool _healthInsurance = false;
-  bool _foodAllowance = false;
   bool _isLoading = false;
   bool _isObscure = true;
 
@@ -57,8 +56,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _healthDescController.dispose();
-    _foodDescController.dispose();
+    BenefitEntry.disposeAll(_benefits);
     super.dispose();
   }
 
@@ -78,6 +76,13 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
       return;
     }
 
+    if (_role == 'mandor' && BenefitEntry.hasBlank(_benefits)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama jaminan tidak boleh kosong.')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     List<String> selectedDays = _workDays.entries
@@ -85,7 +90,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
         .map((e) => e.key)
         .toList();
 
-    final data = {
+    final Map<String, dynamic> data = {
       'name': _nameController.text.trim(),
       'email': _emailController.text.trim(),
       'password': _passwordController.text.trim(),
@@ -95,16 +100,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
         'end_time': _formatTime(_endTime),
         'work_days': selectedDays,
       },
-      'benefit': {
-        'health_insurance': _healthInsurance ? 1 : 0,
-        'health_insurance_desc': _healthInsurance
-            ? _healthDescController.text.trim()
-            : null,
-        'food_allowance': _foodAllowance ? 1 : 0,
-        'food_allowance_desc': _foodAllowance
-            ? _foodDescController.text.trim()
-            : null,
-      },
+      if (_role == 'mandor') 'benefits': BenefitEntry.payload(_benefits),
     };
 
     final success = await WorkerService().createWorker(data);
@@ -194,6 +190,18 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
               ),
             ),
 
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => setState(() {
+                  _passwordController.text = PasswordGenerator.generate();
+                  _isObscure = false;
+                }),
+                icon: const Icon(Icons.autorenew, size: 18),
+                label: const Text('Buat password acak'),
+              ),
+            ),
+
             const Divider(height: 32),
 
             const Text(
@@ -251,49 +259,15 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
               }).toList(),
             ),
 
-            const Divider(height: 32),
-
-            const Text(
-              'Jaminan & Benefit',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SwitchListTile(
-              title: const Text('Jaminan Kesehatan'),
-              value: _healthInsurance,
-              activeThumbColor: const Color(0xFF2E7D32),
-              onChanged: (val) => setState(() => _healthInsurance = val),
-            ),
-
-            if (_healthInsurance)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: TextField(
-                  controller: _healthDescController,
-                  decoration: const InputDecoration(
-                    labelText: 'Detail Jaminan',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+            if (_role == 'mandor') ...[
+              const Divider(height: 32),
+              const Text(
+                'Jaminan & Benefit',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-
-            SwitchListTile(
-              title: const Text('Tunjangan Makan'),
-              value: _foodAllowance,
-              activeThumbColor: const Color(0xFF2E7D32),
-              onChanged: (val) => setState(() => _foodAllowance = val),
-            ),
-
-            if (_foodAllowance)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: TextField(
-                  controller: _foodDescController,
-                  decoration: const InputDecoration(
-                    labelText: 'Detail Tunjangan',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 8),
+              BenefitEditor(entries: _benefits),
+            ],
 
             const SizedBox(height: 24),
 
@@ -312,9 +286,9 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Text(
-                      'SIMPAN DATA BURUH',
-                      style: TextStyle(
+                  : Text(
+                      'SIMPAN DATA ${_roleLabel.toUpperCase()}',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,

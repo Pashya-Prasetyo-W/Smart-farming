@@ -17,7 +17,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _currentController = TextEditingController();
   final _newController = TextEditingController();
   final _confirmController = TextEditingController();
-  bool _isObscure = true;
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
   bool _isLoading = false;
 
   @override
@@ -83,6 +85,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
+  Widget _passwordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: IconButton(
+          tooltip: obscure ? 'Tampilkan password' : 'Sembunyikan password',
+          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
+          onPressed: onToggle,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,34 +126,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 style: TextStyle(fontSize: 15),
               ),
               const SizedBox(height: 24),
-              TextField(
+              _passwordField(
                 controller: _currentController,
-                obscureText: _isObscure,
-                decoration: const InputDecoration(
-                  labelText: 'Password Saat Ini',
-                ),
+                label: 'Password Saat Ini',
+                obscure: _obscureCurrent,
+                onToggle: () =>
+                    setState(() => _obscureCurrent = !_obscureCurrent),
               ),
               const SizedBox(height: 12),
-              TextField(
+              _passwordField(
                 controller: _newController,
-                obscureText: _isObscure,
-                decoration: const InputDecoration(
-                  labelText: 'Password Baru (min. 8 karakter)',
-                ),
+                label: 'Password Baru (min. 8 karakter)',
+                obscure: _obscureNew,
+                onToggle: () => setState(() => _obscureNew = !_obscureNew),
               ),
               const SizedBox(height: 12),
-              TextField(
+              _passwordField(
                 controller: _confirmController,
-                obscureText: _isObscure,
-                decoration: InputDecoration(
-                  labelText: 'Ulangi Password Baru',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscure ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    onPressed: () => setState(() => _isObscure = !_isObscure),
-                  ),
-                ),
+                label: 'Ulangi Password Baru',
+                obscure: _obscureConfirm,
+                onToggle: () =>
+                    setState(() => _obscureConfirm = !_obscureConfirm),
               ),
               const SizedBox(height: 24),
               FilledButton(

@@ -78,6 +78,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Widget _buildBenefitCard() {
+    final List<dynamic> benefits =
+        (_workerData?['benefits'] as List<dynamic>?) ?? [];
+
+    return Card(
+      color: Colors.blue[50],
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: benefits.isEmpty
+            ? const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Belum ada jaminan.'),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: benefits.map<Widget>((item) {
+                  final description = item['description']?.toString() ?? '';
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          item['type'] == 'makan'
+                              ? Icons.restaurant
+                              : Icons.health_and_safety,
+                          color: Colors.green,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['name'].toString(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              if (description.isNotEmpty) Text(description),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,72 +245,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Jaminan & Benefit',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    if (_user!['role'] == 'mandor') ...[
+                      const SizedBox(height: 16),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Jaminan & Benefit',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Card(
-                      color: Colors.blue[50],
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  _workerData!['benefit']['health_insurance'] ==
-                                          true
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color:
-                                      _workerData!['benefit']['health_insurance'] ==
-                                          true
-                                      ? Colors.green
-                                      : Colors.grey,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Kesehatan: ${_workerData!['benefit']['health_insurance_desc'] ?? 'Tidak ada'}',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(
-                                  _workerData!['benefit']['food_allowance'] ==
-                                          true
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color:
-                                      _workerData!['benefit']['food_allowance'] ==
-                                          true
-                                      ? Colors.green
-                                      : Colors.grey,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Tunjangan Makan: ${_workerData!['benefit']['food_allowance_desc'] ?? 'Tidak ada'}',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                      const SizedBox(height: 8),
+                      _buildBenefitCard(),
+                    ],
                   ],
 
                   const SizedBox(height: 30),

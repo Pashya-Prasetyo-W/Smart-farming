@@ -103,7 +103,8 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
               itemBuilder: (context, index) {
                 final worker = _workers![index];
                 final schedule = worker['schedule'];
-                final benefit = worker['benefit'];
+                final List<dynamic> benefits =
+                    (worker['benefits'] as List<dynamic>?) ?? [];
 
                 return Card(
                   elevation: 2,
@@ -206,26 +207,28 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                             style: const TextStyle(fontSize: 12),
                           ),
                         ],
-                        if (benefit != null) ...[
+                        if (worker['role'] == 'mandor' &&
+                            benefits.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Wrap(
                             spacing: 8,
-                            children: [
-                              if (benefit['health_insurance'] == true)
-                                const Chip(
-                                  label: Text(
-                                    'Jaminan Kesehatan',
-                                    style: TextStyle(fontSize: 10),
+                            children: benefits
+                                .map<Widget>(
+                                  (item) => Chip(
+                                    avatar: Icon(
+                                      item['type'] == 'makan'
+                                          ? Icons.restaurant
+                                          : Icons.health_and_safety,
+                                      size: 14,
+                                    ),
+                                    label: Text(
+                                      item['name'].toString(),
+                                      style: const TextStyle(fontSize: 10),
+                                    ),
+                                    visualDensity: VisualDensity.compact,
                                   ),
-                                ),
-                              if (benefit['food_allowance'] == true)
-                                const Chip(
-                                  label: Text(
-                                    'Tunjangan Makan',
-                                    style: TextStyle(fontSize: 10),
-                                  ),
-                                ),
-                            ],
+                                )
+                                .toList(),
                           ),
                         ],
                       ],
@@ -235,6 +238,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Tambah Karyawan',
         onPressed: () async {
           await Navigator.push(
             context,

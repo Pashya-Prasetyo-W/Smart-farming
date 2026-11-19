@@ -9,7 +9,7 @@ use App\Models\Planting;
 use App\Models\Tool;
 use App\Models\Resource;
 use App\Models\WorkerSchedule;
-use App\Models\WorkerBenefit;
+use App\Models\WorkerBenefitItem;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -50,13 +50,20 @@ class DatabaseSeeder extends Seeder
                 'work_days'  => ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'],
             ]);
 
-            WorkerBenefit::forceCreate([
-                'company_id'           => $company->id,
-                'user_id'              => $mandor->id,
-                'health_insurance'     => true,
-                'health_insurance_desc'=> 'BPJS Ketenagakerjaan',
-                'food_allowance'       => true,
-                'food_allowance_desc'  => 'Uang makan Rp 25.000/hari',
+            WorkerBenefitItem::forceCreate([
+                'company_id'  => $company->id,
+                'user_id'     => $mandor->id,
+                'type'        => 'kesehatan',
+                'name'        => 'BPJS Ketenagakerjaan',
+                'description' => null,
+            ]);
+
+            WorkerBenefitItem::forceCreate([
+                'company_id'  => $company->id,
+                'user_id'     => $mandor->id,
+                'type'        => 'makan',
+                'name'        => 'Uang makan',
+                'description' => 'Rp 25.000 per hari',
             ]);
 
             $worker = User::create([
@@ -75,15 +82,6 @@ class DatabaseSeeder extends Seeder
                 'work_days'  => ['senin', 'selasa', 'rabu', 'kamis', 'jumat'],
             ]);
 
-            WorkerBenefit::forceCreate([
-                'company_id'           => $company->id,
-                'user_id'              => $worker->id,
-                'health_insurance'     => true,
-                'health_insurance_desc'=> 'BPJS Ketenagakerjaan',
-                'food_allowance'       => true,
-                'food_allowance_desc'  => 'Uang makan Rp 20.000/hari',
-            ]);
-            
             $land = Land::create([
                 'company_id'    => $company->id,
                 'name'          => 'Lahan Cabai A',

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\IncidentReport;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\WorkerBenefitItem;
 use App\Services\WorkerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,11 +52,10 @@ class WorkerController extends Controller
             'schedule.work_days'            => ['nullable', 'array'],
             'schedule.work_days.*'          => ['string'],
 
-            'benefit'                       => ['nullable', 'array'],
-            'benefit.health_insurance'      => ['nullable', 'numeric', 'min:0'],
-            'benefit.health_insurance_desc' => ['nullable', 'string', 'max:255'],
-            'benefit.food_allowance'        => ['nullable', 'numeric', 'min:0'],
-            'benefit.food_allowance_desc'   => ['nullable', 'string', 'max:255'],
+            'benefits'                      => ['nullable', 'array', 'max:20'],
+            'benefits.*.type'               => ['required', Rule::in(WorkerBenefitItem::TYPES)],
+            'benefits.*.name'               => ['required', 'string', 'max:255'],
+            'benefits.*.description'        => ['nullable', 'string', 'max:255'],
         ]);
 
         $role = $validatedData['role'] ?? UserRole::Buruh->value;
@@ -84,7 +84,7 @@ class WorkerController extends Controller
 
         $workers = User::where('company_id', $actor->company_id)
             ->whereIn('role', $this->manageableRoles($actor))
-            ->with(['schedule', 'benefit', 'creator:id,name'])
+            ->with(['schedule', 'benefits', 'creator:id,name'])
             ->orderBy('role')
             ->orderBy('name')
             ->get();
@@ -106,10 +106,10 @@ class WorkerController extends Controller
             'schedule.start_time' => ['nullable', 'date_format:H:i:s'],
             'schedule.end_time' => ['nullable', 'date_format:H:i:s'],
             'schedule.work_days' => ['nullable', 'array'],
-            'benefit.health_insurance' => ['nullable', 'numeric'],
-            'benefit.health_insurance_desc' => ['nullable', 'string', 'max:255'],
-            'benefit.food_allowance' => ['nullable', 'numeric'],
-            'benefit.food_allowance_desc' => ['nullable', 'string', 'max:255'],
+            'benefits' => ['nullable', 'array', 'max:20'],
+            'benefits.*.type' => ['required', Rule::in(WorkerBenefitItem::TYPES)],
+            'benefits.*.name' => ['required', 'string', 'max:255'],
+            'benefits.*.description' => ['nullable', 'string', 'max:255'],
         ]);
 
         DB::transaction(function () use ($worker, $validatedData) {
@@ -139,19 +139,14 @@ class WorkerController extends Controller
                 ]);
             }
 
-            if (isset($validatedData['benefit'])) {
-                $worker->benefit()->update([
-                    'health_insurance'      => $validatedData['benefit']['health_insurance'] ?? 0,
-                    'health_insurance_desc' => $validatedData['benefit']['health_insurance_desc'] ?? null,
-                    'food_allowance'        => $validatedData['benefit']['food_allowance'] ?? 0,
-                    'food_allowance_desc'   => $validatedData['benefit']['food_allowance_desc'] ?? null,
-                ]);
+            if (array_key_exists('benefits', $validatedData)) {
+                $this->workerService->syncBenefits($worker, $validatedData['benefits'] ?? []);
             }
         });
 
         return response()->json([
             'message' => 'Data karyawan berhasil diperbarui.',
-            'data'    => $worker->load(['schedule', 'benefit']),
+            'data'    => $worker->load(['schedule', 'benefits']),
         ], 200);
     }
 
@@ -203,7 +198,7 @@ class WorkerController extends Controller
 
     public function getProfile(Request $request): JsonResponse
     {
-        $user = User::with(['schedule', 'benefit'])
+        $user = User::with(['schedule', 'benefits'])
             ->find($request->user()->id);
 
         return response()->json([

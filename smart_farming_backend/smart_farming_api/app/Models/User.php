@@ -51,9 +51,9 @@ class User extends Authenticatable
         return $this->hasOne(WorkerSchedule::class);
     }
 
-    public function benefit()
+    public function benefits()
     {
-        return $this->hasOne(WorkerBenefit::class);
+        return $this->hasMany(WorkerBenefitItem::class)->orderBy('id');
     }
 
     public function tasks()
