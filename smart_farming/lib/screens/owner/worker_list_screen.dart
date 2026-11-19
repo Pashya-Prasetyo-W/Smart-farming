@@ -30,11 +30,32 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
     });
   }
 
+  Future<void> _toggleActive(Map<String, dynamic> worker) async {
+    final makeActive = worker['is_active'] != true;
+    final success = await WorkerService().setWorkerActive(
+      worker['id'],
+      makeActive,
+    );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? (makeActive ? 'Akun diaktifkan.' : 'Akun dinonaktifkan.')
+              : 'Gagal mengubah status akun.',
+        ),
+      ),
+    );
+    if (success) _fetchWorkers();
+  }
+
   void _showDeleteConfirmation(int id, String name) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Hapus Buruh'),
+        title: const Text('Hapus Akun'),
         content: Text('Apakah Anda yakin ingin menghapus akun $name?'),
         actions: [
           TextButton(
@@ -45,20 +66,14 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
             onPressed: () async {
               Navigator.pop(dialogContext);
 
-              final success = await WorkerService().deleteWorker(id);
+              final result = await WorkerService().deleteWorker(id);
 
               if (!mounted) return;
 
-              if (success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Buruh berhasil dihapus.')),
-                );
-                _fetchWorkers();
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Gagal menghapus buruh.')),
-                );
-              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(result['message'].toString())),
+              );
+              if (result['success'] == true) _fetchWorkers();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Hapus', style: TextStyle(color: Colors.white)),
@@ -73,7 +88,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Manajemen Buruh',
+          'Manajemen Karyawan',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF2E7D32),
@@ -81,7 +96,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _workers == null || _workers!.isEmpty
-          ? const Center(child: Text('Belum ada data buruh.'))
+          ? const Center(child: Text('Belum ada data karyawan.'))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _workers!.length,
@@ -119,8 +134,48 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                                     worker['email'],
                                     style: TextStyle(color: Colors.grey[600]),
                                   ),
+                                  const SizedBox(height: 4),
+                                  Wrap(
+                                    spacing: 6,
+                                    children: [
+                                      Chip(
+                                        label: Text(
+                                          worker['role'] == 'mandor'
+                                              ? 'MANDOR'
+                                              : 'BURUH',
+                                          style: const TextStyle(fontSize: 10),
+                                        ),
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                      if (worker['is_active'] == false)
+                                        const Chip(
+                                          label: Text(
+                                            'NONAKTIF',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                          visualDensity: VisualDensity.compact,
+                                        ),
+                                    ],
+                                  ),
                                 ],
                               ),
+                            ),
+                            IconButton(
+                              tooltip: worker['is_active'] == false
+                                  ? 'Aktifkan akun'
+                                  : 'Nonaktifkan akun',
+                              icon: Icon(
+                                worker['is_active'] == false
+                                    ? Icons.toggle_off
+                                    : Icons.toggle_on,
+                                color: worker['is_active'] == false
+                                    ? Colors.grey
+                                    : const Color(0xFF2E7D32),
+                              ),
+                              onPressed: () => _toggleActive(worker),
                             ),
                             IconButton(
                               icon: const Icon(Icons.edit, color: Colors.blue),

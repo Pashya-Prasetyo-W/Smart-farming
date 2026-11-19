@@ -252,10 +252,10 @@ class TaskService
     {
         $query = Task::with(['planting.land', 'assignee'])->latest();
         
-        if ($user->role === 'pemilik') {
+        if ($user->hasRole('pemilik', 'mandor')) {
             return $query->where('company_id', $user->company_id)->get();
         }
-        
+
         return $query->where('assigned_to', $user->id)->get();
     }
 }

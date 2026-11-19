@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\IncidentReport;
+use App\Models\Task;
+use App\Models\User;
 use App\Services\WorkerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class WorkerController extends Controller
 {
@@ -13,18 +19,31 @@ class WorkerController extends Controller
         protected WorkerService $workerService
     ) {}
 
+    private function manageableRoles(User $actor): array
+    {
+        return $actor->hasRole(UserRole::Pemilik->value)
+            ? [UserRole::Buruh->value, UserRole::Mandor->value]
+            : [UserRole::Buruh->value];
+    }
+
+    private function findManageable(Request $request, $id): User
+    {
+        $actor = $request->user();
+
+        return User::where('company_id', $actor->company_id)
+            ->whereIn('role', $this->manageableRoles($actor))
+            ->findOrFail($id);
+    }
+
     public function store(Request $request): JsonResponse
     {
-        abort_if(
-            $request->user()->role !== 'pemilik',
-            403,
-            'Akses ditolak. Hanya pemilik yang dapat menambahkan buruh.'
-        );
+        $actor = $request->user();
 
         $validatedData = $request->validate([
             'name'                          => ['required', 'string', 'max:255'],
             'email'                         => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password'                      => ['required', 'string', 'min:8'],
+            'role'                          => ['nullable', Rule::in([UserRole::Buruh->value, UserRole::Mandor->value])],
 
             'schedule'                      => ['nullable', 'array'],
             'schedule.start_time'           => ['nullable', 'date_format:H:i:s'],
@@ -39,39 +58,50 @@ class WorkerController extends Controller
             'benefit.food_allowance_desc'   => ['nullable', 'string', 'max:255'],
         ]);
 
-        $worker = $this->workerService->createWorker($validatedData, $request->user());
+        $role = $validatedData['role'] ?? UserRole::Buruh->value;
+
+        abort_if(
+            ! in_array($role, $this->manageableRoles($actor), true),
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat membuat akun mandor.'
+        );
+
+        $validatedData['role'] = $role;
+
+        $worker = $this->workerService->createWorker($validatedData, $actor);
 
         return response()->json([
-            'message' => 'Data buruh berhasil ditambahkan.',
+            'message' => $role === UserRole::Mandor->value
+                ? 'Akun mandor berhasil ditambahkan.'
+                : 'Data buruh berhasil ditambahkan.',
             'data'    => $worker,
         ], 201);
     }
 
     public function index(Request $request): JsonResponse
     {
-        abort_if($request->user()->role !== 'pemilik', 403, 'Akses ditolak.');
+        $actor = $request->user();
 
-        $workers = \App\Models\User::where('company_id', $request->user()->company_id)
-            ->where('role', 'buruh')
-            ->with(['schedule', 'benefit'])
+        $workers = User::where('company_id', $actor->company_id)
+            ->whereIn('role', $this->manageableRoles($actor))
+            ->with(['schedule', 'benefit', 'creator:id,name'])
+            ->orderBy('role')
+            ->orderBy('name')
             ->get();
 
         return response()->json([
-            'message' => 'Daftar buruh berhasil diambil.',
+            'message' => 'Daftar karyawan berhasil diambil.',
             'data'    => $workers,
         ], 200);
     }
 
     public function update(Request $request, $id): JsonResponse
     {
-        abort_if($request->user()->role !== 'pemilik', 403, 'Akses ditolak.');
-
-        $worker = \App\Models\User::where('company_id', $request->user()->company_id)
-            ->where('role', 'buruh')->findOrFail($id);
+        $worker = $this->findManageable($request, $id);
 
         $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $worker->id],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($worker->id)],
             'password' => ['nullable', 'string', 'min:8'],
             'schedule.start_time' => ['nullable', 'date_format:H:i:s'],
             'schedule.end_time' => ['nullable', 'date_format:H:i:s'],
@@ -82,17 +112,24 @@ class WorkerController extends Controller
             'benefit.food_allowance_desc' => ['nullable', 'string', 'max:255'],
         ]);
 
-        \DB::transaction(function () use ($worker, $validatedData) {
+        DB::transaction(function () use ($worker, $validatedData) {
             $updateData = [
                 'name'  => $validatedData['name'],
                 'email' => $validatedData['email'],
             ];
 
-            if (!empty($validatedData['password'])) {
+            $passwordReset = ! empty($validatedData['password']);
+
+            if ($passwordReset) {
                 $updateData['password'] = $validatedData['password'];
+                $updateData['must_change_password'] = true;
             }
 
-            $worker->update($updateData);
+            $worker->forceFill($updateData)->save();
+
+            if ($passwordReset) {
+                $worker->tokens()->delete();
+            }
 
             if (isset($validatedData['schedule'])) {
                 $worker->schedule()->update([
@@ -113,31 +150,64 @@ class WorkerController extends Controller
         });
 
         return response()->json([
-            'message' => 'Data buruh berhasil diperbarui.',
+            'message' => 'Data karyawan berhasil diperbarui.',
             'data'    => $worker->load(['schedule', 'benefit']),
         ], 200);
     }
 
     public function destroy(Request $request, $id): JsonResponse
     {
-        abort_if($request->user()->role !== 'pemilik', 403, 'Akses ditolak.');
+        $worker = $this->findManageable($request, $id);
 
-        $worker = \App\Models\User::where('company_id', $request->user()->company_id)
-            ->where('role', 'buruh')
-            ->findOrFail($id);
+        $hasHistory = Task::where('assigned_to', $worker->id)->exists()
+            || IncidentReport::where('reported_by', $worker->id)->exists()
+            || User::where('created_by', $worker->id)->exists();
 
+        if ($hasHistory) {
+            return response()->json([
+                'message' => 'Akun ini sudah memiliki riwayat kerja dan tidak dapat dihapus. Nonaktifkan akun ini sebagai gantinya.',
+            ], 422);
+        }
+
+        $worker->tokens()->delete();
         $worker->delete();
 
-        return response()->json(['message' => 'Akun buruh berhasil dihapus.'], 200);
+        return response()->json(['message' => 'Akun berhasil dihapus.'], 200);
+    }
+
+    public function deactivate(Request $request, $id): JsonResponse
+    {
+        return $this->setActive($request, $id, false);
+    }
+
+    public function activate(Request $request, $id): JsonResponse
+    {
+        return $this->setActive($request, $id, true);
+    }
+
+    private function setActive(Request $request, $id, bool $active): JsonResponse
+    {
+        $worker = $this->findManageable($request, $id);
+
+        $worker->forceFill(['is_active' => $active])->save();
+
+        if (! $active) {
+            $worker->tokens()->delete();
+        }
+
+        return response()->json([
+            'message' => $active ? 'Akun berhasil diaktifkan.' : 'Akun berhasil dinonaktifkan.',
+            'data'    => $worker,
+        ], 200);
     }
 
     public function getProfile(Request $request): JsonResponse
     {
-        $user = \App\Models\User::with(['schedule', 'benefit'])
+        $user = User::with(['schedule', 'benefit'])
             ->find($request->user()->id);
 
         return response()->json([
-            'message' => 'Profil buruh berhasil diambil.',
+            'message' => 'Profil karyawan berhasil diambil.',
             'data'    => $user,
         ], 200);
     }

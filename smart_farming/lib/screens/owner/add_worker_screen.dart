@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/worker_service.dart';
 
@@ -33,6 +34,23 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   bool _foodAllowance = false;
   bool _isLoading = false;
   bool _isObscure = true;
+
+  String _role = 'buruh';
+  bool _canChooseRole = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadActorRole();
+  }
+
+  Future<void> _loadActorRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => _canChooseRole = prefs.getString('role') == 'pemilik');
+  }
+
+  String get _roleLabel => _role == 'mandor' ? 'Mandor' : 'Buruh';
 
   @override
   void dispose() {
@@ -71,6 +89,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
       'name': _nameController.text.trim(),
       'email': _emailController.text.trim(),
       'password': _passwordController.text.trim(),
+      'role': _role,
       'schedule': {
         'start_time': _formatTime(_startTime),
         'end_time': _formatTime(_endTime),
@@ -96,12 +115,12 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Akun Buruh berhasil dibuat!')),
+        SnackBar(content: Text('Akun $_roleLabel berhasil dibuat!')),
       );
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal membuat akun buruh. Cek console.')),
+        SnackBar(content: Text('Gagal membuat akun $_roleLabel. Pastikan email belum terdaftar.')),
       );
     }
   }
@@ -110,8 +129,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Tambah Buruh',
+        title: Text(
+          'Tambah $_roleLabel',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF2E7D32),
@@ -127,10 +146,21 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
+            if (_canChooseRole) ...[
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'buruh', label: Text('Buruh')),
+                  ButtonSegment(value: 'mandor', label: Text('Mandor')),
+                ],
+                selected: {_role},
+                onSelectionChanged: (v) => setState(() => _role = v.first),
+              ),
+              const SizedBox(height: 12),
+            ],
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nama Lengkap Buruh',
+              decoration: InputDecoration(
+                labelText: 'Nama Lengkap $_roleLabel',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -138,8 +168,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email Buruh',
+              decoration: InputDecoration(
+                labelText: 'Email $_roleLabel',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -148,7 +178,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
               controller: _passwordController,
               obscureText: _isObscure,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: 'Password Sementara',
+                helperText: 'Pengguna wajib menggantinya saat login pertama.',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(

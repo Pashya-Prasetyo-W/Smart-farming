@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'screens/auth/login_screen.dart';
-
-import 'screens/owner/owner_dashboard_screen.dart';
-import 'screens/worker/worker_dashboard_screen.dart';
+import 'utils/role_router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -124,32 +120,14 @@ class _SplashScreenState extends State<SplashScreen> {
   void _checkLoginStatus() async {
     await Future.delayed(const Duration(milliseconds: 800));
 
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    final role = prefs.getString('role');
+    final screen = await RoleRouter.restoreSession();
 
     if (!mounted) return;
 
-    if (token != null && role != null) {
-      if (role == 'pemilik') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const OwnerDashboardScreen()),
-        );
-      } else if (role == 'buruh') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const WorkerDashboardScreen(),
-          ),
-        );
-      }
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => screen ?? const LoginScreen()),
+    );
   }
 
   @override

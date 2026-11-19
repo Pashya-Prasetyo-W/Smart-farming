@@ -564,7 +564,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
   Widget _buildMenuGrid() {
     final items = <Widget>[
       _buildMenuTile(
-        label: 'Manajemen Buruh',
+        label: 'Manajemen Karyawan',
         icon: Icons.people_alt_rounded,
         color: _Palette.primary,
         onTap: () => _open(const WorkerListScreen()),

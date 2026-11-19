@@ -68,7 +68,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         _selectedWorkerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Judul, Lahan (Siklus), dan Buruh wajib diisi!'),
+          content: Text('Judul, Lahan (Siklus), dan Pelaksana wajib diisi!'),
         ),
       );
       return;
@@ -387,7 +387,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   DropdownButtonFormField<int>(
                     value: _selectedWorkerId,
                     decoration: const InputDecoration(
-                      labelText: 'Tugaskan Ke Buruh',
+                      labelText: 'Tugaskan Ke',
                       border: OutlineInputBorder(),
                     ),
                     items: _workers.map<DropdownMenuItem<int>>((worker) {

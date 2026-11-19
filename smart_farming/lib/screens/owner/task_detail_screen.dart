@@ -17,6 +17,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _task;
   String _userRole = '';
+  int? _userId;
 
   @override
   void initState() {
@@ -38,8 +39,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _userRole = prefs.getString('role') ?? '';
+      _userId = prefs.getInt('user_id');
     });
   }
+
+  bool get _canManageTasks => _userRole == 'pemilik' || _userRole == 'mandor';
+
+  bool get _isExecutor =>
+      _userRole == 'buruh' ||
+      (_userRole == 'mandor' &&
+          _userId != null &&
+          _task?['assigned_to'] == _userId);
 
   void _showCancelDialog() {
     final reasonController = TextEditingController();
@@ -260,7 +270,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
                   const SizedBox(height: 16),
 
-                  if (_userRole == 'pemilik' &&
+                  if (_canManageTasks &&
                       _task!['status'] == 'menunggu') ...[
                     ElevatedButton.icon(
                       onPressed: () async {
@@ -285,7 +295,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     const SizedBox(height: 12),
                   ],
 
-                  if (_userRole == 'pemilik' &&
+                  if (_canManageTasks &&
                       (_task!['status'] == 'menunggu' ||
                           _task!['status'] == 'dikerjakan'))
                     ElevatedButton(
@@ -306,7 +316,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       ),
                     ),
 
-                  if (_userRole == 'buruh') ...[
+                  if (_isExecutor) ...[
                     if (_task!['status'] == 'menunggu')
                       ElevatedButton(
                         onPressed: () async {

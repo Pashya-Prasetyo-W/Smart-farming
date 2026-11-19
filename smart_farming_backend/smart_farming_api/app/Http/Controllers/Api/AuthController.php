@@ -53,4 +53,22 @@ class AuthController extends Controller
             'message' => 'Berhasil keluar (logout).',
         ], 200);
     }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $validatedData = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password'         => ['required', 'string', 'min:8', 'confirmed', 'different:current_password'],
+        ]);
+
+        $this->authService->changePassword(
+            $request->user(),
+            $validatedData['current_password'],
+            $validatedData['password']
+        );
+
+        return response()->json([
+            'message' => 'Password berhasil diganti.',
+        ], 200);
+    }
 }

@@ -26,7 +26,10 @@ class PlantingController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
-            'land_id'          => ['required', 'exists:lands,id'],
+            'land_id'          => [
+                'required',
+                \Illuminate\Validation\Rule::exists('lands', 'id')->where('company_id', $request->user()->company_id),
+            ],
             'crop_name'        => ['required', 'string', 'max:255'],
             'plant_date'       => ['required', 'date'],
             'est_harvest_date' => ['required', 'date', 'after_or_equal:plant_date'],

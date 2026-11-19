@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\BelongsToCompany;
 use App\Observers\ToolObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
 #[ObservedBy(ToolObserver::class)]
 class Tool extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToCompany;
 
     protected $fillable = [
         'company_id',

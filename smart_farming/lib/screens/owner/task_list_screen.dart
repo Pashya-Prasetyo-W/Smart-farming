@@ -114,7 +114,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                           Text(
-                            'Buruh: ${task['assignee']?['name'] ?? 'Belum ada'}',
+                            'Pelaksana: ${task['assignee']?['name'] ?? 'Belum ada'}',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                           const Divider(),

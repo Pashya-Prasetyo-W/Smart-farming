@@ -16,41 +16,76 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\FailureLogController;
 
+
+
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::post('/workers', [WorkerController::class, 'store']);
-    Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
-    Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
-    Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
-    Route::post('/upload', [UploadController::class, 'upload']);
-    Route::post('/plantings/{planting}/harvest', [PlantingController::class, 'harvest']);
-    Route::post('/plantings/{planting}/cancel', [PlantingController::class, 'cancelPlanting']);
-    Route::post('/lands/{land}/milestones', [MilestoneController::class, 'store']);
-    Route::post('/lands/{land}/milestones', [MilestoneController::class, 'store']);
-    Route::apiResource('lands', LandController::class);
-    Route::apiResource('tools', ToolController::class);
-    Route::apiResource('resources', ResourceController::class);
-    Route::apiResource('plantings', PlantingController::class)->only(['index', 'store']);
-    Route::apiResource('tasks', TaskController::class);
-    Route::apiResource('incidents', IncidentReportController::class)->only(['index', 'store']);
-    Route::apiResource('finances', FinanceController::class)->only(['index', 'store']);
-    Route::apiResource('workers', WorkerController::class);
-    Route::get('/plantings/{planting}/hpp', [FinanceController::class, 'calculateHPP']);
-    Route::get('/dashboard/owner', [DashboardController::class, 'owner']);
-    Route::get('/dashboard/worker', [DashboardController::class, 'worker']);
+Route::middleware(['auth:sanctum', 'active'])->group(function () {
+
+    Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->name('auth.change-password');
+    Route::get('/user', [UserController::class, 'show'])->name('user.show');
     Route::get('/worker/profile', [WorkerController::class, 'getProfile']);
-    Route::get('/user', [UserController::class, 'show']);
-    Route::get('/failure-logs', [FailureLogController::class, 'index']);
+    Route::post('/upload', [UploadController::class, 'upload']);
     Route::get('/dashboard/weather', [DashboardController::class, 'weather']);
-    Route::get('/lands/{land}/milestones', [MilestoneController::class, 'index']);
-    Route::get('/lands/{land}/milestones', [MilestoneController::class, 'index']);
-    Route::put('/milestones/{milestone}', [MilestoneController::class, 'update']);
-    Route::put('/milestones/{milestone}', [MilestoneController::class, 'update']);
-    Route::put('/milestones/{milestone}/progress', [MilestoneController::class, 'updateProgress']);
-    Route::delete('/milestones/{milestone}', [MilestoneController::class, 'destroy']);
+    Route::get('/lands', [LandController::class, 'index']);
+    Route::post('/incidents', [IncidentReportController::class, 'store']);
+    Route::get('/tasks', [TaskController::class, 'index']);
+    Route::get('/tasks/{task}', [TaskController::class, 'show']);
+
+    Route::middleware('role:buruh,mandor')->group(function () {
+        Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
+        Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
+    });
+
+    Route::middleware('role:buruh')->group(function () {
+        Route::get('/dashboard/worker', [DashboardController::class, 'worker']);
+    });
+
+    Route::middleware('role:mandor')->group(function () {
+        Route::get('/dashboard/mandor', [DashboardController::class, 'mandor']);
+    });
+
+    Route::middleware('role:pemilik,mandor')->group(function () {
+
+        Route::post('/tasks', [TaskController::class, 'store']);
+        Route::put('/tasks/{task}', [TaskController::class, 'update']);
+        Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
+
+        Route::get('/plantings', [PlantingController::class, 'index']);
+        Route::post('/plantings', [PlantingController::class, 'store']);
+
+        Route::apiResource('tools', ToolController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('resources', ResourceController::class)->only(['index', 'store', 'update', 'destroy']);
+
+        Route::get('/lands/{land}/milestones', [MilestoneController::class, 'index']);
+        Route::post('/lands/{land}/milestones', [MilestoneController::class, 'store']);
+        Route::put('/milestones/{milestone}', [MilestoneController::class, 'update']);
+        Route::put('/milestones/{milestone}/progress', [MilestoneController::class, 'updateProgress']);
+        Route::delete('/milestones/{milestone}', [MilestoneController::class, 'destroy']);
+
+        Route::get('/incidents', [IncidentReportController::class, 'index']);
+        Route::get('/failure-logs', [FailureLogController::class, 'index']);
+
+        Route::apiResource('workers', WorkerController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('/workers/{worker}/deactivate', [WorkerController::class, 'deactivate']);
+        Route::post('/workers/{worker}/activate', [WorkerController::class, 'activate']);
+    });
+
+    Route::middleware('role:pemilik')->group(function () {
+        Route::post('/lands', [LandController::class, 'store']);
+        Route::put('/lands/{land}', [LandController::class, 'update']);
+
+        Route::post('/plantings/{planting}/harvest', [PlantingController::class, 'harvest']);
+        Route::post('/plantings/{planting}/cancel', [PlantingController::class, 'cancelPlanting']);
+
+        Route::get('/finances', [FinanceController::class, 'index']);
+        Route::post('/finances', [FinanceController::class, 'store']);
+        Route::get('/plantings/{planting}/hpp', [FinanceController::class, 'calculateHPP']);
+
+        Route::get('/dashboard/owner', [DashboardController::class, 'owner']);
+    });
 });

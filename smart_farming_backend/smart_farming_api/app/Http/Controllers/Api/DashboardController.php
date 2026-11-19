@@ -29,6 +29,22 @@ class DashboardController extends Controller
         ], 200);
     }
 
+    public function mandor(Request $request): JsonResponse
+    {
+        abort_if(
+            $request->user()->role !== 'mandor',
+            403,
+            'Akses ditolak. Hanya mandor yang dapat melihat statistik dasbor ini.'
+        );
+
+        $stats = $this->dashboardService->getMandorStats($request->user());
+
+        return response()->json([
+            'message' => 'Statistik dasbor mandor berhasil diambil.',
+            'data'    => $stats,
+        ], 200);
+    }
+
     public function worker(Request $request): JsonResponse
     {
         abort_if(

@@ -16,9 +16,6 @@ use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         DB::transaction(function () {
@@ -36,7 +33,32 @@ class DatabaseSeeder extends Seeder
             ]);
 
             $owner->update(['company_id' => $company->id]);
-            
+
+            $mandor = User::create([
+                'name'       => 'Slamet Mandor',
+                'email'      => 'slamet@test.com',
+                'password'   => 'password123',
+                'role'       => 'mandor',
+                'company_id' => $company->id,
+            ]);
+
+            WorkerSchedule::forceCreate([
+                'company_id' => $company->id,
+                'user_id'    => $mandor->id,
+                'start_time' => '07:00:00',
+                'end_time'   => '16:00:00',
+                'work_days'  => ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'],
+            ]);
+
+            WorkerBenefit::forceCreate([
+                'company_id'           => $company->id,
+                'user_id'              => $mandor->id,
+                'health_insurance'     => true,
+                'health_insurance_desc'=> 'BPJS Ketenagakerjaan',
+                'food_allowance'       => true,
+                'food_allowance_desc'  => 'Uang makan Rp 25.000/hari',
+            ]);
+
             $worker = User::create([
                 'name'       => 'Andi Buruh',
                 'email'      => 'andi@test.com',

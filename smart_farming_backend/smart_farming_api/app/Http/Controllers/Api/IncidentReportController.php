@@ -26,7 +26,10 @@ class IncidentReportController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
-            'land_id'          => ['required', 'exists:lands,id'],
+            'land_id'          => [
+                'required',
+                \Illuminate\Validation\Rule::exists('lands', 'id')->where('company_id', $request->user()->company_id),
+            ],
             'type'             => ['required', 'in:hama,penyakit_tanaman,kerusakan_lahan,cuaca_ekstrem,lainnya'],
             'description'      => ['required', 'string'],
             'media_urls'       => ['nullable', 'array'],

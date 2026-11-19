@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthService
 {
@@ -17,7 +19,7 @@ class AuthService
                 'name'     => $data['name'],
                 'email'    => $data['email'],
                 'password' => $data['password'],
-                'role'     => $data['role'] ?? 'pemilik', 
+                'role'     => UserRole::Pemilik->value,
             ]);
 
             $company = Company::create([
@@ -48,6 +50,12 @@ class AuthService
             ]);
         }
 
+        if (! $user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => ['Akun Anda dinonaktifkan. Hubungi atasan Anda.'],
+            ]);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
@@ -59,5 +67,26 @@ class AuthService
     public function logout(User $user): void
     {
         $user->currentAccessToken()->delete();
+    }
+
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void
+    {
+        if (! Hash::check($currentPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Password saat ini salah.'],
+            ]);
+        }
+
+        $user->forceFill([
+            'password'             => $newPassword,
+            'must_change_password' => false,
+        ])->save();
+
+        $currentToken = $user->currentAccessToken();
+        $currentTokenId = $currentToken instanceof PersonalAccessToken ? $currentToken->id : null;
+
+        $user->tokens()
+            ->when($currentTokenId, fn ($query) => $query->where('id', '!=', $currentTokenId))
+            ->delete();
     }
 }

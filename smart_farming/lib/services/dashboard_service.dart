@@ -29,6 +29,29 @@ class DashboardService {
     }
   }
 
+  Future<Map<String, dynamic>?> getMandorStats() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/dashboard/mandor'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> getWeather({int? landId}) async {
     try {
       final prefs = await SharedPreferences.getInstance();

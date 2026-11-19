@@ -31,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _isLoading = false;
     });
 
-    if (user != null && user['role'] == 'buruh') {
+    if (user != null && (user['role'] == 'buruh' || user['role'] == 'mandor')) {
       final wData = await WorkerService().getProfile();
 
       if (mounted) {
@@ -140,7 +140,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     subtitle: Text(_user!['company']?['name'] ?? '-'),
                   ),
 
-                  if (_user!['role'] == 'buruh' && _workerData != null) ...[
+                  if ((_user!['role'] == 'buruh' || _user!['role'] == 'mandor') &&
+                      _workerData != null) ...[
                     const Divider(),
                     const Align(
                       alignment: Alignment.centerLeft,

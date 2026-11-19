@@ -33,12 +33,14 @@ class FinanceController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        // 1. Validasi input request
         $validatedData = $request->validate([
             'type'        => ['required', 'in:pemasukan,pengeluaran'],
             'amount'      => ['required', 'numeric', 'min:0'],
             'description' => ['required', 'string', 'max:255'],
-            'planting_id' => ['nullable', 'exists:plantings,id'],
+            'planting_id' => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('plantings', 'id')->where('company_id', $request->user()->company_id),
+            ],
             'record_date' => ['nullable', 'date'],
         ]);
 

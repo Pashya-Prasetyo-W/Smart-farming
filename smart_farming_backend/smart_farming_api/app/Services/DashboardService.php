@@ -38,6 +38,28 @@ class DashboardService
         ];
     }
 
+    public function getMandorStats(User $mandor): array
+    {
+        $companyId = $mandor->company_id;
+
+        $totalLands = Land::where('company_id', $companyId)->count();
+
+        $activeTasks = Task::where('company_id', $companyId)
+            ->whereIn('status', [TaskStatus::Menunggu, TaskStatus::Dikerjakan])
+            ->count();
+
+        $activeWorkers = User::where('company_id', $companyId)
+            ->where('role', 'buruh')
+            ->where('is_active', true)
+            ->count();
+
+        return [
+            'total_lands'    => $totalLands,
+            'active_tasks'   => $activeTasks,
+            'active_workers' => $activeWorkers,
+        ];
+    }
+
     public function getWorkerStats(User $buruh): array
     {
         $today = Carbon::today();

@@ -72,13 +72,37 @@ class WorkerService {
     }
   }
 
-  Future<bool> deleteWorker(int workerId) async {
+  Future<Map<String, dynamic>> deleteWorker(int workerId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       final response = await http.delete(
         Uri.parse('${ApiConfig.baseUrl}/workers/$workerId'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      final data = jsonDecode(response.body);
+      return {
+        'success': response.statusCode == 200,
+        'message': data['message'] ?? 'Gagal menghapus akun.',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Gagal terhubung ke server.'};
+    }
+  }
+
+  Future<bool> setWorkerActive(int workerId, bool active) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final response = await http.post(
+        Uri.parse(
+          '${ApiConfig.baseUrl}/workers/$workerId/${active ? 'activate' : 'deactivate'}',
+        ),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
