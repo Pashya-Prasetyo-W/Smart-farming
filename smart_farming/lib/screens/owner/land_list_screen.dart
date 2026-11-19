@@ -5,6 +5,8 @@ import 'add_land_screen.dart';
 import 'land_detail_screen.dart';
 
 import 'package:intl/intl.dart';
+import '../../utils/search.dart';
+import '../../widgets/search_field.dart';
 
 class LandListScreen extends StatefulWidget {
   const LandListScreen({super.key});
@@ -16,6 +18,7 @@ class LandListScreen extends StatefulWidget {
 class _LandListScreenState extends State<LandListScreen> {
   bool _isLoading = true;
   List<dynamic>? _lands;
+  String _query = '';
 
   @override
   void initState() {
@@ -32,8 +35,18 @@ class _LandListScreenState extends State<LandListScreen> {
     });
   }
 
+  List<dynamic> get _filteredLands {
+    return (_lands ?? []).where((land) {
+      return matchesSearch(_query, [
+        land['name'],
+        land['active_planting']?['crop_name'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final lands = _filteredLands;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -41,16 +54,25 @@ class _LandListScreenState extends State<LandListScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF2E7D32),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(64),
+          child: SearchField(
+            hint: 'Cari lahan atau tanaman...',
+            onChanged: (value) => setState(() => _query = value),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _lands == null || _lands!.isEmpty
           ? const Center(child: Text('Belum ada lahan yang ditambahkan.'))
+          : lands.isEmpty
+          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
           : ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: _lands!.length,
+              itemCount: lands.length,
               itemBuilder: (context, index) {
-                final land = _lands![index];
+                final land = lands[index];
                 return InkWell(
                   onTap: () async {
                     await Navigator.push(

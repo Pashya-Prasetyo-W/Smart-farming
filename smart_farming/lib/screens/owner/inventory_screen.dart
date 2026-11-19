@@ -10,6 +10,8 @@ import 'package:flutter/services.dart';
 import '../../utils/currency_formatter.dart';
 
 import 'package:intl/intl.dart';
+import '../../utils/search.dart';
+import '../../widgets/search_field.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -59,6 +61,7 @@ class _ToolTab extends StatefulWidget {
 class _ToolTabState extends State<_ToolTab> {
   bool _isLoading = true;
   List<dynamic>? _tools;
+  String _query = '';
 
   @override
   void initState() {
@@ -181,17 +184,37 @@ class _ToolTabState extends State<_ToolTab> {
     );
   }
 
+  List<dynamic> get _filteredTools {
+    return (_tools ?? []).where((tool) {
+      return matchesSearch(_query, [
+        tool['name'],
+        tool['unit_label'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final tools = _filteredTools;
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(68),
+        child: SearchField(
+          hint: 'Cari alat...',
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          onChanged: (value) => setState(() => _query = value),
+        ),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _tools == null || _tools!.isEmpty
           ? const Center(child: Text('Belum ada alat.'))
+          : tools.isEmpty
+          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
           : ListView.builder(
-              itemCount: _tools!.length,
+              itemCount: tools.length,
               itemBuilder: (context, index) {
-                final tool = _tools![index];
+                final tool = tools[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -255,6 +278,7 @@ class _ResourceTab extends StatefulWidget {
 class _ResourceTabState extends State<_ResourceTab> {
   bool _isLoading = true;
   List<dynamic>? _resources;
+  String _query = '';
 
   @override
   void initState() {
@@ -396,17 +420,37 @@ class _ResourceTabState extends State<_ResourceTab> {
     );
   }
 
+  List<dynamic> get _filteredResources {
+    return (_resources ?? []).where((res) {
+      return matchesSearch(_query, [
+        res['name'],
+        res['unit'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final resources = _filteredResources;
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(68),
+        child: SearchField(
+          hint: 'Cari bahan...',
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          onChanged: (value) => setState(() => _query = value),
+        ),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _resources == null || _resources!.isEmpty
           ? const Center(child: Text('Belum ada bahan.'))
+          : resources.isEmpty
+          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
           : ListView.builder(
-              itemCount: _resources!.length,
+              itemCount: resources.length,
               itemBuilder: (context, index) {
-                final res = _resources![index];
+                final res = resources[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 16,

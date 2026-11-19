@@ -4,6 +4,8 @@ import '../../services/worker_service.dart';
 import '../../utils/rupiah.dart';
 import 'add_worker_screen.dart';
 import 'edit_worker_screen.dart';
+import '../../utils/search.dart';
+import '../../widgets/search_field.dart';
 
 class WorkerListScreen extends StatefulWidget {
   const WorkerListScreen({super.key});
@@ -15,6 +17,7 @@ class WorkerListScreen extends StatefulWidget {
 class _WorkerListScreenState extends State<WorkerListScreen> {
   bool _isLoading = true;
   List<dynamic>? _workers;
+  String _query = '';
 
   @override
   void initState() {
@@ -102,8 +105,22 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
     );
   }
 
+  List<dynamic> get _filteredWorkers {
+    return (_workers ?? []).where((worker) {
+      return matchesSearch(_query, [
+        worker['name'],
+        worker['email'],
+        worker['role'],
+        worker['wage_type'],
+        worker['is_active'] == false ? 'nonaktif' : null,
+        ((worker['benefits'] as List<dynamic>?) ?? []).map((item) => item['name']),
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final workers = _filteredWorkers;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -111,16 +128,25 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF2E7D32),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(64),
+          child: SearchField(
+            hint: 'Cari nama, email, peran, tipe upah...',
+            onChanged: (value) => setState(() => _query = value),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _workers == null || _workers!.isEmpty
           ? const Center(child: Text('Belum ada data karyawan.'))
+          : workers.isEmpty
+          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _workers!.length,
+              itemCount: workers.length,
               itemBuilder: (context, index) {
-                final worker = _workers![index];
+                final worker = workers[index];
                 final schedule = worker['schedule'];
                 final List<dynamic> benefits =
                     (worker['benefits'] as List<dynamic>?) ?? [];

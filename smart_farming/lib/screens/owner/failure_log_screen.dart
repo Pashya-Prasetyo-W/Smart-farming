@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 
 import '../../services/failure_log_service.dart';
 import '../../services/incident_service.dart';
+import '../../utils/search.dart';
+import '../../widgets/search_field.dart';
 
 class FailureLogScreen extends StatefulWidget {
   const FailureLogScreen({super.key});
@@ -56,6 +58,7 @@ class _WeatherRiskTab extends StatefulWidget {
 class _WeatherRiskTabState extends State<_WeatherRiskTab> {
   bool _isLoading = true;
   List<dynamic>? _logs;
+  String _query = '';
 
   @override
   void initState() {
@@ -73,6 +76,17 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
     }
   }
 
+  List<dynamic> get _filteredLogs {
+    return (_logs ?? []).where((log) {
+      return matchesSearch(_query, [
+        log['planting']?['crop_name'],
+        log['planting']?['land']?['name'],
+        log['reason'],
+        log['risk_score'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
@@ -85,6 +99,7 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
         .map((e) => double.parse(e['risk_score'].toString()))
         .reduce((a, b) => a > b ? a : b);
     final isHighRisk = highestRisk > 70;
+    final logs = _filteredLogs;
 
     return Column(
       children: [
@@ -132,12 +147,19 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
             ],
           ),
         ),
+        SearchField(
+          hint: 'Cari tanaman, lahan, alasan...',
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          onChanged: (value) => setState(() => _query = value),
+        ),
         Expanded(
-          child: ListView.builder(
+          child: logs.isEmpty
+              ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+              : ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: _logs!.length,
+            itemCount: logs.length,
             itemBuilder: (context, index) {
-              final log = _logs![index];
+              final log = logs[index];
               final score = double.parse(log['risk_score'].toString());
               final isHigh = score > 70;
               final date = DateTime.parse(log['created_at']);
@@ -209,6 +231,7 @@ class _IncidentRiskTab extends StatefulWidget {
 class _IncidentRiskTabState extends State<_IncidentRiskTab> {
   bool _isLoading = true;
   List<dynamic>? _incidents;
+  String _query = '';
 
   @override
   void initState() {
@@ -226,6 +249,17 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
     }
   }
 
+  List<dynamic> get _filteredIncidents {
+    return (_incidents ?? []).where((incident) {
+      return matchesSearch(_query, [
+        incident['type'],
+        incident['description'],
+        incident['land']?['name'],
+        incident['reporter']?['name'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
@@ -234,11 +268,24 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
         child: Text('Belum ada laporan insiden dari lapangan.'),
       );
 
-    return ListView.builder(
+    final incidents = _filteredIncidents;
+
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(68),
+        child: SearchField(
+          hint: 'Cari jenis, lahan, pelapor, deskripsi...',
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          onChanged: (value) => setState(() => _query = value),
+        ),
+      ),
+      body: incidents.isEmpty
+          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          : ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _incidents!.length,
+      itemCount: incidents.length,
       itemBuilder: (context, index) {
-        final incident = _incidents![index];
+        final incident = incidents[index];
         final mediaUrls = incident['media_urls'] as List<dynamic>;
         final imageUrl = mediaUrls.isNotEmpty ? mediaUrls[0] : null;
         final date = DateTime.parse(incident['reported_at']);
@@ -320,6 +367,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
           ),
         );
       },
+    ),
     );
   }
 }

@@ -6,6 +6,8 @@ import '../../services/planting_service.dart';
 import '../../utils/currency_formatter.dart';
 
 import 'package:flutter/services.dart';
+import '../../utils/search.dart';
+import '../../widgets/search_field.dart';
 
 class FinanceScreen extends StatefulWidget {
   const FinanceScreen({super.key});
@@ -59,6 +61,7 @@ class _FinanceListTab extends StatefulWidget {
 class _FinanceListTabState extends State<_FinanceListTab> {
   bool _isLoading = true;
   List<dynamic>? _finances;
+  String _query = '';
   List<dynamic> _plantings = [];
 
   @override
@@ -235,9 +238,29 @@ class _FinanceListTabState extends State<_FinanceListTab> {
     );
   }
 
+  List<dynamic> get _filteredFinances {
+    return (_finances ?? []).where((f) {
+      return matchesSearch(_query, [
+        f['description'],
+        f['type'],
+        f['record_date'],
+        f['amount'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final finances = _filteredFinances;
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(68),
+        child: SearchField(
+          hint: 'Cari keterangan, jenis, tanggal...',
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          onChanged: (value) => setState(() => _query = value),
+        ),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : (_finances == null || _finances!.isEmpty)
@@ -264,10 +287,12 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: _finances!.length,
+                  child: finances.isEmpty
+                      ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+                      : ListView.builder(
+                    itemCount: finances.length,
                     itemBuilder: (context, index) {
-                      final f = _finances![index];
+                      final f = finances[index];
                       final isIncome = f['type'] == 'pemasukan';
                       return ListTile(
                         leading: Icon(

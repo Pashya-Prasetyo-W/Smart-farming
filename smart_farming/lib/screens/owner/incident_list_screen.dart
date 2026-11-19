@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../services/incident_service.dart';
+import '../../utils/search.dart';
+import '../../widgets/search_field.dart';
 
 class IncidentListScreen extends StatefulWidget {
   const IncidentListScreen({super.key});
@@ -13,6 +15,7 @@ class IncidentListScreen extends StatefulWidget {
 class _IncidentListScreenState extends State<IncidentListScreen> {
   bool _isLoading = true;
   List<dynamic>? _incidents;
+  String _query = '';
 
   @override
   void initState() {
@@ -31,8 +34,20 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
     });
   }
 
+  List<dynamic> get _filteredIncidents {
+    return (_incidents ?? []).where((incident) {
+      return matchesSearch(_query, [
+        incident['type'],
+        incident['description'],
+        incident['land']?['name'],
+        incident['reporter']?['name'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final incidents = _filteredIncidents;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -40,17 +55,26 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF2E7D32),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(64),
+          child: SearchField(
+            hint: 'Cari jenis, lahan, pelapor, deskripsi...',
+            onChanged: (value) => setState(() => _query = value),
+          ),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _incidents == null || _incidents!.isEmpty
           ? const Center(child: Text('Belum ada laporan insiden.'))
+          : incidents.isEmpty
+          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _incidents!.length,
+              itemCount: incidents.length,
               itemBuilder: (context, index) {
-                final incident = _incidents![index];
+                final incident = incidents[index];
                 final mediaUrls = incident['media_urls'] as List<dynamic>;
                 final imageUrl = mediaUrls.isNotEmpty ? mediaUrls[0] : null;
 

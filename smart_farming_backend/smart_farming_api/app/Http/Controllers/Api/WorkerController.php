@@ -33,7 +33,7 @@ class WorkerController extends Controller
         return [
             'wage'                => ['nullable', 'array'],
             'wage.wage_type'      => ['required_with:wage', Rule::in(WorkerWage::typesFor($role))],
-            'wage.amount'         => ['required_with:wage', 'exclude_if:wage.wage_type,borongan', 'numeric', 'min:0', 'max:1000000000'],
+            'wage.amount'         => ['exclude_if:wage.wage_type,borongan', 'required_with:wage', 'numeric', 'min:0', 'max:1000000000'],
             'allowances'          => ['nullable', 'array', 'max:20'],
             'allowances.*.name'   => ['required', 'string', 'max:100'],
             'allowances.*.amount' => ['required', 'numeric', 'min:0', 'max:1000000000'],

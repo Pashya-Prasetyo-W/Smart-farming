@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../services/task_service.dart';
 import '../../utils/rupiah.dart';
 import 'task_detail_screen.dart';
+import '../../utils/search.dart';
+import '../../widgets/search_field.dart';
 
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
@@ -14,6 +16,7 @@ class TaskListScreen extends StatefulWidget {
 class _TaskListScreenState extends State<TaskListScreen> {
   bool _isLoading = true;
   List<dynamic>? _tasks;
+  String _query = '';
 
   @override
   void initState() {
@@ -30,8 +33,22 @@ class _TaskListScreenState extends State<TaskListScreen> {
     });
   }
 
+  List<dynamic> get _filteredTasks {
+    return (_tasks ?? []).where((task) {
+      return matchesSearch(_query, [
+        task['title'],
+        task['description'],
+        task['status'],
+        task['assignee']?['name'],
+        task['planting']?['crop_name'],
+        task['planting']?['land']?['name'],
+      ]);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final tasks = _filteredTasks;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -39,16 +56,25 @@ class _TaskListScreenState extends State<TaskListScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF2E7D32),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(64),
+          child: SearchField(
+            hint: 'Cari tugas, pelaksana, lahan, status...',
+            onChanged: (value) => setState(() => _query = value),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _tasks == null || _tasks!.isEmpty
           ? const Center(child: Text('Belum ada tugas.'))
+          : tasks.isEmpty
+          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _tasks!.length,
+              itemCount: tasks.length,
               itemBuilder: (context, index) {
-                final task = _tasks![index];
+                final task = tasks[index];
 
                 Color statusColor = Colors.grey;
                 if (task['status'] == 'menunggu') statusColor = Colors.orange;
