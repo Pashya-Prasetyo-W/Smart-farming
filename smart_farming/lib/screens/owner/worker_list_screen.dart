@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/worker_service.dart';
+import '../../utils/rupiah.dart';
 import 'add_worker_screen.dart';
 import 'edit_worker_screen.dart';
 
@@ -49,6 +50,31 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
       ),
     );
     if (success) _fetchWorkers();
+  }
+
+  String _wageLabel(dynamic wage) {
+    if (wage is! Map) return 'Upah belum diatur';
+    final type = wage['wage_type']?.toString();
+    final label = type == 'borongan'
+        ? 'Borongan'
+        : type == 'bulanan'
+        ? 'Bulanan'
+        : 'Harian';
+    final suffix = type == 'borongan'
+        ? '/tugas'
+        : type == 'bulanan'
+        ? '/bln'
+        : '/hari';
+    return '$label ${Rupiah.format(wage['amount'])}$suffix';
+  }
+
+  num _allowanceTotal(Map<String, dynamic> worker) {
+    final allowances = worker['allowances'];
+    if (allowances is! List) return 0;
+    return allowances.fold<num>(
+      0,
+      (sum, item) => sum + (num.tryParse(item['amount'].toString()) ?? 0),
+    );
   }
 
   void _showDeleteConfirmation(int id, String name) {
@@ -205,6 +231,36 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                           Text(
                             'Jam Kerja: ${schedule['start_time'].toString().substring(0, 5)} - ${schedule['end_time'].toString().substring(0, 5)}',
                             style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                        if (worker.containsKey('wage')) ...[
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              Chip(
+                                avatar: Icon(
+                                  Icons.payments,
+                                  size: 14,
+                                  color: worker['wage'] == null
+                                      ? Colors.orange
+                                      : null,
+                                ),
+                                label: Text(
+                                  _wageLabel(worker['wage']),
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              if (_allowanceTotal(worker) > 0)
+                                Chip(
+                                  label: Text(
+                                    'Tunjangan ${Rupiah.format(_allowanceTotal(worker))}/bln',
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                            ],
                           ),
                         ],
                         if (worker['role'] == 'mandor' &&

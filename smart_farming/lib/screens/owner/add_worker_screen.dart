@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/worker_service.dart';
 import '../../utils/password_generator.dart';
 import '../../widgets/benefit_editor.dart';
+import '../../widgets/wage_editor.dart';
 
 class AddWorkerScreen extends StatefulWidget {
   const AddWorkerScreen({super.key});
@@ -17,6 +18,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final List<BenefitEntry> _benefits = [];
+  final WageDraft _wage = WageDraft();
 
   TimeOfDay _startTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 16, minute: 0);
@@ -57,6 +59,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     BenefitEntry.disposeAll(_benefits);
+    _wage.dispose();
     super.dispose();
   }
 
@@ -83,6 +86,15 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
       return;
     }
 
+    if (_canChooseRole && _role == 'mandor' && _wage.hasInvalidAllowance) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nama dan nominal tunjangan wajib diisi.'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     List<String> selectedDays = _workDays.entries
@@ -101,6 +113,9 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
         'work_days': selectedDays,
       },
       if (_role == 'mandor') 'benefits': BenefitEntry.payload(_benefits),
+      if (_canChooseRole && _wage.payload() != null) 'wage': _wage.payload(),
+      if (_canChooseRole && _role == 'mandor')
+        'allowances': _wage.allowancePayload(),
     };
 
     final success = await WorkerService().createWorker(data);
@@ -149,7 +164,10 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                   ButtonSegment(value: 'mandor', label: Text('Mandor')),
                 ],
                 selected: {_role},
-                onSelectionChanged: (v) => setState(() => _role = v.first),
+                onSelectionChanged: (v) => setState(() {
+                  _role = v.first;
+                  _wage.useRole(_role);
+                }),
               ),
               const SizedBox(height: 12),
             ],
@@ -258,6 +276,16 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                 );
               }).toList(),
             ),
+
+            if (_canChooseRole) ...[
+              const Divider(height: 32),
+              const Text(
+                'Upah',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              WageEditor(draft: _wage, role: _role),
+            ],
 
             if (_role == 'mandor') ...[
               const Divider(height: 32),

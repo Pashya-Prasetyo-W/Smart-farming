@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Models\WorkerAllowance;
 use App\Models\WorkerBenefitItem;
+use App\Models\WorkerWage;
 use Illuminate\Support\Facades\DB;
 
 class WorkerService
@@ -34,8 +36,49 @@ class WorkerService
 
             $this->syncBenefits($worker, $data['benefits'] ?? []);
 
+            if ($creator->role === UserRole::Pemilik->value) {
+                $this->syncWage($worker, $data['wage'] ?? null);
+                $this->syncAllowances($worker, $data['allowances'] ?? null);
+            }
+
             return $worker->load(['schedule', 'benefits']);
         });
+    }
+
+    public function syncWage(User $worker, ?array $wage): void
+    {
+        if (empty($wage)) {
+            return;
+        }
+
+        $record = WorkerWage::firstOrNew(['user_id' => $worker->id]);
+        $record->forceFill([
+            'company_id' => $worker->company_id,
+            'user_id'    => $worker->id,
+            'wage_type'  => $wage['wage_type'],
+            'amount'     => $wage['amount'],
+        ])->save();
+    }
+
+    public function syncAllowances(User $worker, ?array $items): void
+    {
+        if ($items === null) {
+            return;
+        }
+
+        WorkerAllowance::where('user_id', $worker->id)->delete();
+
+        if ($worker->role !== UserRole::Mandor->value) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            $worker->allowances()->forceCreate([
+                'company_id' => $worker->company_id,
+                'name'       => $item['name'],
+                'amount'     => $item['amount'],
+            ]);
+        }
     }
 
     public function syncBenefits(User $worker, array $items): void

@@ -56,6 +56,16 @@ class User extends Authenticatable
         return $this->hasMany(WorkerBenefitItem::class)->orderBy('id');
     }
 
+    public function wage()
+    {
+        return $this->hasOne(WorkerWage::class);
+    }
+
+    public function allowances()
+    {
+        return $this->hasMany(WorkerAllowance::class)->orderBy('id');
+    }
+
     public function tasks()
     {
         return $this->hasMany(Task::class, 'assigned_to');

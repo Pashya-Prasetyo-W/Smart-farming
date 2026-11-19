@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/worker_service.dart';
 import '../../utils/password_generator.dart';
 import '../../widgets/benefit_editor.dart';
+import '../../widgets/wage_editor.dart';
 
 class EditWorkerScreen extends StatefulWidget {
   final Map<String, dynamic> worker;
@@ -18,6 +20,8 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
   late final TextEditingController _emailController;
   final _passwordController = TextEditingController();
   final List<BenefitEntry> _benefits = [];
+  late final WageDraft _wage;
+  bool _isOwner = false;
 
   TimeOfDay _startTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 16, minute: 0);
@@ -45,6 +49,8 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
     );
 
     _benefits.addAll(BenefitEntry.fromList(widget.worker['benefits']));
+    _wage = WageDraft.fromWorker(widget.worker);
+    _loadActorRole();
 
     final schedule = widget.worker['schedule'];
     if (schedule != null) {
@@ -84,7 +90,14 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     BenefitEntry.disposeAll(_benefits);
+    _wage.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadActorRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => _isOwner = prefs.getString('role') == 'pemilik');
   }
 
   bool get _isMandor => widget.worker['role'] == 'mandor';
@@ -112,6 +125,15 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
       return;
     }
 
+    if (_isOwner && _isMandor && _wage.hasInvalidAllowance) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nama dan nominal tunjangan wajib diisi.'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     List<String> selectedDays = _workDays.entries
@@ -128,6 +150,8 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
         'work_days': selectedDays,
       },
       if (_isMandor) 'benefits': BenefitEntry.payload(_benefits),
+      if (_isOwner && _wage.payload() != null) 'wage': _wage.payload(),
+      if (_isOwner && _isMandor) 'allowances': _wage.allowancePayload(),
     };
 
     if (_passwordController.text.isNotEmpty) {
@@ -278,6 +302,16 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
                 );
               }).toList(),
             ),
+
+            if (_isOwner) ...[
+              const Divider(height: 32),
+              const Text(
+                'Upah',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              WageEditor(draft: _wage, role: widget.worker['role'].toString()),
+            ],
 
             if (_isMandor) ...[
               const Divider(height: 32),

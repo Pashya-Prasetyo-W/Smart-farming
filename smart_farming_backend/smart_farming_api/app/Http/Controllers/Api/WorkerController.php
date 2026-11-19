@@ -8,6 +8,7 @@ use App\Models\IncidentReport;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\WorkerBenefitItem;
+use App\Models\WorkerWage;
 use App\Services\WorkerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,23 @@ class WorkerController extends Controller
         return $actor->hasRole(UserRole::Pemilik->value)
             ? [UserRole::Buruh->value, UserRole::Mandor->value]
             : [UserRole::Buruh->value];
+    }
+
+    private function wageRules(string $role): array
+    {
+        return [
+            'wage'                => ['nullable', 'array'],
+            'wage.wage_type'      => ['required_with:wage', Rule::in(WorkerWage::typesFor($role))],
+            'wage.amount'         => ['required_with:wage', 'numeric', 'min:0', 'max:1000000000'],
+            'allowances'          => ['nullable', 'array', 'max:20'],
+            'allowances.*.name'   => ['required', 'string', 'max:100'],
+            'allowances.*.amount' => ['required', 'numeric', 'min:0', 'max:1000000000'],
+        ];
+    }
+
+    private function payrollRelations(User $actor): array
+    {
+        return $actor->hasRole(UserRole::Pemilik->value) ? ['wage', 'allowances'] : [];
     }
 
     private function findManageable(Request $request, $id): User
@@ -56,6 +74,12 @@ class WorkerController extends Controller
             'benefits.*.type'               => ['required', Rule::in(WorkerBenefitItem::TYPES)],
             'benefits.*.name'               => ['required', 'string', 'max:255'],
             'benefits.*.description'        => ['nullable', 'string', 'max:255'],
+
+            ...$this->wageRules(
+                $request->input('role') === UserRole::Mandor->value
+                    ? UserRole::Mandor->value
+                    : UserRole::Buruh->value
+            ),
         ]);
 
         $role = $validatedData['role'] ?? UserRole::Buruh->value;
@@ -69,6 +93,7 @@ class WorkerController extends Controller
         $validatedData['role'] = $role;
 
         $worker = $this->workerService->createWorker($validatedData, $actor);
+        $worker->load($this->payrollRelations($actor));
 
         return response()->json([
             'message' => $role === UserRole::Mandor->value
@@ -84,7 +109,7 @@ class WorkerController extends Controller
 
         $workers = User::where('company_id', $actor->company_id)
             ->whereIn('role', $this->manageableRoles($actor))
-            ->with(['schedule', 'benefits', 'creator:id,name'])
+            ->with(array_merge(['schedule', 'benefits', 'creator:id,name'], $this->payrollRelations($actor)))
             ->orderBy('role')
             ->orderBy('name')
             ->get();
@@ -110,9 +135,12 @@ class WorkerController extends Controller
             'benefits.*.type' => ['required', Rule::in(WorkerBenefitItem::TYPES)],
             'benefits.*.name' => ['required', 'string', 'max:255'],
             'benefits.*.description' => ['nullable', 'string', 'max:255'],
+            ...$this->wageRules($worker->role),
         ]);
 
-        DB::transaction(function () use ($worker, $validatedData) {
+        $actor = $request->user();
+
+        DB::transaction(function () use ($worker, $validatedData, $actor) {
             $updateData = [
                 'name'  => $validatedData['name'],
                 'email' => $validatedData['email'],
@@ -142,11 +170,19 @@ class WorkerController extends Controller
             if (array_key_exists('benefits', $validatedData)) {
                 $this->workerService->syncBenefits($worker, $validatedData['benefits'] ?? []);
             }
+
+            if ($actor->hasRole(UserRole::Pemilik->value)) {
+                $this->workerService->syncWage($worker, $validatedData['wage'] ?? null);
+
+                if (array_key_exists('allowances', $validatedData)) {
+                    $this->workerService->syncAllowances($worker, $validatedData['allowances'] ?? []);
+                }
+            }
         });
 
         return response()->json([
             'message' => 'Data karyawan berhasil diperbarui.',
-            'data'    => $worker->load(['schedule', 'benefits']),
+            'data'    => $worker->load(array_merge(['schedule', 'benefits'], $this->payrollRelations($actor))),
         ], 200);
     }
 
@@ -198,7 +234,7 @@ class WorkerController extends Controller
 
     public function getProfile(Request $request): JsonResponse
     {
-        $user = User::with(['schedule', 'benefits'])
+        $user = User::with(['schedule', 'benefits', 'wage', 'allowances'])
             ->find($request->user()->id);
 
         return response()->json([

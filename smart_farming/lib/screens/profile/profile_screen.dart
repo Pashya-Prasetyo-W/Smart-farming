@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/user_service.dart';
 import '../auth/login_screen.dart';
 import '../../services/worker_service.dart';
+import '../../utils/rupiah.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -76,6 +77,84 @@ class _ProfileScreenState extends State<ProfileScreen> {
         (route) => false,
       );
     }
+  }
+
+  Widget _buildWageCard() {
+    final wage = _workerData?['wage'];
+    final List<dynamic> allowances =
+        (_workerData?['allowances'] as List<dynamic>?) ?? [];
+
+    if (wage is! Map) {
+      return const Card(
+        color: Color(0xFFFFF3E0),
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Upah Anda belum diatur oleh pemilik.'),
+          ),
+        ),
+      );
+    }
+
+    final type = wage['wage_type']?.toString();
+    final typeLabel = type == 'borongan'
+        ? 'Borongan (per tugas selesai)'
+        : type == 'bulanan'
+        ? 'Bulanan'
+        : 'Harian';
+    final suffix = type == 'borongan'
+        ? '/tugas'
+        : type == 'bulanan'
+        ? '/bulan'
+        : '/hari';
+    final num allowanceTotal = allowances.fold<num>(
+      0,
+      (sum, item) => sum + (num.tryParse(item['amount'].toString()) ?? 0),
+    );
+
+    return Card(
+      color: Colors.amber[50],
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Tipe: $typeLabel'),
+            const SizedBox(height: 4),
+            Text(
+              '${Rupiah.format(wage['amount'])}$suffix',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            if (allowances.isNotEmpty) ...[
+              const Divider(),
+              const Text(
+                'Tunjangan Tetap Bulanan',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              ...allowances.map<Widget>(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: Text(item['name'].toString())),
+                      Text(Rupiah.format(item['amount'])),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Total tunjangan: ${Rupiah.format(allowanceTotal)}/bulan',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBenefitCard() {
@@ -245,6 +324,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Upah',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildWageCard(),
                     if (_user!['role'] == 'mandor') ...[
                       const SizedBox(height: 16),
                       const Align(

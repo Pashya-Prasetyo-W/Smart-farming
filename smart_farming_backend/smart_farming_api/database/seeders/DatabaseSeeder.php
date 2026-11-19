@@ -9,7 +9,9 @@ use App\Models\Planting;
 use App\Models\Tool;
 use App\Models\Resource;
 use App\Models\WorkerSchedule;
+use App\Models\WorkerAllowance;
 use App\Models\WorkerBenefitItem;
+use App\Models\WorkerWage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -66,6 +68,20 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Rp 25.000 per hari',
             ]);
 
+            WorkerWage::forceCreate([
+                'company_id' => $company->id,
+                'user_id'    => $mandor->id,
+                'wage_type'  => 'bulanan',
+                'amount'     => 4500000,
+            ]);
+
+            WorkerAllowance::forceCreate([
+                'company_id' => $company->id,
+                'user_id'    => $mandor->id,
+                'name'       => 'Tunjangan transport',
+                'amount'     => 300000,
+            ]);
+
             $worker = User::create([
                 'name'       => 'Andi Buruh',
                 'email'      => 'andi@test.com',
@@ -80,6 +96,13 @@ class DatabaseSeeder extends Seeder
                 'start_time' => '08:00:00',
                 'end_time'   => '16:00:00',
                 'work_days'  => ['senin', 'selasa', 'rabu', 'kamis', 'jumat'],
+            ]);
+
+            WorkerWage::forceCreate([
+                'company_id' => $company->id,
+                'user_id'    => $worker->id,
+                'wage_type'  => 'harian',
+                'amount'     => 80000,
             ]);
 
             $land = Land::create([
