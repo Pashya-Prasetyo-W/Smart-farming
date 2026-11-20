@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ToolController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\PlantingController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\TaskReportController;
 use App\Http\Controllers\Api\IncidentReportController;
 use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\DashboardController;
@@ -47,6 +48,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('/attendances/check-in', [AttendanceController::class, 'checkIn']);
         Route::post('/attendances/check-out', [AttendanceController::class, 'checkOut']);
         Route::post('/attendances/{attendance}/object', [AttendanceController::class, 'object']);
+        Route::post('/task-reports/{report}/object', [TaskReportController::class, 'object']);
     });
 
     Route::middleware('role:buruh')->group(function () {
@@ -64,6 +66,11 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('/attendances', [AttendanceController::class, 'store']);
         Route::post('/attendances/{attendance}/verify', [AttendanceController::class, 'verify']);
         Route::post('/attendances/{attendance}/reject', [AttendanceController::class, 'reject']);
+
+        Route::get('/task-reports', [TaskReportController::class, 'index']);
+        Route::get('/task-reports/queue', [TaskReportController::class, 'queue']);
+        Route::post('/task-reports/{report}/verify', [TaskReportController::class, 'verify']);
+        Route::post('/task-reports/{report}/reject', [TaskReportController::class, 'reject']);
 
         Route::post('/tasks', [TaskController::class, 'store']);
         Route::put('/tasks/{task}', [TaskController::class, 'update']);

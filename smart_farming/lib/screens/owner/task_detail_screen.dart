@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/task_service.dart';
+import '../../services/report_review_service.dart';
 import '../../utils/rupiah.dart';
+import '../../utils/task_status.dart';
+import '../../widgets/attendance_status_chip.dart';
+import '../../widgets/reason_dialog.dart';
 import 'report_task_screen.dart';
 import 'edit_task_screen.dart';
 
@@ -51,6 +55,36 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       (_userRole == 'mandor' &&
           _userId != null &&
           _task?['assigned_to'] == _userId);
+
+  bool get _canObjectReport {
+    final report = _task?['report'] as Map<String, dynamic>?;
+    if (report == null || !_isExecutor) return false;
+    return report['review_status'] == 'ditolak' &&
+        report['is_final'] != true &&
+        ((report['objection_count'] as num?) ?? 0) < 2;
+  }
+
+  Future<void> _objectReport() async {
+    final note = await askReason(
+      context,
+      title: 'Ajukan Keberatan',
+      label: 'Alasan keberatan',
+      confirmLabel: 'Ajukan',
+    );
+    if (note == null) return;
+
+    final result = await ReportReviewService().object(
+      _task!['report']['id'] as int,
+      note,
+    );
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result['message'].toString())),
+    );
+
+    if (result['success'] == true) _fetchDetail();
+  }
 
   void _showCancelDialog() {
     final reasonController = TextEditingController();
@@ -152,7 +186,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text('Status: ${_task!['status'].toString().toUpperCase()}'),
+                  Text('Status: ${taskStatusLabel(_task!['status'])}'),
                   const Divider(height: 32),
 
                   const Text(
@@ -275,6 +309,51 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(_task!['report']['notes'] ?? '-'),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        const Text(
+                          'Verifikasi: ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        AttendanceStatusChip(
+                          status: _task!['report']['review_status']?.toString(),
+                        ),
+                      ],
+                    ),
+                    if (_task!['report']['reviewer'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Diproses oleh ${_task!['report']['reviewer']['name']}',
+                        ),
+                      ),
+                    if (_task!['report']['reject_reason'] != null &&
+                        _task!['report']['review_status'] == 'ditolak')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Alasan ditolak: ${_task!['report']['reject_reason']}'
+                          '${_task!['report']['is_final'] == true ? ' (keputusan final)' : ''}',
+                          style: const TextStyle(color: Color(0xFFC62828)),
+                        ),
+                      ),
+                    if (_task!['report']['objection_note'] != null &&
+                        _task!['report']['review_status'] == 'keberatan')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Keberatan: ${_task!['report']['objection_note']}',
+                        ),
+                      ),
+                    if (_canObjectReport) ...[
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: _objectReport,
+                        child: const Text('Ajukan Keberatan'),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                   ],
 

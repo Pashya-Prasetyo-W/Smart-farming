@@ -4,6 +4,7 @@ import '../../services/task_service.dart';
 import '../../utils/rupiah.dart';
 import 'task_detail_screen.dart';
 import '../../utils/search.dart';
+import '../../utils/task_status.dart';
 import '../../widgets/search_field.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -76,11 +77,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
               itemBuilder: (context, index) {
                 final task = tasks[index];
 
-                Color statusColor = Colors.grey;
-                if (task['status'] == 'menunggu') statusColor = Colors.orange;
-                if (task['status'] == 'dikerjakan') statusColor = Colors.blue;
-                if (task['status'] == 'selesai') statusColor = Colors.green;
-                if (task['status'] == 'batal') statusColor = Colors.red;
+                final statusColor = taskStatusColor(task['status']);
 
                 return InkWell(
                   onTap: () {
@@ -125,7 +122,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  task['status'].toString().toUpperCase(),
+                                  taskStatusLabel(task['status']),
                                   style: TextStyle(
                                     color: statusColor,
                                     fontSize: 12,

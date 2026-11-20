@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/dashboard_service.dart';
 import '../attendance/attendance_review_screen.dart';
 import '../attendance/my_attendance_screen.dart';
+import '../reports/report_review_screen.dart';
 import '../owner/add_task_screen.dart';
 import '../owner/failure_log_screen.dart';
 import '../owner/incident_list_screen.dart';
@@ -157,6 +158,11 @@ class _MandorDashboardScreenState extends State<MandorDashboardScreen> {
                 'Verifikasi Absensi',
                 Icons.fact_check_rounded,
                 const AttendanceReviewScreen(),
+              ),
+              _menuTile(
+                'Verifikasi Laporan',
+                Icons.assignment_turned_in_rounded,
+                const ReportReviewScreen(),
               ),
               _menuTile('Buat Tugas', Icons.add_task_rounded, const AddTaskScreen()),
               _menuTile('Inventaris', Icons.inventory_2_rounded, const InventoryScreen()),

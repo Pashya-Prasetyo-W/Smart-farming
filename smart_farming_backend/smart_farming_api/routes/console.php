@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('crop:analyze-risk')->dailyAt('00:00');
 
 Schedule::command('attendances:escalate')->hourly();
+Schedule::command('reports:escalate')->hourly();

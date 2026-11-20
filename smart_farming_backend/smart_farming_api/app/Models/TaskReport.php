@@ -21,7 +21,12 @@ class TaskReport extends Model
     {
         return [
             'media_urls' => 'array',
-            'reported_at' => 'datetime:Y-m-d H:i:s'
+            'reported_at' => 'datetime:Y-m-d H:i:s',
+            'reviewer_assigned_at' => 'datetime',
+            'reviewed_at' => 'datetime',
+            'escalated_at' => 'datetime',
+            'is_final' => 'boolean',
+            'objection_count' => 'integer',
         ];
     }
 
@@ -33,5 +38,10 @@ class TaskReport extends Model
     public function task()
     {
         return $this->belongsTo(Task::class);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }

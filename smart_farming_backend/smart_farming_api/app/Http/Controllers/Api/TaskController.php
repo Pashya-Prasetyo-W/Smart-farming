@@ -177,7 +177,7 @@ class TaskController extends Controller
             'Akses ditolak.'
         );
 
-        $task->load(['planting.land', 'assignee', 'resources', 'tools', 'report']);
+        $task->load(['planting.land', 'assignee', 'resources', 'tools', 'report.reviewer:id,name']);
 
         return response()->json([
             'message' => 'Detail tugas berhasil diambil.',

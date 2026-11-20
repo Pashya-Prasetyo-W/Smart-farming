@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\ReviewStatus;
 use App\Enums\TaskStatus;
+use App\Enums\UserRole;
 use App\Models\Finance;
 use App\Models\Planting;
 use App\Models\Resource;
@@ -32,10 +34,15 @@ class ReportService
                 'media_urls'  => $data['media_urls'] ?? [],
                 'notes'       => $data['notes'] ?? null,
                 'reported_at' => $data['reported_at'] ?? now(),
+                'review_status'        => ReviewStatus::Menunggu->value,
+                'reviewer_role'        => $task->assignee?->role === UserRole::Mandor->value
+                    ? UserRole::Pemilik->value
+                    : UserRole::Mandor->value,
+                'reviewer_assigned_at' => now(),
             ]);
             $report->save();
 
-            $task->status = TaskStatus::Selesai;
+            $task->status = TaskStatus::MenungguVerifikasi;
             $task->save();
 
             $totalTaskCost = 0;
