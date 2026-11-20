@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/worker_service.dart';
+import '../attendance/my_attendance_screen.dart';
 import '../owner/task_list_screen.dart';
 import '../profile/profile_screen.dart';
 import 'add_incident_screen.dart';
@@ -114,6 +115,27 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
                   const Text(
                     'Aksi Cepat',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MyAttendanceScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.fingerprint, color: Colors.white),
+                    label: const Text(
+                      'Absensi Hari Ini',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      minimumSize: const Size(double.infinity, 48),
+                    ),
                   ),
                   const SizedBox(height: 12),
 

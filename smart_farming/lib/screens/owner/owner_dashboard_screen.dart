@@ -11,6 +11,7 @@ import 'add_task_screen.dart';
 import 'incident_list_screen.dart';
 import 'finance_screen.dart';
 import 'failure_log_screen.dart';
+import '../attendance/attendance_review_screen.dart';
 import '../../services/land_service.dart';
 
 class _Palette {
@@ -568,6 +569,12 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
         icon: Icons.people_alt_rounded,
         color: _Palette.primary,
         onTap: () => _open(const WorkerListScreen()),
+      ),
+      _buildMenuTile(
+        label: 'Verifikasi Absensi',
+        icon: Icons.fact_check_rounded,
+        color: _Palette.accent,
+        onTap: () => _open(const AttendanceReviewScreen()),
       ),
       _buildMenuTile(
         label: 'Manajemen Inventaris',

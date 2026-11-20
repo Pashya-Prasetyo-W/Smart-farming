@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/dashboard_service.dart';
+import '../attendance/attendance_review_screen.dart';
+import '../attendance/my_attendance_screen.dart';
 import '../owner/add_task_screen.dart';
 import '../owner/failure_log_screen.dart';
 import '../owner/incident_list_screen.dart';
@@ -146,6 +148,16 @@ class _MandorDashboardScreenState extends State<MandorDashboardScreen> {
             crossAxisSpacing: 12,
             childAspectRatio: 1.3,
             children: [
+              _menuTile(
+                'Absensi Saya',
+                Icons.fingerprint,
+                const MyAttendanceScreen(),
+              ),
+              _menuTile(
+                'Verifikasi Absensi',
+                Icons.fact_check_rounded,
+                const AttendanceReviewScreen(),
+              ),
               _menuTile('Buat Tugas', Icons.add_task_rounded, const AddTaskScreen()),
               _menuTile('Inventaris', Icons.inventory_2_rounded, const InventoryScreen()),
               _menuTile('Kelola Buruh', Icons.people_alt_rounded, const WorkerListScreen()),
