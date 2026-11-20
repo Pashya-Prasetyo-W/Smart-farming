@@ -12,6 +12,7 @@ import 'incident_list_screen.dart';
 import 'finance_screen.dart';
 import 'failure_log_screen.dart';
 import '../attendance/attendance_review_screen.dart';
+import '../payroll/payroll_list_screen.dart';
 import '../reports/report_review_screen.dart';
 import '../../services/land_service.dart';
 
@@ -582,6 +583,12 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
         icon: Icons.assignment_turned_in_rounded,
         color: _Palette.teal,
         onTap: () => _open(const ReportReviewScreen()),
+      ),
+      _buildMenuTile(
+        label: 'Rekap Upah',
+        icon: Icons.payments_rounded,
+        color: _Palette.primaryDark,
+        onTap: () => _open(const PayrollListScreen()),
       ),
       _buildMenuTile(
         label: 'Manajemen Inventaris',

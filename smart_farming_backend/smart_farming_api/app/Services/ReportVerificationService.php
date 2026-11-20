@@ -20,6 +20,7 @@ class ReportVerificationService
     private const RELATIONS = [
         'task:id,title,planting_id,assigned_to,status,wage_amount,task_date',
         'task.assignee:id,name,role',
+        'task.resources',
         'reviewer:id,name',
     ];
 
@@ -84,11 +85,11 @@ class ReportVerificationService
         }
 
         if (! empty($filters['from'])) {
-            $query->where('reported_at', '>=', Carbon::parse($filters['from'], config('app.business_timezone'))->startOfDay());
+            $query->where('reported_at', '>=', Carbon::parse($filters['from'], config('app.business_timezone'))->startOfDay()->setTimezone(config('app.timezone')));
         }
 
         if (! empty($filters['to'])) {
-            $query->where('reported_at', '<=', Carbon::parse($filters['to'], config('app.business_timezone'))->endOfDay());
+            $query->where('reported_at', '<=', Carbon::parse($filters['to'], config('app.business_timezone'))->endOfDay()->setTimezone(config('app.timezone')));
         }
 
         return $query->orderByDesc('reported_at')->orderByDesc('id')->limit(300)->get();

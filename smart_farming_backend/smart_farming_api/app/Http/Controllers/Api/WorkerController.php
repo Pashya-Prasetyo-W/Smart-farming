@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\IncidentReport;
+use App\Models\PayrollItem;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\WorkerBenefitItem;
@@ -199,7 +201,9 @@ class WorkerController extends Controller
 
         $hasHistory = Task::where('assigned_to', $worker->id)->exists()
             || IncidentReport::where('reported_by', $worker->id)->exists()
-            || User::where('created_by', $worker->id)->exists();
+            || User::where('created_by', $worker->id)->exists()
+            || Attendance::where('user_id', $worker->id)->exists()
+            || PayrollItem::where('user_id', $worker->id)->exists();
 
         if ($hasHistory) {
             return response()->json([

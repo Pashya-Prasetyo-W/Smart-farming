@@ -40,6 +40,8 @@ class ApiClient {
       final http.Response response;
       if (method == 'GET') {
         response = await http.get(uri, headers: headers);
+      } else if (method == 'DELETE') {
+        response = await http.delete(uri, headers: headers);
       } else {
         response = await http.post(
           uri,

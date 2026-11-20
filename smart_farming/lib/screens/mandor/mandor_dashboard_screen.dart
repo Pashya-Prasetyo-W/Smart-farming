@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/dashboard_service.dart';
 import '../attendance/attendance_review_screen.dart';
 import '../attendance/my_attendance_screen.dart';
+import '../payroll/my_payslip_screen.dart';
 import '../reports/report_review_screen.dart';
 import '../owner/add_task_screen.dart';
 import '../owner/failure_log_screen.dart';
@@ -153,6 +154,11 @@ class _MandorDashboardScreenState extends State<MandorDashboardScreen> {
                 'Absensi Saya',
                 Icons.fingerprint,
                 const MyAttendanceScreen(),
+              ),
+              _menuTile(
+                'Slip Upah Saya',
+                Icons.receipt_long_rounded,
+                const MyPayslipScreen(),
               ),
               _menuTile(
                 'Verifikasi Absensi',

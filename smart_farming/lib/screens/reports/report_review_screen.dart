@@ -113,6 +113,51 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
     return '${formatWorkDate(text.substring(0, 10))}, ${text.substring(11, 16)}';
   }
 
+  String _qty(dynamic value) {
+    final number = num.tryParse(value.toString());
+    if (number == null) return value.toString();
+    if (number == number.roundToDouble()) return number.toInt().toString();
+    return number.toString();
+  }
+
+  bool _isTrue(dynamic value) => value == true || value == 1 || value == '1';
+
+  Widget _resourceUsage(Map<String, dynamic>? task) {
+    final resources = (task?['resources'] as List?) ?? [];
+    if (resources.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Pemakaian bahan:',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          ...resources.map((res) {
+            final pivot = res['pivot'] as Map<String, dynamic>? ?? {};
+            final over = _isTrue(pivot['is_over_allocated']);
+            final unit = res['unit']?.toString() ?? '';
+
+            return Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                '- ${res['name']}: ${_qty(pivot['actual_used_qty'])} $unit '
+                '(batas ${_qty(pivot['max_allocated_qty'])} $unit)'
+                '${over ? ' - melebihi batas' : ''}',
+                style: TextStyle(
+                  color: over ? const Color(0xFFC62828) : null,
+                  fontWeight: over ? FontWeight.w600 : null,
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   bool _matches(Map<String, dynamic> item) {
     final task = item['task'] as Map<String, dynamic>?;
     final assignee = task?['assignee'] as Map<String, dynamic>?;
@@ -184,6 +229,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text('Catatan: $notes'),
                 ),
+              _resourceUsage(task),
               if (item['escalated_at'] != null && actionable)
                 const Padding(
                   padding: EdgeInsets.only(top: 4),

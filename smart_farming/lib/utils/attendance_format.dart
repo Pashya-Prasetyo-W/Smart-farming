@@ -62,3 +62,14 @@ String roleLabel(String? role) {
       return 'Buruh';
   }
 }
+
+String formatShortDate(dynamic value) {
+  final parsed = DateTime.tryParse(value?.toString() ?? '');
+  if (parsed == null) return '-';
+  final date = parsed.toLocal();
+  return '${date.day} ${_monthNames[date.month - 1]} ${date.year}';
+}
+
+String formatPeriod(dynamic start, dynamic end) {
+  return '${formatShortDate(start)} - ${formatShortDate(end)}';
+}

@@ -109,4 +109,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
         Route::get('/dashboard/owner', [DashboardController::class, 'owner']);
     });
+
+    require __DIR__ . '/payroll.php';
+
 });

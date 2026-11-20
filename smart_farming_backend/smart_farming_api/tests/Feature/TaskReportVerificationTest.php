@@ -314,6 +314,38 @@ class TaskReportVerificationTest extends TestCase
         $this->getJson('/api/task-reports?from=2026-11-21')->assertOk()->assertJsonCount(0, 'data');
     }
 
+    public function test_antrean_menyertakan_pemakaian_bahan(): void
+    {
+        $worker = $this->t['buruh'];
+        $task = $this->makeTask($worker);
+
+        $task->resources()->attach($this->t['resource']->id, [
+            'company_id'        => $this->t['company']->id,
+            'max_allocated_qty' => 5,
+            'actual_used_qty'   => 0,
+            'variance_qty'      => 0,
+            'is_over_allocated' => false,
+        ]);
+
+        Sanctum::actingAs($worker);
+
+        $this->postJson("/api/tasks/{$task->id}/report", [
+            'media_urls' => ['foto.jpg'],
+            'resources'  => [['resource_id' => $this->t['resource']->id, 'actual_used_qty' => 7]],
+        ])->assertCreated();
+
+        Sanctum::actingAs($this->t['mandor']);
+
+        $response = $this->getJson('/api/task-reports/queue')->assertOk();
+
+        $resource = $response->json('data.0.task.resources.0');
+
+        $this->assertSame($this->t['resource']->id, $resource['id']);
+        $this->assertEquals(7, $resource['pivot']['actual_used_qty']);
+        $this->assertEquals(5, $resource['pivot']['max_allocated_qty']);
+        $this->assertTrue((bool) $resource['pivot']['is_over_allocated']);
+    }
+
     public function test_detail_tugas_menyertakan_status_verifikasi(): void
     {
         $report = $this->pendingReport();
