@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\FailureLogController;
+use App\Http\Controllers\Api\AttendanceController;
 
 
 
@@ -41,6 +42,11 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::middleware('role:buruh,mandor')->group(function () {
         Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
         Route::post('/tasks/{task}/report', [TaskController::class, 'report']);
+        Route::get('/attendances/today', [AttendanceController::class, 'today']);
+        Route::get('/attendances/mine', [AttendanceController::class, 'mine']);
+        Route::post('/attendances/check-in', [AttendanceController::class, 'checkIn']);
+        Route::post('/attendances/check-out', [AttendanceController::class, 'checkOut']);
+        Route::post('/attendances/{attendance}/object', [AttendanceController::class, 'object']);
     });
 
     Route::middleware('role:buruh')->group(function () {
@@ -52,6 +58,12 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     });
 
     Route::middleware('role:pemilik,mandor')->group(function () {
+
+        Route::get('/attendances', [AttendanceController::class, 'index']);
+        Route::get('/attendances/queue', [AttendanceController::class, 'queue']);
+        Route::post('/attendances', [AttendanceController::class, 'store']);
+        Route::post('/attendances/{attendance}/verify', [AttendanceController::class, 'verify']);
+        Route::post('/attendances/{attendance}/reject', [AttendanceController::class, 'reject']);
 
         Route::post('/tasks', [TaskController::class, 'store']);
         Route::put('/tasks/{task}', [TaskController::class, 'update']);

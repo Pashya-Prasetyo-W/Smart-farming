@@ -64,7 +64,8 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
   }
 
   void _toast(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _act(Future<Map<String, dynamic>> Function() action) async {
@@ -75,9 +76,11 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
     if (!mounted) return;
 
     setState(() => _isBusy = false);
-    _toast(result['message'].toString().isEmpty
-        ? (result['success'] == true ? 'Berhasil.' : 'Gagal.')
-        : result['message'].toString());
+    _toast(
+      result['message'].toString().isEmpty
+          ? (result['success'] == true ? 'Berhasil.' : 'Gagal.')
+          : result['message'].toString(),
+    );
 
     if (result['success'] == true) await _load();
   }
@@ -175,18 +178,22 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
             if (actionable) ...[
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  OutlinedButton(
-                    onPressed: _isBusy ? null : () => _reject(item),
-                    child: const Text('Tolak'),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isBusy ? null : () => _reject(item),
+                      child: const Text('Tolak'),
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _isBusy
-                        ? null
-                        : () => _act(() => _service.verify(item['id'] as int)),
-                    child: const Text('Verifikasi'),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _isBusy
+                          ? null
+                          : () =>
+                                _act(() => _service.verify(item['id'] as int)),
+                      child: const Text('Verifikasi'),
+                    ),
                   ),
                 ],
               ),
@@ -197,11 +204,12 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
     );
   }
 
-  Widget _list(List<dynamic> source, {required bool actionable, required String empty}) {
-    final items = source
-        .cast<Map<String, dynamic>>()
-        .where(_matches)
-        .toList();
+  Widget _list(
+    List<dynamic> source, {
+    required bool actionable,
+    required String empty,
+  }) {
+    final items = source.cast<Map<String, dynamic>>().where(_matches).toList();
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -209,7 +217,9 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
           ? ListView(
               children: [
                 const SizedBox(height: 80),
-                Center(child: Text(_query.isEmpty ? empty : 'Tidak ada hasil.')),
+                Center(
+                  child: Text(_query.isEmpty ? empty : 'Tidak ada hasil.'),
+                ),
               ],
             )
           : ListView.builder(
@@ -276,47 +286,47 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _loadError != null
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(_loadError!, textAlign: TextAlign.center),
-                                const SizedBox(height: 12),
-                                OutlinedButton(
-                                  onPressed: () {
-                                    setState(() => _isLoading = true);
-                                    _load();
-                                  },
-                                  child: const Text('Coba lagi'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : TabBarView(
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            _list(
-                              _queue,
-                              actionable: true,
-                              empty: 'Tidak ada absensi yang menunggu verifikasi.',
-                            ),
-                            Column(
-                              children: [
-                                _statusFilterBar(),
-                                const SizedBox(height: 8),
-                                Expanded(
-                                  child: _list(
-                                    _history,
-                                    actionable: false,
-                                    empty: 'Belum ada riwayat absensi.',
-                                  ),
-                                ),
-                              ],
+                            Text(_loadError!, textAlign: TextAlign.center),
+                            const SizedBox(height: 12),
+                            OutlinedButton(
+                              onPressed: () {
+                                setState(() => _isLoading = true);
+                                _load();
+                              },
+                              child: const Text('Coba lagi'),
                             ),
                           ],
                         ),
+                      ),
+                    )
+                  : TabBarView(
+                      children: [
+                        _list(
+                          _queue,
+                          actionable: true,
+                          empty: 'Tidak ada absensi yang menunggu verifikasi.',
+                        ),
+                        Column(
+                          children: [
+                            _statusFilterBar(),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: _list(
+                                _history,
+                                actionable: false,
+                                empty: 'Belum ada riwayat absensi.',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),

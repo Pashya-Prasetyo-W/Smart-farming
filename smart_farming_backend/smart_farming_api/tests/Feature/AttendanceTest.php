@@ -396,8 +396,8 @@ class AttendanceTest extends TestCase
             ->assertJsonPath('data.recorder.id', $this->t['mandor']->id);
 
         $attendance = Attendance::first();
-        $this->assertSame('01:00', $attendance->check_in_at->format('H:i'));
-        $this->assertSame('09:00', $attendance->check_out_at->format('H:i'));
+        $this->assertTrue($attendance->check_in_at->equalTo(Carbon::parse('2026-11-18 08:00:00', 'Asia/Jakarta')));
+        $this->assertTrue($attendance->check_out_at->equalTo(Carbon::parse('2026-11-18 16:00:00', 'Asia/Jakarta')));
     }
 
     public function test_pencatatan_manual_dibatasi_aturan(): void
