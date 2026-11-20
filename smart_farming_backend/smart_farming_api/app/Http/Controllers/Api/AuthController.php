@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AuthService;
+use App\Services\PasswordResetService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,6 +52,38 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Berhasil keluar (logout).',
+        ], 200);
+    }
+
+    public function forgotPassword(Request $request, PasswordResetService $passwordResets): JsonResponse
+    {
+        $validatedData = $request->validate([
+            'email' => ['required', 'string', 'email'],
+        ]);
+
+        $passwordResets->sendCode($validatedData['email']);
+
+        return response()->json([
+            'message' => 'Jika email terdaftar sebagai akun pemilik, kode pengaturan ulang password telah dikirim.',
+        ], 200);
+    }
+
+    public function resetPassword(Request $request, PasswordResetService $passwordResets): JsonResponse
+    {
+        $validatedData = $request->validate([
+            'email'    => ['required', 'string', 'email'],
+            'code'     => ['required', 'digits:6'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $passwordResets->reset(
+            $validatedData['email'],
+            $validatedData['code'],
+            $validatedData['password']
+        );
+
+        return response()->json([
+            'message' => 'Password berhasil diatur ulang. Silakan login.',
         ], 200);
     }
 

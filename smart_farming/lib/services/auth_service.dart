@@ -86,6 +86,60 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    return _postPublic('/auth/forgot-password', {'email': email});
+  }
+
+  Future<Map<String, dynamic>> resetPassword(
+    String email,
+    String code,
+    String password,
+    String confirmation,
+  ) async {
+    return _postPublic('/auth/reset-password', {
+      'email': email,
+      'code': code,
+      'password': password,
+      'password_confirmation': confirmation,
+    });
+  }
+
+  Future<Map<String, dynamic>> _postPublic(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}$path'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      final data = jsonDecode(response.body);
+      String message = data['message']?.toString() ?? 'Permintaan gagal.';
+
+      if (response.statusCode != 200) {
+        final errors = data['errors'];
+        if (errors is Map && errors.isNotEmpty) {
+          final first = errors.values.first;
+          if (first is List && first.isNotEmpty) {
+            message = first.first.toString();
+          }
+        }
+        if (response.statusCode == 429) {
+          message = 'Terlalu banyak percobaan. Coba lagi beberapa saat lagi.';
+        }
+      }
+
+      return {'success': response.statusCode == 200, 'message': message};
+    } catch (e) {
+      return {'success': false, 'message': 'Gagal terhubung ke server: $e'};
+    }
+  }
+
   Future<Map<String, dynamic>> register(
     String name,
     String email,

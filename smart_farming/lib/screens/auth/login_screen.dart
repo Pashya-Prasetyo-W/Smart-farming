@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/auth_service.dart';
 import '../../utils/role_router.dart';
+import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -140,7 +141,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     fillColor: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 32),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ForgotPasswordScreen(
+                            initialEmail: _emailController.text.trim(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Lupa password?',
+                      style: TextStyle(color: Color(0xFF2E7D32)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
