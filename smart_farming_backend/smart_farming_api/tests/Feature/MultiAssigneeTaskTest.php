@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Task;
+use App\Models\Tool;
 use App\Models\User;
 use App\Models\WorkerWage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -163,7 +164,38 @@ class MultiAssigneeTaskTest extends TestCase
         $this->assertSame(0, Task::count());
     }
 
-    public function test_alat_dibutuhkan_per_karyawan(): void
+    private function toolShares(): array
+    {
+        return Task::orderBy('id')->get()->map(
+            fn (Task $task) => (int) ($task->tools()->first()?->pivot->qty ?? 0)
+        )->all();
+    }
+
+    public function test_jumlah_alat_dibagi_rata_ke_semua_tugas(): void
+    {
+        $second = $this->extraBuruh('Buruh Dua');
+        $third = $this->extraBuruh('Buruh Tiga');
+
+        $bigTool = new Tool();
+        $bigTool->forceFill([
+            'company_id'    => $this->t['company']->id,
+            'name'          => 'Sabit',
+            'unit_label'    => 'buah',
+            'total_qty'     => 5,
+            'available_qty' => 5,
+        ])->save();
+
+        Sanctum::actingAs($this->t['owner']);
+
+        $this->postJson('/api/tasks', $this->groupPayload(
+            [$this->t['buruh']->id, $second->id, $third->id],
+            ['tools' => [['tool_id' => $bigTool->id, 'qty' => 5]]]
+        ))->assertCreated();
+
+        $this->assertSame([2, 2, 1], $this->toolShares());
+    }
+
+    public function test_alat_lebih_sedikit_dari_karyawan_hanya_diberikan_ke_sebagian(): void
     {
         $second = $this->extraBuruh('Buruh Dua');
         $third = $this->extraBuruh('Buruh Tiga');
@@ -172,17 +204,24 @@ class MultiAssigneeTaskTest extends TestCase
 
         $this->postJson('/api/tasks', $this->groupPayload(
             [$this->t['buruh']->id, $second->id, $third->id],
-            ['tools' => [['tool_id' => $this->t['tool']->id, 'qty' => 1]]]
-        ))->assertUnprocessable()->assertJsonValidationErrors('tools');
+            ['tools' => [['tool_id' => $this->t['tool']->id, 'qty' => 2]]]
+        ))->assertCreated()->assertJsonCount(3, 'data');
 
-        $this->assertSame(0, Task::count());
+        $this->assertSame([1, 1, 0], $this->toolShares());
+    }
+
+    public function test_total_alat_melebihi_ketersediaan_membatalkan_semua_tugas(): void
+    {
+        $second = $this->extraBuruh('Buruh Dua');
+
+        Sanctum::actingAs($this->t['owner']);
 
         $this->postJson('/api/tasks', $this->groupPayload(
             [$this->t['buruh']->id, $second->id],
-            ['tools' => [['tool_id' => $this->t['tool']->id, 'qty' => 1]]]
-        ))->assertCreated();
+            ['tools' => [['tool_id' => $this->t['tool']->id, 'qty' => 3]]]
+        ))->assertUnprocessable()->assertJsonValidationErrors('tools');
 
-        $this->assertSame(2, Task::count());
+        $this->assertSame(0, Task::count());
     }
 
     public function test_upah_borongan_hanya_berlaku_untuk_pekerja_borongan(): void

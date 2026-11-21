@@ -23,12 +23,14 @@ class TaskService
             $this->assertToolsForGroup($data['tools'] ?? [], $count, $actor->company_id);
 
             $shares = $this->splitResources($data['resources'] ?? [], $count);
+            $toolShares = $this->splitTools($data['tools'] ?? [], $count);
             $tasks = new Collection();
 
             foreach (array_values($assigneeIds) as $index => $assigneeId) {
                 $payload = array_merge($data, [
                     'assigned_to' => $assigneeId,
                     'resources'   => $shares[$index],
+                    'tools'       => $toolShares[$index],
                     'wage_amount' => in_array($assigneeId, $boronganIds, true) ? ($data['wage_amount'] ?? null) : null,
                 ]);
 
@@ -51,14 +53,33 @@ class TaskService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $needed = (int) $toolData['qty'] * $count;
-
-            if ($needed > $tool->available_qty) {
+            if ((int) $toolData['qty'] > $tool->available_qty) {
                 throw ValidationException::withMessages([
-                    'tools' => ["Gagal! Alat {$tool->name} yang tersedia hanya {$tool->available_qty}, sedangkan {$count} karyawan membutuhkan {$needed}."],
+                    'tools' => ["Gagal! Alat {$tool->name} yang tersedia hanya {$tool->available_qty}."],
                 ]);
             }
         }
+    }
+
+    private function splitTools(array $tools, int $count): array
+    {
+        $shares = array_fill(0, $count, []);
+
+        foreach ($tools as $tool) {
+            $total = (int) $tool['qty'];
+            $base = intdiv($total, $count);
+            $extra = $total % $count;
+
+            for ($i = 0; $i < $count; $i++) {
+                $qty = $base + ($i < $extra ? 1 : 0);
+
+                if ($qty > 0) {
+                    $shares[$i][] = ['tool_id' => $tool['tool_id'], 'qty' => $qty];
+                }
+            }
+        }
+
+        return $shares;
     }
 
     private function splitResources(array $resources, int $count): array

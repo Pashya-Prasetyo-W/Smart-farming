@@ -627,7 +627,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     )
                   else if (_selectedWorkerIds.length > 1)
                     Text(
-                      'Jumlah alat berlaku untuk setiap karyawan (dibutuhkan ${_selectedWorkerIds.length}x).',
+                      'Jumlah alat dibagi rata ke ${_selectedWorkerIds.length} karyawan.',
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ..._selectedTools.map((tool) {
