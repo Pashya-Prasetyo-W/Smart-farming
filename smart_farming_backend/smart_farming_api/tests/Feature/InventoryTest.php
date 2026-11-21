@@ -242,14 +242,13 @@ class InventoryTest extends TestCase
         $this->purchase()->assertUnprocessable()->assertJsonValidationErrors('resource_id');
     }
 
-    public function test_mandor_tidak_dapat_mengubah_data_bahan_dan_alat(): void
+    public function test_mandor_tidak_dapat_mengubah_atau_menghapus_data_bahan_dan_alat(): void
     {
         Sanctum::actingAs($this->t['mandor']);
 
-        $this->postJson('/api/resources', ['name' => 'Benih', 'unit' => 'kg', 'stock_qty' => 5, 'unit_price' => 1000])->assertForbidden();
         $this->putJson('/api/resources/' . $this->t['resource']->id, ['name' => 'X', 'unit' => 'kg', 'stock_qty' => 999, 'unit_price' => 1])->assertForbidden();
         $this->deleteJson('/api/resources/' . $this->t['resource']->id)->assertForbidden();
-        $this->postJson('/api/tools', ['name' => 'Sabit', 'total_qty' => 1])->assertForbidden();
+        $this->putJson('/api/tools/' . $this->t['tool']->id, ['name' => 'X', 'total_qty' => 9])->assertForbidden();
         $this->deleteJson('/api/tools/' . $this->t['tool']->id)->assertForbidden();
 
         $this->getJson('/api/resources')->assertOk();

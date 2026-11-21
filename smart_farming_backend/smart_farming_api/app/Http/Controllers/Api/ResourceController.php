@@ -22,12 +22,6 @@ class ResourceController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        abort_unless(
-            $request->user()->hasRole('pemilik'),
-            403,
-            'Akses ditolak. Hanya pemilik yang dapat mengubah data bahan.'
-        );
-
         $validatedData = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'unit'       => ['required', 'string', 'max:50'],

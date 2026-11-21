@@ -298,9 +298,7 @@ class _ToolTabState extends State<_ToolTab> {
                 );
               },
             ),
-      floatingActionButton: !widget.isOwner
-          ? null
-          : FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         heroTag: 'fabTool',
         backgroundColor: const Color(0xFF2E7D32),
         child: const Icon(Icons.add, color: Colors.white),
@@ -586,9 +584,7 @@ class _ResourceTabState extends State<_ResourceTab> {
                 );
               },
             ),
-      floatingActionButton: !widget.isOwner
-          ? null
-          : FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         heroTag: 'fabResource',
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add, color: Colors.white),
