@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\HarvestService;
 use App\Services\PlantingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,7 +11,8 @@ use Illuminate\Http\Request;
 class PlantingController extends Controller
 {
     public function __construct(
-        protected PlantingService $plantingService
+        protected PlantingService $plantingService,
+        protected HarvestService $harvestService
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -45,33 +47,32 @@ class PlantingController extends Controller
 
     public function harvest(Request $request, \App\Models\Planting $planting): JsonResponse
     {
-        if ($planting->status !== 'berjalan') {
-            return response()->json(['message' => 'Siklus ini sudah selesai atau dibatalkan.'], 400);
-        }
-
-        $request->validate([
-            'harvest_kg' => 'required|numeric|min:0.1',
+        $validatedData = $request->validate([
+            'harvest_date' => ['nullable', 'date_format:Y-m-d'],
+            'harvest_kg'   => ['nullable', 'numeric', 'min:0.1', 'max:100000000'],
+            'sold_kg'      => ['nullable', 'numeric', 'min:0', 'max:100000000'],
+            'price_per_kg' => ['nullable', 'numeric', 'min:0', 'max:1000000000'],
         ]);
 
-        $planting->update(['status' => 'panen']);
+        $finalEntry = isset($validatedData['harvest_kg'])
+            ? array_merge($validatedData, ['quantity_kg' => $validatedData['harvest_kg']])
+            : [];
+
+        $result = $this->harvestService->close($request->user(), $planting, $finalEntry);
 
         return response()->json([
             'message' => 'Siklus tanam berhasil diselesaikan (Panen).',
-            'data'    => $planting
+            'data'    => $result,
         ], 200);
     }
 
     public function cancelPlanting(Request $request, \App\Models\Planting $planting): JsonResponse
     {
-        if ($planting->status !== 'berjalan') {
-            return response()->json(['message' => 'Siklus ini sudah selesai atau dibatalkan.'], 400);
-        }
-
-        $planting->update(['status' => 'gagal']);
+        $result = $this->harvestService->cancel($planting);
 
         return response()->json([
             'message' => 'Siklus tanam berhasil dibatalkan (Gagal).',
-            'data'    => $planting
+            'data'    => $result,
         ], 200);
     }
 }

@@ -8,6 +8,7 @@ import '../../services/land_service.dart';
 import '../../services/milestone_service.dart';
 import 'add_planting_screen.dart';
 import 'edit_land_screen.dart';
+import 'planting_summary_screen.dart';
 
 class LandDetailScreen extends StatefulWidget {
   final dynamic land;
@@ -18,7 +19,6 @@ class LandDetailScreen extends StatefulWidget {
 }
 
 class _LandDetailScreenState extends State<LandDetailScreen> {
-  final _harvestController = TextEditingController();
   late dynamic _currentLand;
   List<dynamic> _milestones = [];
 
@@ -326,50 +326,14 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
     );
   }
 
-  void _showHarvestDialog(int plantingId) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Selesaikan Siklus (Panen)'),
-        content: TextField(
-          controller: _harvestController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            ThousandsSeparatorInputFormatter(),
-          ],
-          decoration: const InputDecoration(
-            labelText: 'Total Hasil Panen (kg)',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final cleanKg = _harvestController.text.replaceAll('.', '');
-              final kg = double.tryParse(cleanKg) ?? 0;
-              if (kg <= 0) return;
-              Navigator.pop(dialogContext);
-
-              final success = await PlantingService().harvestPlanting(
-                plantingId,
-                kg,
-              );
-              if (success && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Siklus berhasil dipanen!')),
-                );
-                _refreshLand();
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
+  Future<void> _openSummary(int plantingId) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlantingSummaryScreen(plantingId: plantingId),
       ),
     );
+    _refreshLand();
   }
 
   void _showCancelDialog(int plantingId) {
@@ -582,12 +546,12 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () =>
-                                _showHarvestDialog(activePlanting['id']),
+                                _openSummary(activePlanting['id']),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                             ),
                             child: const Text(
-                              'PANEN',
+                              'PANEN & RINGKASAN',
                               style: TextStyle(color: Colors.white),
                             ),
                           ),

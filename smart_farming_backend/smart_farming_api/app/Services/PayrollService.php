@@ -281,11 +281,15 @@ class PayrollService
             $this->fail('status', 'Rekap upah kosong dan tidak dapat disetujui.');
         }
 
-        $payroll->forceFill([
-            'status'      => Payroll::STATUS_DISETUJUI,
-            'approved_by' => $actor->id,
-            'approved_at' => now(),
-        ])->save();
+        DB::transaction(function () use ($actor, $payroll) {
+            $payroll->forceFill([
+                'status'      => Payroll::STATUS_DISETUJUI,
+                'approved_by' => $actor->id,
+                'approved_at' => now(),
+            ])->save();
+
+            app(PayrollCostService::class)->record($payroll);
+        });
 
         return $this->detail($payroll);
     }

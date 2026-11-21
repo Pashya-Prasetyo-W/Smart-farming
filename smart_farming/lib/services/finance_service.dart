@@ -51,7 +51,7 @@ class FinanceService {
 
   Future<Map<String, dynamic>?> calculateHpp(
     int plantingId,
-    double harvestKg,
+    double? harvestKg,
   ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -59,7 +59,7 @@ class FinanceService {
 
       final response = await http.get(
         Uri.parse(
-          '${ApiConfig.baseUrl}/plantings/$plantingId/hpp?harvest_kg=$harvestKg',
+          '${ApiConfig.baseUrl}/plantings/$plantingId/hpp${harvestKg == null ? '' : '?harvest_kg=$harvestKg'}',
         ),
         headers: {
           'Accept': 'application/json',

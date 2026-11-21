@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_farming/config/api_config.dart';
 
+import 'api_client.dart';
+
 class PlantingService {
   Future<bool> createPlanting(Map<String, dynamic> data) async {
     try {
@@ -49,25 +51,28 @@ class PlantingService {
     }
   }
 
-  Future<bool> harvestPlanting(int plantingId, double harvestKg) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+  Future<Map<String, dynamic>> summary(int plantingId) =>
+      ApiClient.send('GET', '/plantings/$plantingId/summary');
 
-      final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/plantings/$plantingId/harvest'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({'harvest_kg': harvestKg}),
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
+  Future<Map<String, dynamic>> recordHarvest(
+    int plantingId, {
+    required String harvestDate,
+    required double quantityKg,
+    double? soldKg,
+    double? pricePerKg,
+  }) =>
+      ApiClient.send('POST', '/plantings/$plantingId/harvests', body: {
+        'harvest_date': harvestDate,
+        'quantity_kg': quantityKg,
+        if (soldKg != null && soldKg > 0) 'sold_kg': soldKg,
+        if (pricePerKg != null && pricePerKg > 0) 'price_per_kg': pricePerKg,
+      });
+
+  Future<Map<String, dynamic>> deleteHarvest(int harvestId) =>
+      ApiClient.send('DELETE', '/harvests/$harvestId');
+
+  Future<Map<String, dynamic>> closePlanting(int plantingId) =>
+      ApiClient.send('POST', '/plantings/$plantingId/harvest');
 
   Future<bool> cancelPlanting(int plantingId) async {
     try {

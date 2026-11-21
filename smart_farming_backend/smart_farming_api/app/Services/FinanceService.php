@@ -19,6 +19,7 @@ class FinanceService
                 'company_id'  => $pemilik->company_id,
                 'planting_id' => $data['planting_id'] ?? null,
                 'type'        => $data['type'],
+                'category'    => $data['category'] ?? Finance::CATEGORY_LAINNYA,
                 'amount'      => $data['amount'],
                 'description' => $data['description'],
                 'record_date' => $data['record_date'] ?? now(),
@@ -41,10 +42,12 @@ class FinanceService
         return (float) ($planting->total_cost / $harvestKg);
     }
 
-    public function getFinances(User $pemilik, ?int $month = null, ?int $year = null): Collection
+    public function getFinances(User $pemilik, ?int $month = null, ?int $year = null, ?int $plantingId = null, ?string $category = null): Collection
     {
         return Finance::where('company_id', $pemilik->company_id)
             ->with('planting')
+            ->when($plantingId, fn ($query, $id) => $query->where('planting_id', $id))
+            ->when($category, fn ($query, $value) => $query->where('category', $value))
             ->when($month, function ($query, $month) {
                 return $query->whereMonth('record_date', $month);
             })

@@ -7,6 +7,7 @@ import '../../utils/currency_formatter.dart';
 
 import 'package:flutter/services.dart';
 import '../../utils/search.dart';
+import 'planting_summary_screen.dart';
 import '../../widgets/search_field.dart';
 
 class FinanceScreen extends StatefulWidget {
@@ -389,25 +390,34 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
   }
 
   void _calculateHpp() async {
-    if (_selectedPlantingId == null || _harvestController.text.isEmpty) return;
+    if (_selectedPlantingId == null) return;
     setState(() {
       _isCalculating = true;
       _hppResult = null;
     });
 
-    final harvestKg =
-        double.tryParse(_harvestController.text.replaceAll('.', '')) ?? 0;
+    final typed = double.tryParse(_harvestController.text.replaceAll('.', ''));
     final result = await FinanceService().calculateHpp(
       _selectedPlantingId!,
-      harvestKg,
+      typed != null && typed > 0 ? typed : null,
     );
-    
+
     if (!mounted) return;
 
     setState(() {
       _hppResult = result;
       _isCalculating = false;
     });
+
+    if (result == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Belum ada hasil panen tercatat. Catat panen atau isi jumlah panen.',
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -443,9 +453,26 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
             }).toList(),
             onChanged: (val) => setState(() => _selectedPlantingId = val),
           ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _selectedPlantingId == null
+                ? null
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PlantingSummaryScreen(
+                          plantingId: _selectedPlantingId!,
+                        ),
+                      ),
+                    );
+                  },
+            icon: const Icon(Icons.insights_rounded),
+            label: const Text('Lihat Ringkasan Siklus'),
+          ),
           const SizedBox(height: 16),
           const Text(
-            'Total Hasil Panen (kg)',
+            'Total Hasil Panen (kg), kosongkan untuk memakai panen tercatat',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),

@@ -6,7 +6,6 @@ use App\Enums\ReviewStatus;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Models\Finance;
-use App\Models\Planting;
 use App\Models\Resource;
 use App\Models\Task;
 use App\Models\TaskReport;
@@ -45,8 +44,6 @@ class ReportService
             $task->status = TaskStatus::MenungguVerifikasi;
             $task->save();
 
-            $totalTaskCost = 0;
-
             if (!empty($data['resources'])) {
                 foreach ($data['resources'] as $resInput) {
                     $resourceId    = $resInput['resource_id'];
@@ -74,25 +71,17 @@ class ReportService
                         $resource->save();
 
                         $cost = $actualUsedQty * $resource->unit_price;
-                        $totalTaskCost += $cost;
 
                         Finance::forceCreate([
                             'company_id'  => $task->company_id,
                             'planting_id' => $task->planting_id,
                             'type'        => 'pengeluaran',
+                            'category'    => Finance::CATEGORY_BAHAN,
                             'amount'      => $cost,
                             'description' => "Pengeluaran bahan {$resource->name} untuk tugas: {$task->title}",
                             'record_date' => now(),
                         ]);
                     }
-                }
-            }
-
-            if ($totalTaskCost > 0) {
-                $planting = Planting::where('id', $task->planting_id)->lockForUpdate()->first();
-                if ($planting) {
-                    $planting->total_cost += $totalTaskCost;
-                    $planting->save();
                 }
             }
 

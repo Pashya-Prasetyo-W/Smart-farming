@@ -23,6 +23,7 @@ class Planting extends Model
         return [
             'plant_date' => 'date',
             'est_harvest_date' => 'date',
+            'closed_at' => 'date:Y-m-d',
             'total_cost' => 'decimal:2',
         ];
     }
@@ -45,6 +46,11 @@ class Planting extends Model
     public function milestones()
     {
         return $this->morphMany(Milestone::class, 'milestoneable');
+    }
+
+    public function harvests()
+    {
+        return $this->hasMany(Harvest::class)->orderByDesc('harvest_date')->orderByDesc('id');
     }
 
     public function finances()
