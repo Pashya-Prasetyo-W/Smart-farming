@@ -31,7 +31,11 @@ class ToolService
     public function getTools(User $pemilik): Collection
     {
         return Tool::where('company_id', $pemilik->company_id)
-            ->withCount('units')
+            ->withCount([
+                'units',
+                'units as damaged_units_count' => fn ($query) => $query->where('condition', 'rusak'),
+                'units as lost_units_count'    => fn ($query) => $query->where('condition', 'hilang'),
+            ])
             ->latest()
             ->get();
     }

@@ -284,6 +284,11 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                         _calculateTotal('pengeluaran'),
                         Colors.red,
                       ),
+                      _buildSummary(
+                        'Beli Stok',
+                        _stockPurchaseTotal(),
+                        Colors.blueGrey,
+                      ),
                     ],
                   ),
                 ),
@@ -302,7 +307,8 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                         ),
                         title: Text(f['description']),
                         subtitle: Text(
-                          f['record_date'].toString().substring(0, 10),
+                          '${f['record_date'].toString().substring(0, 10)}'
+                          '${f['category'] == 'pembelian' ? ' • Pembelian stok (belum dihitung sebagai biaya)' : ''}',
                         ),
                         trailing: Text(
                           '${isIncome ? "+" : "-"} Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(double.parse(f['amount'].toString()))}',
@@ -328,7 +334,14 @@ class _FinanceListTabState extends State<_FinanceListTab> {
   double _calculateTotal(String type) {
     if (_finances == null) return 0;
     return _finances!
-        .where((f) => f['type'] == type)
+        .where((f) => f['type'] == type && f['category'] != 'pembelian')
+        .fold(0.0, (sum, f) => sum + double.parse(f['amount'].toString()));
+  }
+
+  double _stockPurchaseTotal() {
+    if (_finances == null) return 0;
+    return _finances!
+        .where((f) => f['category'] == 'pembelian')
         .fold(0.0, (sum, f) => sum + double.parse(f['amount'].toString()));
   }
 

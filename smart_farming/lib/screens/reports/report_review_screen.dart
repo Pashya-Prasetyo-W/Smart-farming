@@ -158,6 +158,51 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
     );
   }
 
+  Widget _toolCondition(Map<String, dynamic>? task) {
+    final tools = (task?['tools'] as List?) ?? [];
+    final issues = tools.where((tool) {
+      final pivot = tool['pivot'] as Map<String, dynamic>? ?? {};
+      return (int.tryParse(pivot['lost_qty']?.toString() ?? '') ?? 0) > 0 ||
+          (int.tryParse(pivot['damaged_qty']?.toString() ?? '') ?? 0) > 0;
+    }).toList();
+
+    if (issues.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Kondisi alat:',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          ...issues.map((tool) {
+            final pivot = tool['pivot'] as Map<String, dynamic>? ?? {};
+            final lost = int.tryParse(pivot['lost_qty']?.toString() ?? '') ?? 0;
+            final damaged =
+                int.tryParse(pivot['damaged_qty']?.toString() ?? '') ?? 0;
+            final parts = <String>[
+              if (lost > 0) '$lost hilang',
+              if (damaged > 0) '$damaged rusak',
+            ];
+
+            return Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                '- ${tool['name']}: ${parts.join(', ')}',
+                style: const TextStyle(
+                  color: Color(0xFFC62828),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   bool _matches(Map<String, dynamic> item) {
     final task = item['task'] as Map<String, dynamic>?;
     final assignee = task?['assignee'] as Map<String, dynamic>?;
@@ -230,6 +275,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
                   child: Text('Catatan: $notes'),
                 ),
               _resourceUsage(task),
+              _toolCondition(task),
               if (item['escalated_at'] != null && actionable)
                 const Padding(
                   padding: EdgeInsets.only(top: 4),

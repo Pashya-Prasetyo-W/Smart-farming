@@ -9,8 +9,6 @@ use App\Models\Finance;
 use App\Models\Resource;
 use App\Models\Task;
 use App\Models\TaskReport;
-use App\Models\Tool;
-use App\Models\ToolUnit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -85,25 +83,12 @@ class ReportService
                 }
             }
 
-            foreach ($task->tools as $tool) {
-                $taskTool = \App\Models\TaskTool::where('task_id', $task->id)
-                    ->where('tool_id', $tool->id)
-                    ->first();
-                $assignedUnitIds = $taskTool ? $taskTool->assigned_unit_ids : [];
-                $borrowedQty     = $tool->pivot->qty;
-
-                if (!empty($assignedUnitIds)) {
-                    ToolUnit::whereIn('id', $assignedUnitIds)->update([
-                        'is_available' => true,
-                    ]);
-                }
-
-                $lockedTool = Tool::where('id', $tool->id)->lockForUpdate()->first();
-                if ($lockedTool) {
-                    $lockedTool->available_qty += $borrowedQty;
-                    $lockedTool->save();
-                }
-            }
+            app(ToolIncidentService::class)->returnTools(
+                $task,
+                $data['tools'] ?? [],
+                $task->assigned_to,
+                $data['notes'] ?? null
+            );
 
             return $report->load(['task.planting', 'company']);
         });

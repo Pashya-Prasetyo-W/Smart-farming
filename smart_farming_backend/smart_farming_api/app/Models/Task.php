@@ -71,6 +71,7 @@ class Task extends Model
         ->withPivot([
             'qty',
             'lost_qty',
+            'damaged_qty',
             'assigned_unit_ids',])
             ->withTimestamps();
     }

@@ -22,6 +22,12 @@ class ToolController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        abort_unless(
+            $request->user()->hasRole('pemilik'),
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat mengubah data alat.'
+        );
+
         $validatedData = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'unit_label' => ['nullable', 'string', 'max:50'],
@@ -34,6 +40,12 @@ class ToolController extends Controller
 
     public function update(Request $request, Tool $tool, ToolService $toolService): JsonResponse
     {
+        abort_unless(
+            $request->user()->hasRole('pemilik'),
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat mengubah data alat.'
+        );
+
         $validatedData = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'unit_label' => ['nullable', 'string', 'max:50'],
@@ -44,8 +56,14 @@ class ToolController extends Controller
         return response()->json(['message' => 'Alat berhasil diperbarui.', 'data' => $updatedTool], 200);
     }
 
-    public function destroy(Tool $tool): JsonResponse
+    public function destroy(Request $request, Tool $tool): JsonResponse
     {
+        abort_unless(
+            $request->user()->hasRole('pemilik'),
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat mengubah data alat.'
+        );
+
         $isBorrowed = \App\Models\TaskTool::where('tool_id', $tool->id)
             ->whereHas('task', function($q) {
                 $q->whereIn('status', ['menunggu', 'dikerjakan']);

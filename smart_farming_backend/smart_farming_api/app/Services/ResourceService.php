@@ -29,8 +29,10 @@ class ResourceService
 
     public function getResources(User $pemilik): Collection
     {
-        return Resource::where('company_id', $pemilik->company_id)
+        $resources = Resource::where('company_id', $pemilik->company_id)
             ->latest()
             ->get();
+
+        return app(ResourceStockService::class)->withAvailability($resources);
     }
 }

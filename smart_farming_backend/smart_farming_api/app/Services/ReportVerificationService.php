@@ -21,6 +21,7 @@ class ReportVerificationService
         'task:id,title,planting_id,assigned_to,status,wage_amount,task_date',
         'task.assignee:id,name,role',
         'task.resources',
+        'task.tools',
         'reviewer:id,name',
     ];
 

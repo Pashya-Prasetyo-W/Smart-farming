@@ -22,6 +22,8 @@ class Finance extends Model
     public const CATEGORY_UPAH = 'upah';
     public const CATEGORY_PENJUALAN = 'penjualan';
     public const CATEGORY_LAINNYA = 'lainnya';
+    public const CATEGORY_PEMBELIAN = 'pembelian';
+    public const CATEGORY_PERAWATAN = 'perawatan';
 
     protected static function booted(): void
     {
@@ -44,6 +46,12 @@ class Finance extends Model
 
             Planting::withoutGlobalScopes()->whereKey($plantingId)->update(['total_cost' => $total]);
         }
+    }
+
+    public function scopeOperatingExpense($query)
+    {
+        return $query->where('type', 'pengeluaran')
+            ->where('category', '!=', self::CATEGORY_PEMBELIAN);
     }
 
     protected function casts(): array

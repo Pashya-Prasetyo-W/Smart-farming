@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/tool_service.dart';
 import '../../services/resource_service.dart';
 import 'add_tool_screen.dart';
 import 'add_resource_screen.dart';
+import 'inventory_incident_tab.dart';
+import 'inventory_purchase_tab.dart';
 
 import 'package:flutter/services.dart';
 
@@ -23,11 +26,31 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isOwner = false;
+  int? _userId;
+  bool _ready = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
+    _loadRole();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _isOwner = prefs.getString('role') == 'pemilik';
+      _userId = prefs.getInt('user_id');
+      _ready = true;
+    });
   }
 
   @override
@@ -39,21 +62,36 @@ class _InventoryScreenState extends State<InventoryScreen>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(text: 'Alat', icon: Icon(Icons.handyman)),
             Tab(text: 'Bahan', icon: Icon(Icons.science)),
+            Tab(text: 'Pembelian', icon: Icon(Icons.shopping_cart)),
+            Tab(text: 'Kerusakan', icon: Icon(Icons.report_problem)),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_ToolTab(), _ResourceTab()],
-      ),
+      body: !_ready
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _ToolTab(isOwner: _isOwner),
+                _ResourceTab(isOwner: _isOwner),
+                PurchaseTab(isOwner: _isOwner, userId: _userId),
+                IncidentTab(isOwner: _isOwner),
+              ],
+            ),
     );
   }
 }
 
 class _ToolTab extends StatefulWidget {
+  const _ToolTab({required this.isOwner});
+
+  final bool isOwner;
+
   @override
   State<_ToolTab> createState() => _ToolTabState();
 }
@@ -227,9 +265,15 @@ class _ToolTabState extends State<_ToolTab> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      'Tersedia: ${tool['available_qty']} / ${tool['total_qty']} ${tool['unit_label'] ?? ''}',
+                      'Tersedia: ${tool['available_qty']} / ${tool['total_qty']} ${tool['unit_label'] ?? ''}'
+                      '${(tool['damaged_units_count'] ?? 0) > 0 ? '\nRusak: ${tool['damaged_units_count']}' : ''}'
+                      '${(tool['lost_units_count'] ?? 0) > 0 ? '\nHilang: ${tool['lost_units_count']}' : ''}',
                     ),
-                    trailing: Row(
+                    isThreeLine: (tool['damaged_units_count'] ?? 0) > 0 ||
+                        (tool['lost_units_count'] ?? 0) > 0,
+                    trailing: !widget.isOwner
+                        ? null
+                        : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
@@ -254,7 +298,9 @@ class _ToolTabState extends State<_ToolTab> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: !widget.isOwner
+          ? null
+          : FloatingActionButton(
         heroTag: 'fabTool',
         backgroundColor: const Color(0xFF2E7D32),
         child: const Icon(Icons.add, color: Colors.white),
@@ -271,6 +317,10 @@ class _ToolTabState extends State<_ToolTab> {
 }
 
 class _ResourceTab extends StatefulWidget {
+  const _ResourceTab({required this.isOwner});
+
+  final bool isOwner;
+
   @override
   State<_ResourceTab> createState() => _ResourceTabState();
 }
@@ -420,6 +470,24 @@ class _ResourceTabState extends State<_ResourceTab> {
     );
   }
 
+  String _qty(dynamic value) {
+    final number = num.tryParse(value?.toString() ?? '');
+    if (number == null) return value?.toString() ?? '-';
+    if (number == number.roundToDouble()) return number.toInt().toString();
+    return number.toStringAsFixed(2);
+  }
+
+  Future<void> _buy(dynamic res) async {
+    final message = await showPurchaseDialog(
+      context,
+      resources: _resources ?? [],
+      preselected: Map<String, dynamic>.from(res as Map),
+    );
+    if (message == null || !mounted) return;
+    _fetch();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   List<dynamic> get _filteredResources {
     return (_resources ?? []).where((res) {
       return matchesSearch(_query, [
@@ -456,17 +524,21 @@ class _ResourceTabState extends State<_ResourceTab> {
                     horizontal: 16,
                     vertical: 8,
                   ),
-                  child: ListTile(
-                    leading: const Icon(Icons.science, color: Colors.blue),
-                    title: Text(
-                      res['name'],
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text('Stok: ${res['stock_qty']} ${res['unit']}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.science, color: Colors.blue),
+                        title: Text(
+                          res['name'],
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Stok: ${_qty(res['stock_qty'])} ${res['unit']}\n'
+                          'Dipesan tugas: ${_qty(res['reserved_qty'])} ${res['unit']}\n'
+                          'Tersedia: ${_qty(res['available_qty'])} ${res['unit']}',
+                        ),
+                        isThreeLine: true,
+                        trailing: Text(
                           NumberFormat.currency(
                             locale: 'id_ID',
                             symbol: 'Rp ',
@@ -477,30 +549,46 @@ class _ResourceTabState extends State<_ResourceTab> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.edit,
-                            color: Colors.blue,
-                            size: 20,
-                          ),
-                          onPressed: () => _showEditDialog(res),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () => _buy(res),
+                              icon: const Icon(Icons.add_shopping_cart, size: 18),
+                              label: const Text('Beli'),
+                            ),
+                            if (widget.isOwner) ...[
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.blue,
+                                  size: 20,
+                                ),
+                                onPressed: () => _showEditDialog(res),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                  size: 20,
+                                ),
+                                onPressed: () => _showDeleteDialog(res),
+                              ),
+                            ],
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                            size: 20,
-                          ),
-                          onPressed: () => _showDeleteDialog(res),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: !widget.isOwner
+          ? null
+          : FloatingActionButton(
         heroTag: 'fabResource',
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add, color: Colors.white),

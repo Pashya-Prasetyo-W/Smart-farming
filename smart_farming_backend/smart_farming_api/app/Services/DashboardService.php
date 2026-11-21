@@ -20,7 +20,11 @@ class DashboardService
             ->sum('amount');
 
         $totalExpense = Finance::where('company_id', $companyId)
-            ->where('type', 'pengeluaran')
+            ->operatingExpense()
+            ->sum('amount');
+
+        $stockPurchases = Finance::where('company_id', $companyId)
+            ->where('category', Finance::CATEGORY_PEMBELIAN)
             ->sum('amount');
 
         $totalLands = Land::where('company_id', $companyId)->count();
@@ -33,6 +37,7 @@ class DashboardService
             'total_income'  => (float) $totalIncome,
             'total_expense' => (float) $totalExpense,
             'net_profit'    => (float) ($totalIncome - $totalExpense),
+            'stock_purchases' => (float) $stockPurchases,
             'total_lands'   => $totalLands,
             'active_tasks'  => $activeTasks,
         ];

@@ -453,6 +453,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               builder: (context) => ReportTaskScreen(
                                 taskId: widget.taskId,
                                 resources: _task!['resources'] ?? [],
+                                tools: _task!['tools'] ?? [],
                               ),
                             ),
                           ).then((_) => _fetchDetail());

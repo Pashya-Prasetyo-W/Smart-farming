@@ -17,6 +17,7 @@ class TaskTool extends Model
         'tool_id',
         'qty',
         'lost_qty',
+        'damaged_qty',
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class TaskTool extends Model
         return [
             'qty'      => 'integer',
             'lost_qty' => 'integer',
+            'damaged_qty' => 'integer',
             'assigned_unit_ids' => 'array'
         ];
     }

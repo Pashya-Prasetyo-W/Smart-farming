@@ -9,11 +9,13 @@ import 'dart:io';
 class ReportTaskScreen extends StatefulWidget {
   final int taskId;
   final List<dynamic> resources;
+  final List<dynamic> tools;
 
   const ReportTaskScreen({
     super.key,
     required this.taskId,
     required this.resources,
+    this.tools = const [],
   });
 
   @override
@@ -24,6 +26,8 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
   final _notesController = TextEditingController();
 
   final Map<int, TextEditingController> _resourceControllers = {};
+  final Map<int, TextEditingController> _lostControllers = {};
+  final Map<int, TextEditingController> _damagedControllers = {};
   bool _isLoading = false;
 
   File? _selectedImage;
@@ -45,12 +49,23 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
     for (var res in widget.resources) {
       _resourceControllers[res['id']] = TextEditingController();
     }
+
+    for (var tool in widget.tools) {
+      _lostControllers[tool['id']] = TextEditingController();
+      _damagedControllers[tool['id']] = TextEditingController();
+    }
   }
 
   @override
   void dispose() {
     _notesController.dispose();
     for (var controller in _resourceControllers.values) {
+      controller.dispose();
+    }
+    for (var controller in _lostControllers.values) {
+      controller.dispose();
+    }
+    for (var controller in _damagedControllers.values) {
       controller.dispose();
     }
     super.dispose();
@@ -62,6 +77,33 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
         const SnackBar(content: Text('Pilih bukti foto terlebih dahulu!')),
       );
       return;
+    }
+
+    final List<Map<String, dynamic>> payloadTools = [];
+    for (var tool in widget.tools) {
+      final id = tool['id'] as int;
+      final lost = int.tryParse(_lostControllers[id]?.text.trim() ?? '') ?? 0;
+      final damaged =
+          int.tryParse(_damagedControllers[id]?.text.trim() ?? '') ?? 0;
+      final borrowed =
+          int.tryParse(tool['pivot']?['qty']?.toString() ?? '') ?? 0;
+
+      if (lost + damaged > borrowed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Jumlah ${tool['name']} yang hilang dan rusak melebihi yang dipinjam ($borrowed).',
+            ),
+          ),
+        );
+        return;
+      }
+
+      payloadTools.add({
+        'tool_id': id,
+        'lost_qty': lost,
+        'damaged_qty': damaged,
+      });
     }
 
     setState(() => _isLoading = true);
@@ -89,6 +131,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
       payloadResources,
       _notesController.text,
       mediaUrl,
+      tools: payloadTools,
     );
 
     setState(() => _isLoading = false);
@@ -206,6 +249,64 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                 ),
               );
             }),
+
+            if (widget.tools.isNotEmpty) ...[
+              const Divider(height: 32),
+              const Text(
+                'Kondisi Alat',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Isi hanya jika ada alat yang hilang atau rusak. Alat lain dianggap kembali dalam kondisi baik.',
+              ),
+              const SizedBox(height: 16),
+              ...widget.tools.map((tool) {
+                final id = tool['id'] as int;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${tool['name']} (dipinjam ${tool['pivot']?['qty'] ?? '-'})',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _lostControllers[id],
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Hilang',
+                                hintText: '0',
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _damagedControllers[id],
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Rusak',
+                                hintText: '0',
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
 
             const Divider(height: 32),
 

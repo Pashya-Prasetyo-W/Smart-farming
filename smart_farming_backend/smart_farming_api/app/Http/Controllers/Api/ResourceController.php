@@ -20,8 +20,14 @@ class ResourceController extends Controller
         return response()->json(['message' => 'Daftar bahan berhasil diambil.', 'data' => $resources], 200);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
+        abort_unless(
+            $request->user()->hasRole('pemilik'),
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat mengubah data bahan.'
+        );
+
         $validatedData = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'unit'       => ['required', 'string', 'max:50'],
@@ -35,6 +41,12 @@ class ResourceController extends Controller
 
     public function update(Request $request, Resource $resource): JsonResponse
     {
+        abort_unless(
+            $request->user()->hasRole('pemilik'),
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat mengubah data bahan.'
+        );
+
         $validatedData = $request->validate([
             'name'       => ['required', 'string', 'max:255'],
             'unit'       => ['required', 'string', 'max:50'],
@@ -46,8 +58,14 @@ class ResourceController extends Controller
         return response()->json(['message' => 'Bahan berhasil diperbarui.', 'data' => $resource], 200);
     }
 
-    public function destroy(Resource $resource): JsonResponse
+    public function destroy(Request $request, Resource $resource): JsonResponse
     {
+        abort_unless(
+            $request->user()->hasRole('pemilik'),
+            403,
+            'Akses ditolak. Hanya pemilik yang dapat mengubah data bahan.'
+        );
+
         try {
             $isActive = \App\Models\TaskResource::where('resource_id', $resource->id)
                 ->whereHas('task', function($q) {

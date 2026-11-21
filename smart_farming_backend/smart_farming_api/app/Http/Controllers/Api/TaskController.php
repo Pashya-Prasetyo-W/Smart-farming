@@ -129,6 +129,10 @@ class TaskController extends Controller
             'resources'                   => ['nullable', 'array'],
             'resources.*.resource_id'     => ['required', Rule::exists('resources', 'id')->where('company_id', $companyId)],
             'resources.*.actual_used_qty' => ['required', 'numeric', 'min:0'],
+            'tools'                       => ['nullable', 'array'],
+            'tools.*.tool_id'             => ['required', Rule::exists('tools', 'id')->where('company_id', $companyId)],
+            'tools.*.lost_qty'            => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'tools.*.damaged_qty'         => ['nullable', 'integer', 'min:0', 'max:1000'],
         ]);
 
         $report = $this->reportService->submitReport($task, $validatedData);

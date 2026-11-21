@@ -32,6 +32,14 @@ class Tool extends Model
         return $this->belongsTo(Company::class);
     }
 
+    public function syncAvailability(): void
+    {
+        $this->forceFill([
+            'total_qty'     => $this->units()->count(),
+            'available_qty' => $this->units()->where('is_available', true)->count(),
+        ])->save();
+    }
+
     public function units()
     {
         return $this->hasMany(ToolUnit::class);
@@ -47,7 +55,8 @@ class Tool extends Model
             )
         ->withPivot([
             'qty',
-            'lost_qty'
+            'lost_qty',
+            'damaged_qty'
             ])
         ->withTimestamps();
     }

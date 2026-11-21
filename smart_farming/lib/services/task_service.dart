@@ -117,8 +117,9 @@ class TaskService {
     int taskId,
     List<Map<String, dynamic>> resources,
     String notes,
-    String mediaUrl,
-  ) async {
+    String mediaUrl, {
+    List<Map<String, dynamic>> tools = const [],
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -134,6 +135,7 @@ class TaskService {
           'media_urls': [mediaUrl],
           'notes': notes,
           'resources': resources,
+          'tools': tools,
         }),
       );
       return response.statusCode == 201;

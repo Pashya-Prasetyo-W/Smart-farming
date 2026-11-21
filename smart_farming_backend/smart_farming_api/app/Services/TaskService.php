@@ -18,20 +18,7 @@ class TaskService
     {
         return DB::transaction(function () use ($data, $pemilik) {
             
-            if (!empty($data['resources'])) {
-                foreach ($data['resources'] as $res) {
-                    $resource = Resource::where('company_id', $pemilik->company_id)
-                        ->where('id', $res['resource_id'])
-                        ->lockForUpdate()
-                        ->firstOrFail();
-
-                    if ($res['max_allocated_qty'] > $resource->stock_qty) {
-                        throw ValidationException::withMessages([
-                            'resources' => ["Gagal! Stok {$resource->name} tidak mencukupi. Tersedia: {$resource->stock_qty} {$resource->unit}."]
-                        ]);
-                    }
-                }
-            }
+            app(ResourceStockService::class)->assertAvailable($data['resources'] ?? [], $pemilik->company_id);
 
             if (!empty($data['tools'])) {
                 foreach ($data['tools'] as $toolData) {
@@ -98,14 +85,8 @@ class TaskService
         }
 
         return DB::transaction(function () use ($task, $data) {
-            if (!empty($data['resources'])) {
-                foreach ($data['resources'] as $res) {
-                    $resource = \App\Models\Resource::where('id', $res['resource_id'])->lockForUpdate()->first();
-                    if ($res['max_allocated_qty'] > $resource->stock_qty) {
-                        throw ValidationException::withMessages(['resources' => ["Stok {$resource->name} tidak mencukupi."]]);
-                    }
-                }
-            }
+            app(ResourceStockService::class)->assertAvailable($data['resources'] ?? [], $task->company_id, $task->id);
+
             if (!empty($data['tools'])) {
                 foreach ($data['tools'] as $toolData) {
                     $tool = \App\Models\Tool::where('id', $toolData['tool_id'])->lockForUpdate()->first();
