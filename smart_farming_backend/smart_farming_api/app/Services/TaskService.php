@@ -10,10 +10,77 @@ use App\Models\ToolUnit;
 use App\Models\TaskTool;
 use App\Models\Resource;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class TaskService
 {
+    public function createTasks(array $data, array $assigneeIds, User $actor, array $boronganIds = []): Collection
+    {
+        $count = count($assigneeIds);
+
+        return DB::transaction(function () use ($data, $assigneeIds, $actor, $boronganIds, $count) {
+            $this->assertToolsForGroup($data['tools'] ?? [], $count, $actor->company_id);
+
+            $shares = $this->splitResources($data['resources'] ?? [], $count);
+            $tasks = new Collection();
+
+            foreach (array_values($assigneeIds) as $index => $assigneeId) {
+                $payload = array_merge($data, [
+                    'assigned_to' => $assigneeId,
+                    'resources'   => $shares[$index],
+                    'wage_amount' => in_array($assigneeId, $boronganIds, true) ? ($data['wage_amount'] ?? null) : null,
+                ]);
+
+                $tasks->push($this->createTask($payload, $actor));
+            }
+
+            return $tasks;
+        });
+    }
+
+    private function assertToolsForGroup(array $tools, int $count, int $companyId): void
+    {
+        if ($count < 2) {
+            return;
+        }
+
+        foreach ($tools as $toolData) {
+            $tool = Tool::where('company_id', $companyId)
+                ->where('id', $toolData['tool_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $needed = (int) $toolData['qty'] * $count;
+
+            if ($needed > $tool->available_qty) {
+                throw ValidationException::withMessages([
+                    'tools' => ["Gagal! Alat {$tool->name} yang tersedia hanya {$tool->available_qty}, sedangkan {$count} karyawan membutuhkan {$needed}."],
+                ]);
+            }
+        }
+    }
+
+    private function splitResources(array $resources, int $count): array
+    {
+        $shares = array_fill(0, $count, []);
+
+        foreach ($resources as $resource) {
+            $total = (float) $resource['max_allocated_qty'];
+            $each = floor($total / $count * 100) / 100;
+            $remainder = round($total - $each * ($count - 1), 2);
+
+            for ($i = 0; $i < $count; $i++) {
+                $shares[$i][] = [
+                    'resource_id'       => $resource['resource_id'],
+                    'max_allocated_qty' => $i === $count - 1 ? $remainder : $each,
+                ];
+            }
+        }
+
+        return $shares;
+    }
+
     public function createTask(array $data, User $pemilik): Task
     {
         return DB::transaction(function () use ($data, $pemilik) {

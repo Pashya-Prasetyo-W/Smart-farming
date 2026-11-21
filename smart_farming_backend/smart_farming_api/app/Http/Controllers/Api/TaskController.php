@@ -19,23 +19,32 @@ class TaskController extends Controller
         protected ReportService $reportService
     ) {}
 
-    private function taskRules(Request $request): array
+    private function taskRules(Request $request, bool $multiple): array
     {
         $companyId = $request->user()->company_id;
 
         $sameCompany = fn (string $table) => Rule::exists($table, 'id')->where('company_id', $companyId);
 
+        $assignable = fn () => Rule::exists('users', 'id')->where(
+            fn ($query) => $query
+                ->where('company_id', $companyId)
+                ->whereIn('role', ['buruh', 'mandor'])
+                ->where('is_active', true)
+        );
+
+        $assignees = $multiple
+            ? [
+                'assigned_to'      => ['nullable', 'required_without:assignee_ids', $assignable()],
+                'assignee_ids'     => ['required_without:assigned_to', 'array', 'min:1', 'max:100'],
+                'assignee_ids.*'   => ['integer', 'distinct', $assignable()],
+            ]
+            : [
+                'assigned_to'      => ['required', $assignable()],
+            ];
+
         return [
+            ...$assignees,
             'planting_id'                   => ['required', $sameCompany('plantings')],
-            'assigned_to'                   => [
-                'required',
-                Rule::exists('users', 'id')->where(
-                    fn ($query) => $query
-                        ->where('company_id', $companyId)
-                        ->whereIn('role', ['buruh', 'mandor'])
-                        ->where('is_active', true)
-                ),
-            ],
             'title'                         => ['required', 'string', 'max:255'],
             'task_date'                     => ['required', 'date'],
             'due_date'                      => ['required', 'date', 'after_or_equal:task_date'],
@@ -50,36 +59,57 @@ class TaskController extends Controller
         ];
     }
 
-    private function validateTask(Request $request): array
+    private function validateTask(Request $request, bool $multiple = false): array
     {
-        $data = $request->validate($this->taskRules($request));
+        $data = $request->validate($this->taskRules($request, $multiple));
 
-        $isBorongan = WorkerWage::where('user_id', $data['assigned_to'])
+        $assigneeIds = $multiple && ! empty($data['assignee_ids'])
+            ? array_map('intval', $data['assignee_ids'])
+            : [(int) $data['assigned_to']];
+
+        $boronganIds = WorkerWage::whereIn('user_id', $assigneeIds)
             ->where('wage_type', WorkerWage::TYPE_BORONGAN)
-            ->exists();
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
 
-        if ($isBorongan && empty($data['wage_amount'])) {
+        if (! empty($boronganIds) && empty($data['wage_amount'])) {
             throw ValidationException::withMessages([
                 'wage_amount' => ['Upah tugas wajib diisi untuk pelaksana dengan upah borongan.'],
             ]);
         }
 
-        if (! $isBorongan) {
+        if (empty($boronganIds)) {
             $data['wage_amount'] = null;
         }
+
+        $data['assignee_ids'] = $assigneeIds;
+        $data['borongan_ids'] = $boronganIds;
 
         return $data;
     }
 
     public function store(Request $request): JsonResponse
     {
-        $validatedData = $this->validateTask($request);
+        $validatedData = $this->validateTask($request, true);
 
-        $task = $this->taskService->createTask($validatedData, $request->user());
+        $tasks = $this->taskService->createTasks(
+            $validatedData,
+            $validatedData['assignee_ids'],
+            $request->user(),
+            $validatedData['borongan_ids']
+        );
+
+        if ($request->has('assignee_ids')) {
+            return response()->json([
+                'message' => $tasks->count() . ' tugas berhasil dibuat.',
+                'data'    => $tasks,
+            ], 201);
+        }
 
         return response()->json([
             'message' => 'Tugas berhasil dibuat.',
-            'data'    => $task,
+            'data'    => $tasks->first(),
         ], 201);
     }
 

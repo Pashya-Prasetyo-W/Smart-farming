@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_farming/config/api_config.dart';
 
+import 'api_client.dart';
+
 import 'dart:io';
 
 class TaskService {
@@ -144,25 +146,8 @@ class TaskService {
     }
   }
 
-  Future<bool> createTask(Map<String, dynamic> data) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/tasks'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(data),
-      );
-
-      return response.statusCode == 201;
-    } catch (e) {
-      return false;
-    }
+  Future<Map<String, dynamic>> createTask(Map<String, dynamic> data) {
+    return ApiClient.send('POST', '/tasks', body: data);
   }
 
   Future<String?> uploadFile(File file) async {

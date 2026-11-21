@@ -98,8 +98,17 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     await Future.wait([_fetchStats(), _fetchLandsForWeather()]);
   }
 
+  int _taskListVersion = 0;
+
   void _open(Widget screen) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    ).then((_) {
+      if (!mounted) return;
+      setState(() => _taskListVersion++);
+      _refreshAll();
+    });
   }
 
   String _rupiah(dynamic value) {
@@ -712,7 +721,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     final List<Widget> pages = [
       _buildHomeTab(),
       const LandListScreen(),
-      const TaskListScreen(),
+      TaskListScreen(key: ValueKey(_taskListVersion)),
       const ProfileScreen(),
     ];
 
@@ -733,6 +742,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
           onTap: (index) {
             setState(() {
               _currentIndex = index;
+              if (index == 2) _taskListVersion++;
             });
           },
           type: BottomNavigationBarType.fixed,

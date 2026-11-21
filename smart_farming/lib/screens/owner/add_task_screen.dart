@@ -32,7 +32,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   List<dynamic> _tools = [];
 
   int? _selectedPlantingId;
-  int? _selectedWorkerId;
+  final Set<int> _selectedWorkerIds = {};
 
   List<Map<String, dynamic>> _selectedResources = [];
   List<Map<String, dynamic>> _selectedTools = [];
@@ -51,12 +51,26 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     super.dispose();
   }
 
-  bool get _isBorongan {
-    return _workers.any(
-      (worker) =>
-          worker['id'] == _selectedWorkerId &&
-          worker['wage_type'] == 'borongan',
-    );
+  int get _boronganCount {
+    return _workers
+        .where(
+          (worker) =>
+              _selectedWorkerIds.contains(worker['id']) &&
+              worker['wage_type'] == 'borongan',
+        )
+        .length;
+  }
+
+  bool get _isBorongan => _boronganCount > 0;
+
+  bool _isActiveWorker(dynamic worker) => worker['is_active'] != false;
+
+  List<dynamic> get _activeWorkers =>
+      _workers.where(_isActiveWorker).toList();
+
+  double _availableOf(dynamic resource) {
+    final raw = resource['available_qty'] ?? resource['stock_qty'];
+    return double.tryParse(raw.toString()) ?? 0.0;
   }
 
   void _fetchReferences() async {
@@ -84,11 +98,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   void _submit() async {
     if (_titleController.text.isEmpty ||
-        _selectedPlantingId == null ||
-        _selectedWorkerId == null) {
+        _selectedPlantingId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Judul dan Lahan (Siklus) wajib diisi!')),
+      );
+      return;
+    }
+
+    if (_selectedWorkerIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Judul, Lahan (Siklus), dan Pelaksana wajib diisi!'),
+          content: Text('Pilih minimal satu karyawan yang akan ditugaskan.'),
         ),
       );
       return;
@@ -107,7 +127,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
     final Map<String, dynamic> data = {
       'planting_id': _selectedPlantingId,
-      'assigned_to': _selectedWorkerId,
+      'assignee_ids': _selectedWorkerIds.toList(),
       'title': _titleController.text.trim(),
       'description': _descController.text.trim(),
       'task_date': _formatDate(_taskDate),
@@ -117,20 +137,23 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       if (_isBorongan) 'wage_amount': Rupiah.parse(_wageController.text),
     };
 
-    final success = await TaskService().createTask(data);
-
-    setState(() => _isSaving = false);
+    final result = await TaskService().createTask(data);
 
     if (!mounted) return;
 
-    if (success) {
+    setState(() => _isSaving = false);
+
+    if (result['success'] == true) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Tugas berhasil dibuat!')));
-      Navigator.pop(context);
+      ).showSnackBar(SnackBar(content: Text(result['message'].toString())));
+      Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal membuat tugas. Cek console.')),
+        SnackBar(
+          content: Text(result['message'].toString()),
+          duration: const Duration(seconds: 5),
+        ),
       );
     }
   }
@@ -172,7 +195,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 const SizedBox(height: 12),
 
                 Text(
-                  'Stok tersedia: ${selectedResource['stock_qty']} ${selectedResource['unit']}',
+                  'Stok tersedia: ${_availableOf(selectedResource)} ${selectedResource['unit']}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
@@ -202,12 +225,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     final selectedResource = _resources.firstWhere(
                       (r) => r['id'] == selectedId,
                     );
-                    final stockTersedia =
+                    final stockTersedia = _availableOf(selectedResource);
+                    final inputQty =
                         double.tryParse(
-                          selectedResource['stock_qty'].toString(),
+                          qtyController.text.replaceAll(',', '.'),
                         ) ??
                         0.0;
-                    final inputQty = double.tryParse(qtyController.text) ?? 0.0;
 
                     if (inputQty > stockTersedia) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -352,6 +375,72 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  Widget _buildWorkerPicker() {
+    final workers = _activeWorkers;
+    final allSelected =
+        workers.isNotEmpty &&
+        workers.every((worker) => _selectedWorkerIds.contains(worker['id']));
+
+    return InputDecorator(
+      decoration: const InputDecoration(
+        labelText: 'Tugaskan Ke',
+        border: OutlineInputBorder(),
+      ),
+      child: workers.isEmpty
+          ? const Text(
+              'Belum ada karyawan aktif.',
+              style: TextStyle(color: Colors.red),
+            )
+          : Column(
+              children: [
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: Text(
+                    'Pilih semua (${_selectedWorkerIds.length}/${workers.length})',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  value: allSelected,
+                  onChanged: (checked) => setState(() {
+                    if (checked == true) {
+                      _selectedWorkerIds.addAll(
+                        workers.map<int>((worker) => worker['id'] as int),
+                      );
+                    } else {
+                      _selectedWorkerIds.clear();
+                    }
+                  }),
+                ),
+                const Divider(height: 1),
+                ...workers.map((worker) {
+                  final id = worker['id'] as int;
+                  final tags = <String>[
+                    if (worker['role'] == 'mandor') 'mandor',
+                    if (worker['wage_type'] == 'borongan') 'borongan',
+                  ];
+                  return CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(
+                      tags.isEmpty
+                          ? worker['name'].toString()
+                          : '${worker['name']} (${tags.join(', ')})',
+                    ),
+                    value: _selectedWorkerIds.contains(id),
+                    onChanged: (checked) => setState(() {
+                      if (checked == true) {
+                        _selectedWorkerIds.add(id);
+                      } else {
+                        _selectedWorkerIds.remove(id);
+                      }
+                    }),
+                  );
+                }),
+              ],
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -414,24 +503,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         ),
                   const SizedBox(height: 12),
 
-                  DropdownButtonFormField<int>(
-                    value: _selectedWorkerId,
-                    decoration: const InputDecoration(
-                      labelText: 'Tugaskan Ke',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _workers.map<DropdownMenuItem<int>>((worker) {
-                      return DropdownMenuItem<int>(
-                        value: worker['id'],
-                        child: Text(
-                          worker['wage_type'] == 'borongan'
-                              ? '${worker['name']} (borongan)'
-                              : worker['name'],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setState(() => _selectedWorkerId = val),
-                  ),
+                  _buildWorkerPicker(),
                   if (_isBorongan) ...[
                     const SizedBox(height: 12),
                     TextField(
@@ -441,13 +513,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         FilteringTextInputFormatter.digitsOnly,
                         ThousandsSeparatorInputFormatter(),
                       ],
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Upah Tugas (Borongan)',
                         prefixText: 'Rp ',
                         helperText:
-                            'Tentukan sesuai tingkat kesulitan dan lama pengerjaan tugas ini.',
-                        helperMaxLines: 2,
-                        border: OutlineInputBorder(),
+                            'Berlaku untuk setiap pekerja borongan yang dipilih ($_boronganCount orang). Tentukan sesuai tingkat kesulitan dan lama pengerjaan.',
+                        helperMaxLines: 3,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ],
@@ -510,6 +582,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     const Text(
                       'Belum ada bahan dipilih.',
                       style: TextStyle(color: Colors.grey),
+                    )
+                  else if (_selectedWorkerIds.length > 1)
+                    Text(
+                      'Jumlah bahan dibagi rata ke ${_selectedWorkerIds.length} tugas.',
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ..._selectedResources.map((res) {
                     final resItem = _resources.firstWhere(
@@ -547,6 +624,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     const Text(
                       'Belum ada alat dipinjam.',
                       style: TextStyle(color: Colors.grey),
+                    )
+                  else if (_selectedWorkerIds.length > 1)
+                    Text(
+                      'Jumlah alat berlaku untuk setiap karyawan (dibutuhkan ${_selectedWorkerIds.length}x).',
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ..._selectedTools.map((tool) {
                     final toolItem = _tools.firstWhere(
