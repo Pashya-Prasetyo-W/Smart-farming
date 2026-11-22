@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
 
 Schedule::command('crop:analyze-risk')
     ->dailyAt('00:00')
-    ->timezone(config('business_timezone'))
+    ->timezone(config('app.business_timezone'))
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/crop-risk.log'));
 

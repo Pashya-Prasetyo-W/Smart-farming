@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\TaskStatus;
+use App\Models\CropRiskRun;
 use App\Models\FailureLog;
 use App\Models\Planting;
 use Carbon\Carbon;
@@ -21,7 +22,7 @@ class CropRiskService
             ->with(['land', 'tasks'])
             ->get();
 
-        $today = Carbon::today(config('business_timezone'));
+        $today = Carbon::today(config('app.business_timezone'));
 
         $summary = ['checked' => 0, 'logged' => 0, 'skipped' => 0, 'failed' => 0];
 
@@ -109,8 +110,35 @@ class CropRiskService
             }
         }
 
+        CropRiskRun::create(array_merge($summary, ['ran_at' => now()]));
+
         Log::info('Analisis risiko gagal panen selesai.', $summary);
 
         return $summary;
+    }
+
+    public function status(int $companyId): array
+    {
+        $latestPerPlanting = FailureLog::where('company_id', $companyId)
+            ->where('created_at', '>=', now()->subDays(2))
+            ->whereHas('planting', fn ($query) => $query->where('status', 'berjalan'))
+            ->latest('id')
+            ->get()
+            ->groupBy('planting_id')
+            ->map(fn ($logs) => $logs->first());
+
+        $run = CropRiskRun::latest('ran_at')->first();
+
+        return [
+            'current_score' => (int) $latestPerPlanting->max('risk_score'),
+            'last_run_at'   => $run?->ran_at?->toIso8601String(),
+            'last_run'      => $run ? [
+                'checked' => $run->checked,
+                'logged'  => $run->logged,
+                'skipped' => $run->skipped,
+                'failed'  => $run->failed,
+            ] : null,
+            'is_stale'      => $run === null || $run->ran_at->lt(now()->subHours(36)),
+        ];
     }
 }

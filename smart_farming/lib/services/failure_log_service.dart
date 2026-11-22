@@ -22,4 +22,27 @@ class FailureLogService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getOverview() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/failure-logs'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode != 200) return null;
+
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return {
+        'logs': (body['data'] as List?) ?? [],
+        'status': (body['status'] as Map?)?.cast<String, dynamic>() ?? {},
+      };
+    } catch (e) {
+      return null;
+    }
+  }
 }
