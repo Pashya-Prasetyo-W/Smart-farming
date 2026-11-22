@@ -15,16 +15,19 @@ class CropRiskService
         protected WeatherService $weatherService
     ) {}
 
-    public function runAnalysis(): void
+    public function runAnalysis(): array
     {
         $plantings = Planting::where('status', 'berjalan')
             ->with(['land', 'tasks'])
             ->get();
 
-        $today = Carbon::today();
+        $today = Carbon::today(config('business_timezone'));
+
+        $summary = ['checked' => 0, 'logged' => 0, 'skipped' => 0, 'failed' => 0];
 
         foreach ($plantings as $planting) {
             if (!$planting->land || !$planting->land->location_lat || !$planting->land->location_long) {
+                $summary['skipped']++;
                 continue;
             }
 
@@ -37,8 +40,11 @@ class CropRiskService
                 );
             } catch (Exception $e) {
                 Log::error("Gagal mengambil data cuaca untuk Planting ID {$planting->id}: " . $e->getMessage());
+                $summary['failed']++;
                 continue;
             }
+
+            $summary['checked']++;
 
             $overdueTasksCount = $planting->tasks->filter(function ($task) use ($today) {
                 return in_array($task->status, [TaskStatus::Menunggu, TaskStatus::Dikerjakan])
@@ -95,11 +101,16 @@ class CropRiskService
                     ],
                 ]);
                 $failureLog->save();
+                $summary['logged']++;
 
                 if ($score > 70) {
                     Log::warning("Risiko gagal panen tinggi (Skor: {$score}) untuk Planting ID: {$planting->id}. Alasan: {$reasonString}");
                 }
             }
         }
+
+        Log::info('Analisis risiko gagal panen selesai.', $summary);
+
+        return $summary;
     }
 }

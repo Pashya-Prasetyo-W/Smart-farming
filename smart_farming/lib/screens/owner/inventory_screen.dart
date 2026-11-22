@@ -63,8 +63,6 @@ class _InventoryScreenState extends State<InventoryScreen>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(text: 'Alat', icon: Icon(Icons.handyman)),
             Tab(text: 'Bahan', icon: Icon(Icons.science)),

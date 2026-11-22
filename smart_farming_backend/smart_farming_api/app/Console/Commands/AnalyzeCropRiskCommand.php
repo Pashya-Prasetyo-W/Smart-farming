@@ -11,10 +11,18 @@ use App\Services\CropRiskService;
 #[Description('Menganalisis risiko gagal panen untuk semua tanaman berjalan')]
 class AnalyzeCropRiskCommand extends Command
 {
-    public function handle(CropRiskService $service): void
+    public function handle(CropRiskService $service): int
     {
-        $service->runAnalysis();
+        $summary = $service->runAnalysis();
 
-        $this->info('Analisis risiko selesai dijalankan.');
+        $this->info(sprintf(
+            'Analisis risiko selesai: %d tanaman dianalisis, %d berisiko, %d dilewati, %d gagal.',
+            $summary['checked'],
+            $summary['logged'],
+            $summary['skipped'],
+            $summary['failed'],
+        ));
+
+        return self::SUCCESS;
     }
 }

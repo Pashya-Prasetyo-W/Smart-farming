@@ -8,7 +8,11 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('crop:analyze-risk')->dailyAt('00:00');
+Schedule::command('crop:analyze-risk')
+    ->dailyAt('00:00')
+    ->timezone(config('business_timezone'))
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/crop-risk.log'));
 
 Schedule::command('attendances:escalate')->hourly();
 Schedule::command('reports:escalate')->hourly();

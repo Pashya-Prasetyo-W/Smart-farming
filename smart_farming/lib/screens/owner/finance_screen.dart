@@ -267,27 +267,33 @@ class _FinanceListTabState extends State<_FinanceListTab> {
           ? const EmptyState(message: 'Belum ada catatan keuangan.')
           : Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  color: AppColors.primarySoft,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Column(
                     children: [
-                      _buildSummary(
-                        'Pemasukan',
-                        _calculateTotal('pemasukan'),
-                        AppColors.primary,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _summaryCard(
+                              'Pemasukan',
+                              _calculateTotal('pemasukan'),
+                              AppColors.primary,
+                              Icons.arrow_downward_rounded,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _summaryCard(
+                              'Pengeluaran',
+                              _calculateTotal('pengeluaran'),
+                              AppColors.danger,
+                              Icons.arrow_upward_rounded,
+                            ),
+                          ),
+                        ],
                       ),
-                      _buildSummary(
-                        'Pengeluaran',
-                        _calculateTotal('pengeluaran'),
-                        AppColors.danger,
-                      ),
-                      _buildSummary(
-                        'Beli Stok',
-                        _stockPurchaseTotal(),
-                        AppColors.textMuted,
-                      ),
+                      const SizedBox(height: 8),
+                      _stockRow(_stockPurchaseTotal()),
                     ],
                   ),
                 ),
@@ -344,19 +350,83 @@ class _FinanceListTabState extends State<_FinanceListTab> {
         .fold(0.0, (sum, f) => sum + double.parse(f['amount'].toString()));
   }
 
-  Widget _buildSummary(String title, double amount, Color color) {
-    return Column(
-      children: [
-        Text(title, style: const TextStyle(color: AppColors.textMuted)),
-        Text(
-          'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(amount)}',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
+  String _rp(double amount) {
+    return 'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(amount)}';
+  }
+
+  Widget _summaryCard(
+    String title,
+    double amount,
+    Color color,
+    IconData icon,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 16, color: color),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _rp(amount),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _stockRow(double amount) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.inventory_2_rounded,
+              size: 16,
+              color: AppColors.soil,
+            ),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Beli stok (aset, bukan biaya)',
+                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+              ),
+            ),
+            Text(
+              _rp(amount),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textDark,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
