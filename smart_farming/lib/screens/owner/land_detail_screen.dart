@@ -595,7 +595,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                             ),
                           ),
                         ],
-                      ),
+                      )
                     else
                       SizedBox(
                         width: double.infinity,
