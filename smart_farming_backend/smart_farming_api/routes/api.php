@@ -113,5 +113,6 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     require __DIR__ . '/payroll.php';
     require __DIR__ . '/harvest.php';
     require __DIR__ . '/inventory.php';
+    require __DIR__ . '/analytics.php';
 
 });

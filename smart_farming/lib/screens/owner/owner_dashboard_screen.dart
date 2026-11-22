@@ -7,6 +7,7 @@ import 'task_list_screen.dart';
 import '../profile/profile_screen.dart';
 import 'worker_list_screen.dart';
 import 'inventory_screen.dart';
+import 'analytics_screen.dart';
 import 'add_task_screen.dart';
 import 'incident_list_screen.dart';
 import 'finance_screen.dart';
@@ -622,6 +623,12 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
         icon: Icons.account_balance_wallet_rounded,
         color: _Palette.primaryDark,
         onTap: () => _open(const FinanceScreen()),
+      ),
+      _buildMenuTile(
+        label: 'Analitik Laba & Risiko',
+        icon: Icons.insights_rounded,
+        color: _Palette.teal,
+        onTap: () => _open(const AnalyticsScreen()),
       ),
       _buildMenuTile(
         label: 'Cek Risiko Gagal Panen',
