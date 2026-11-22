@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/tool_service.dart';
+import '../../theme/app_theme.dart';
 
 class AddToolScreen extends StatefulWidget {
   const AddToolScreen({super.key});
@@ -46,7 +47,6 @@ class _AddToolScreenState extends State<AddToolScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tambah Alat'),
-        backgroundColor: const Color(0xFF2E7D32),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -80,7 +80,7 @@ class _AddToolScreenState extends State<AddToolScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading

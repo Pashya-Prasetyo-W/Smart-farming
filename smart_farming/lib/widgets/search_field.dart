@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class SearchField extends StatefulWidget {
   const SearchField({
@@ -35,7 +36,7 @@ class _SearchFieldState extends State<SearchField> {
   Widget build(BuildContext context) {
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.grey.shade300),
+      borderSide: BorderSide(color: AppColors.outline),
     );
 
     return Padding(
@@ -63,7 +64,7 @@ class _SearchFieldState extends State<SearchField> {
           border: border,
           enabledBorder: border,
           focusedBorder: border.copyWith(
-            borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 2),
+            borderSide: const BorderSide(color: AppColors.primary, width: 2),
           ),
         ),
       ),

@@ -6,6 +6,8 @@ import 'add_worker_screen.dart';
 import 'edit_worker_screen.dart';
 import '../../utils/search.dart';
 import '../../widgets/search_field.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
 
 class WorkerListScreen extends StatefulWidget {
   const WorkerListScreen({super.key});
@@ -82,7 +84,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            child: const Text('Batal', style: TextStyle(color: AppColors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -97,7 +99,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
               );
               if (result['success'] == true) _fetchWorkers();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             child: const Text('Hapus', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -124,10 +126,8 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Manajemen Karyawan',
-          style: TextStyle(color: Colors.white),
+          'Manajemen Karyawan'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: SearchField(
@@ -139,9 +139,9 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _workers == null || _workers!.isEmpty
-          ? const Center(child: Text('Belum ada data karyawan.'))
+          ? const EmptyState(message: 'Belum ada data karyawan.')
           : workers.isEmpty
-          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: workers.length,
@@ -152,11 +152,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                     (worker['benefits'] as List<dynamic>?) ?? [];
 
                 return Card(
-                  elevation: 2,
                   margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -178,7 +174,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                                   ),
                                   Text(
                                     worker['email'],
-                                    style: TextStyle(color: Colors.grey[600]),
+                                    style: TextStyle(color: AppColors.textMuted),
                                   ),
                                   const SizedBox(height: 4),
                                   Wrap(
@@ -199,7 +195,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                                             'NONAKTIF',
                                             style: TextStyle(
                                               fontSize: 10,
-                                              color: Colors.red,
+                                              color: AppColors.danger,
                                             ),
                                           ),
                                           visualDensity: VisualDensity.compact,
@@ -218,13 +214,13 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                                     ? Icons.toggle_off
                                     : Icons.toggle_on,
                                 color: worker['is_active'] == false
-                                    ? Colors.grey
-                                    : const Color(0xFF2E7D32),
+                                    ? AppColors.textMuted
+                                    : AppColors.primary,
                               ),
                               onPressed: () => _toggleActive(worker),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              icon: const Icon(Icons.edit, color: AppColors.water),
                               onPressed: () async {
                                 await Navigator.push(
                                   context,
@@ -237,7 +233,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                               },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: AppColors.danger),
                               onPressed: () => _showDeleteConfirmation(
                                 worker['id'],
                                 worker['name'],
@@ -262,7 +258,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                                   Icons.payments,
                                   size: 14,
                                   color: worker['wage'] == null
-                                      ? Colors.orange
+                                      ? AppColors.warning
                                       : null,
                                 ),
                                 label: Text(
@@ -321,7 +317,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           );
           _fetchWorkers();
         },
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

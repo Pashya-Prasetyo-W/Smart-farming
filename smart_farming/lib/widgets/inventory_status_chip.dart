@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class InventoryStatusChip extends StatelessWidget {
   const InventoryStatusChip({super.key, required this.status});
@@ -26,15 +27,15 @@ class InventoryStatusChip extends StatelessWidget {
     switch (status) {
       case 'disetujui':
       case 'selesai':
-        return const Color(0xFF2E7D32);
+        return AppColors.primary;
       case 'ditolak':
-        return const Color(0xFFC62828);
+        return AppColors.danger;
       case 'dibatalkan':
-        return const Color(0xFF546E7A);
+        return AppColors.textMuted;
       case 'terbuka':
-        return const Color(0xFFEF6C00);
+        return AppColors.warning;
       default:
-        return const Color(0xFFEF6C00);
+        return AppColors.warning;
     }
   }
 

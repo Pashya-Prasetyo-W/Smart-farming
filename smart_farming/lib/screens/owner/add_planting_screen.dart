@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/planting_service.dart';
+import '../../theme/app_theme.dart';
 
 class AddPlantingScreen extends StatefulWidget {
   final int landId;
@@ -76,11 +77,8 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Mulai Siklus Tanam',
-          style: TextStyle(color: Colors.white),
+          'Mulai Siklus Tanam'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -91,7 +89,7 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: AppColors.outline,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -154,7 +152,7 @@ class _AddPlantingScreenState extends State<AddPlantingScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading

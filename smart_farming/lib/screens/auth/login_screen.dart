@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../utils/role_router.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
+import '../../theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: AppColors.background,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -92,14 +93,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.textDark,
                   ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Masuk untuk mengelola kebun Anda',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Color(0xFF616161)),
+                  style: TextStyle(fontSize: 16, color: AppColors.textMuted),
                 ),
                 const SizedBox(height: 40),
 
@@ -156,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: const Text(
                       'Lupa password?',
-                      style: TextStyle(color: Color(0xFF2E7D32)),
+                      style: TextStyle(color: AppColors.primary),
                     ),
                   ),
                 ),
@@ -165,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -208,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Text(
                         'Daftar sebagai Pemilik',
                         style: TextStyle(
-                          color: Color(0xFF2E7D32),
+                          color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

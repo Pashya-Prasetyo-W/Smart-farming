@@ -7,6 +7,7 @@ import '../../utils/attendance_format.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/rupiah.dart';
 import '../../widgets/inventory_status_chip.dart';
+import '../../theme/app_theme.dart';
 
 String incidentKindLabel(String? kind) => kind == 'hilang' ? 'Hilang' : 'Rusak';
 
@@ -102,7 +103,7 @@ class _IncidentTabState extends State<IncidentTab> {
     final reporter = item['reporter'] as Map<String, dynamic>?;
     final open = item['status'] == 'terbuka';
     final isLost = item['kind'] == 'hilang';
-    final color = isLost ? const Color(0xFFC62828) : const Color(0xFFEF6C00);
+    final color = isLost ? AppColors.danger : AppColors.warning;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -137,17 +138,17 @@ class _IncidentTabState extends State<IncidentTab> {
             ),
             Text(
               '${formatShortDate(item['created_at'])} • ${reporter?['name'] ?? '-'}',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             if (task != null)
               Text(
                 'Tugas: ${task['title']}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
             if ((item['notes'] ?? '').toString().isNotEmpty)
               Text(
                 item['notes'].toString(),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
             if (!open)
               Padding(
@@ -203,7 +204,7 @@ class _IncidentTabState extends State<IncidentTab> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'fabIncident',
-        backgroundColor: const Color(0xFFEF6C00),
+        backgroundColor: AppColors.warning,
         onPressed: _record,
         icon: const Icon(Icons.report_problem, color: Colors.white),
         label: const Text('Catat Kejadian', style: TextStyle(color: Colors.white)),
@@ -328,7 +329,7 @@ class _RecordDialogState extends State<_RecordDialog> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _error!,
-                    style: const TextStyle(color: Color(0xFFC62828)),
+                    style: const TextStyle(color: AppColors.danger),
                   ),
                 ),
               ),
@@ -474,7 +475,7 @@ class _ResolveDialogState extends State<_ResolveDialog> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _error!,
-                    style: const TextStyle(color: Color(0xFFC62828)),
+                    style: const TextStyle(color: AppColors.danger),
                   ),
                 ),
               ),

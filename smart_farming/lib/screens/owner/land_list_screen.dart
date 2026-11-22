@@ -7,6 +7,8 @@ import 'land_detail_screen.dart';
 import 'package:intl/intl.dart';
 import '../../utils/search.dart';
 import '../../widgets/search_field.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
 
 class LandListScreen extends StatefulWidget {
   const LandListScreen({super.key});
@@ -50,10 +52,8 @@ class _LandListScreenState extends State<LandListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Daftar Lahan',
-          style: TextStyle(color: Colors.white),
+          'Daftar Lahan'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: SearchField(
@@ -65,9 +65,9 @@ class _LandListScreenState extends State<LandListScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _lands == null || _lands!.isEmpty
-          ? const Center(child: Text('Belum ada lahan yang ditambahkan.'))
+          ? const EmptyState(message: 'Belum ada lahan yang ditambahkan.')
           : lands.isEmpty
-          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
           : ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: lands.length,
@@ -84,19 +84,15 @@ class _LandListScreenState extends State<LandListScreen> {
                     _fetchLands();
                   },
                   child: Card(
-                    elevation: 2,
                     margin: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(16),
                       leading: const CircleAvatar(
-                        backgroundColor: Color(0xFFC8E6C9),
-                        child: Icon(Icons.landscape, color: Color(0xFF2E7D32)),
+                        backgroundColor: AppColors.primaryContainer,
+                        child: Icon(Icons.landscape, color: AppColors.primary),
                       ),
                       title: Text(
                         land['name'],
@@ -121,7 +117,7 @@ class _LandListScreenState extends State<LandListScreen> {
                             Text(
                               'Siklus aktif: ${land['active_planting']['crop_name']}',
                               style: const TextStyle(
-                                color: Colors.green,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -141,7 +137,7 @@ class _LandListScreenState extends State<LandListScreen> {
           );
           _fetchLands();
         },
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

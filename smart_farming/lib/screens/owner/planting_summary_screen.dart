@@ -5,6 +5,7 @@ import '../../services/planting_service.dart';
 import '../../utils/attendance_format.dart';
 import '../../utils/rupiah.dart';
 import '../../widgets/harvest_form_dialog.dart';
+import '../../theme/app_theme.dart';
 
 class PlantingSummaryScreen extends StatefulWidget {
   const PlantingSummaryScreen({super.key, required this.plantingId});
@@ -244,7 +245,7 @@ class _PlantingSummaryScreenState extends State<PlantingSummaryScreen> {
             _row(
               profit >= 0 ? 'Laba' : 'Rugi',
               Rupiah.format(profit.abs()),
-              color: profit >= 0 ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+              color: profit >= 0 ? AppColors.primary : AppColors.danger,
               bold: true,
             ),
             const Divider(),

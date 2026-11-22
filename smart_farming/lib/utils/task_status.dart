@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 String taskStatusLabel(dynamic status) {
   return status.toString().replaceAll('_', ' ').toUpperCase();
@@ -7,17 +8,17 @@ String taskStatusLabel(dynamic status) {
 Color taskStatusColor(dynamic status) {
   switch (status) {
     case 'menunggu':
-      return Colors.orange;
+      return AppColors.warning;
     case 'dikerjakan':
-      return Colors.blue;
+      return AppColors.water;
     case 'menunggu_verifikasi':
-      return Colors.purple;
+      return AppColors.soil;
     case 'selesai':
-      return Colors.green;
+      return AppColors.primary;
     case 'ditolak':
     case 'batal':
-      return Colors.red;
+      return AppColors.danger;
     default:
-      return Colors.grey;
+      return AppColors.textMuted;
   }
 }

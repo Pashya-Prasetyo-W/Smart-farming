@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import '../../utils/search.dart';
 import 'planting_summary_screen.dart';
 import '../../widgets/search_field.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
 
 class FinanceScreen extends StatefulWidget {
   const FinanceScreen({super.key});
@@ -32,11 +34,8 @@ class _FinanceScreenState extends State<FinanceScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Keuangan & HPP',
-          style: TextStyle(color: Colors.white),
+          'Keuangan & HPP'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -265,36 +264,36 @@ class _FinanceListTabState extends State<_FinanceListTab> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : (_finances == null || _finances!.isEmpty)
-          ? const Center(child: Text('Belum ada catatan keuangan.'))
+          ? const EmptyState(message: 'Belum ada catatan keuangan.')
           : Column(
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  color: Colors.green[50],
+                  color: AppColors.primarySoft,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildSummary(
                         'Pemasukan',
                         _calculateTotal('pemasukan'),
-                        Colors.green,
+                        AppColors.primary,
                       ),
                       _buildSummary(
                         'Pengeluaran',
                         _calculateTotal('pengeluaran'),
-                        Colors.red,
+                        AppColors.danger,
                       ),
                       _buildSummary(
                         'Beli Stok',
                         _stockPurchaseTotal(),
-                        Colors.blueGrey,
+                        AppColors.textMuted,
                       ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: finances.isEmpty
-                      ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+                      ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
                       : ListView.builder(
                     itemCount: finances.length,
                     itemBuilder: (context, index) {
@@ -303,7 +302,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                       return ListTile(
                         leading: Icon(
                           isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                          color: isIncome ? Colors.green : Colors.red,
+                          color: isIncome ? AppColors.primary : AppColors.danger,
                         ),
                         title: Text(f['description']),
                         subtitle: Text(
@@ -313,7 +312,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
                         trailing: Text(
                           '${isIncome ? "+" : "-"} Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(double.parse(f['amount'].toString()))}',
                           style: TextStyle(
-                            color: isIncome ? Colors.green : Colors.red,
+                            color: isIncome ? AppColors.primary : AppColors.danger,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -325,7 +324,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddFinanceDialog,
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -348,7 +347,7 @@ class _FinanceListTabState extends State<_FinanceListTab> {
   Widget _buildSummary(String title, double amount, Color color) {
     return Column(
       children: [
-        Text(title, style: const TextStyle(color: Colors.grey)),
+        Text(title, style: const TextStyle(color: AppColors.textMuted)),
         Text(
           'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(amount)}',
           style: TextStyle(
@@ -437,7 +436,7 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
   Widget build(BuildContext context) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_activePlantings.isEmpty)
-      return const Center(child: Text('Tidak ada siklus tanam aktif.'));
+      return const EmptyState(message: 'Tidak ada siklus tanam aktif.');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -505,7 +504,7 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
           ElevatedButton(
             onPressed: _isCalculating ? null : _calculateHpp,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: AppColors.primary,
               minimumSize: const Size(double.infinity, 50),
             ),
             child: _isCalculating
@@ -524,9 +523,9 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green[50],
+                color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green),
+                border: Border.all(color: AppColors.primary),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,7 +557,7 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
                       '(Akumulasi otomatis dari seluruh Riwayat Pengeluaran Kas yang dialokasikan untuk siklus tanam ini)',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey,
+                        color: AppColors.textMuted,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -589,7 +588,7 @@ class _HppCalculatorTabState extends State<_HppCalculatorTab> {
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: AppColors.primary,
                           ),
                         ),
                       ],

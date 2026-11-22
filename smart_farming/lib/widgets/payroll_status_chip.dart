@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class PayrollStatusChip extends StatelessWidget {
   const PayrollStatusChip({super.key, required this.status});
@@ -13,15 +14,15 @@ class PayrollStatusChip extends StatelessWidget {
     switch (status) {
       case 'disetujui':
         label = 'Disetujui';
-        color = const Color(0xFF1565C0);
+        color = AppColors.water;
         break;
       case 'dibayar':
         label = 'Dibayar';
-        color = const Color(0xFF2E7D32);
+        color = AppColors.primary;
         break;
       default:
         label = 'Draf';
-        color = const Color(0xFF546E7A);
+        color = AppColors.textMuted;
     }
 
     return Container(

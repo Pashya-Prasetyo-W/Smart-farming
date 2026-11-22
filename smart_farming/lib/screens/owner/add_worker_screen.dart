@@ -5,6 +5,7 @@ import '../../services/worker_service.dart';
 import '../../utils/password_generator.dart';
 import '../../widgets/benefit_editor.dart';
 import '../../widgets/wage_editor.dart';
+import '../../theme/app_theme.dart';
 
 class AddWorkerScreen extends StatefulWidget {
   const AddWorkerScreen({super.key});
@@ -141,11 +142,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Tambah $_roleLabel',
-          style: TextStyle(color: Colors.white),
+          'Tambah $_roleLabel'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -272,7 +270,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                   onSelected: (selected) {
                     setState(() => _workDays[day] = selected);
                   },
-                  selectedColor: const Color(0xFFC8E6C9),
+                  selectedColor: AppColors.primaryContainer,
                 );
               }).toList(),
             ),
@@ -302,7 +300,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading

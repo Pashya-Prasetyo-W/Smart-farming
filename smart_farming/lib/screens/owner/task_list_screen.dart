@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/task_service.dart';
 import '../../utils/rupiah.dart';
@@ -6,6 +7,9 @@ import 'task_detail_screen.dart';
 import '../../utils/search.dart';
 import '../../utils/task_status.dart';
 import '../../widgets/search_field.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
+import 'add_task_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
@@ -16,13 +20,22 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> {
   bool _isLoading = true;
+  bool _canCreate = false;
   List<dynamic>? _tasks;
   String _query = '';
 
   @override
   void initState() {
     super.initState();
+    _loadRole();
     _fetchTasks();
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString('role');
+    if (!mounted) return;
+    setState(() => _canCreate = role == 'pemilik' || role == 'mandor');
   }
 
   void _fetchTasks() async {
@@ -47,16 +60,86 @@ class _TaskListScreenState extends State<TaskListScreen> {
     }).toList();
   }
 
+  Future<void> _openDetail(dynamic task) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskDetailScreen(taskId: task['id']),
+      ),
+    );
+    _fetchTasks();
+  }
+
+  Future<void> _openCreate() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddTaskScreen()),
+    );
+    _fetchTasks();
+  }
+
+  Widget _taskCard(dynamic task) {
+    final statusColor = taskStatusColor(task['status']);
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: InkWell(
+        onTap: () => _openDetail(task),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      task['title'],
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  StatusPill(
+                    label: taskStatusLabel(task['status']),
+                    color: statusColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              InfoLine(
+                icon: Icons.landscape_rounded,
+                text: '${task['planting']['land']['name']}',
+              ),
+              InfoLine(
+                icon: Icons.person_rounded,
+                text: '${task['assignee']?['name'] ?? 'Belum ada pelaksana'}',
+              ),
+              if (task['wage_amount'] != null)
+                InfoLine(
+                  icon: Icons.payments_rounded,
+                  text: 'Upah tugas ${Rupiah.format(task['wage_amount'])}',
+                ),
+              InfoLine(
+                icon: Icons.event_rounded,
+                text:
+                    'Tenggat ${task['due_date'].toString().substring(0, 10)}',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tasks = _filteredTasks;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Daftar Tugas',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF2E7D32),
+        title: const Text('Daftar Tugas'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: SearchField(
@@ -65,97 +148,34 @@ class _TaskListScreenState extends State<TaskListScreen> {
           ),
         ),
       ),
+      floatingActionButton: _canCreate
+          ? FloatingActionButton.extended(
+              onPressed: _openCreate,
+              icon: const Icon(Icons.add_task_rounded),
+              label: const Text('Buat Tugas'),
+            )
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _tasks == null || _tasks!.isEmpty
-          ? const Center(child: Text('Belum ada tugas.'))
+          ? const EmptyState(
+              message: 'Belum ada tugas.',
+              icon: Icons.task_alt_rounded,
+            )
           : tasks.isEmpty
-          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          ? EmptyState(
+              message: 'Tidak ada hasil untuk "$_query".',
+              icon: Icons.search_off_rounded,
+            )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page,
+                AppSpacing.page,
+                AppSpacing.page,
+                88,
+              ),
               itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                final task = tasks[index];
-
-                final statusColor = taskStatusColor(task['status']);
-
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            TaskDetailScreen(taskId: task['id']),
-                      ),
-                    ).then((_) => _fetchTasks());
-                  },
-                  child: Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  task['title'],
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  taskStatusLabel(task['status']),
-                                  style: TextStyle(
-                                    color: statusColor,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Lahan: ${task['planting']['land']['name']}',
-                            style: TextStyle(color: Colors.grey[700]),
-                          ),
-                          Text(
-                            'Pelaksana: ${task['assignee']?['name'] ?? 'Belum ada'}',
-                            style: TextStyle(color: Colors.grey[700]),
-                          ),
-                          if (task['wage_amount'] != null)
-                            Text(
-                              'Upah tugas: ${Rupiah.format(task['wage_amount'])}',
-                              style: TextStyle(color: Colors.grey[700]),
-                            ),
-                          const Divider(),
-                          Text(
-                            'Deadline: ${task['due_date'].toString().substring(0, 10)}',
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+              itemBuilder: (context, index) => _taskCard(tasks[index]),
             ),
     );
   }

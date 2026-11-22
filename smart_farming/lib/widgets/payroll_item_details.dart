@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/attendance_format.dart';
 import '../utils/rupiah.dart';
+import '../theme/app_theme.dart';
 
 String payrollTypeLabel(dynamic type) {
   switch (type) {
@@ -52,7 +53,7 @@ List<Widget> payrollItemLines(Map<String, dynamic> item) {
           padding: const EdgeInsets.only(top: 4),
           child: Text(
             dates.map(formatShortDate).join(', '),
-            style: TextStyle(color: Colors.grey[700], fontSize: 12),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
         ),
       );
@@ -85,7 +86,7 @@ List<Widget> payrollItemLines(Map<String, dynamic> item) {
         padding: const EdgeInsets.only(top: 4),
         child: Text(
           item['note'].toString(),
-          style: const TextStyle(color: Color(0xFFEF6C00), fontSize: 12),
+          style: const TextStyle(color: AppColors.warning, fontSize: 12),
         ),
       ),
     );

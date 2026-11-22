@@ -6,6 +6,7 @@ import '../../utils/currency_formatter.dart';
 
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../../theme/app_theme.dart';
 
 class AddLandScreen extends StatefulWidget {
   const AddLandScreen({super.key});
@@ -85,11 +86,8 @@ class _AddLandScreenState extends State<AddLandScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Tambah Lahan',
-          style: TextStyle(color: Colors.white),
+          'Tambah Lahan'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -131,7 +129,7 @@ class _AddLandScreenState extends State<AddLandScreen> {
             const SizedBox(height: 8),
             const Text(
               'Pilih titik lokasi lahan dengan mengetuk pada peta di bawah:',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             const SizedBox(height: 16),
 
@@ -139,7 +137,7 @@ class _AddLandScreenState extends State<AddLandScreen> {
               height: 250,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey),
+                border: Border.all(color: AppColors.textMuted),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -171,7 +169,7 @@ class _AddLandScreenState extends State<AddLandScreen> {
                           height: 40,
                           child: const Icon(
                             Icons.location_on,
-                            color: Colors.red,
+                            color: AppColors.danger,
                             size: 40,
                           ),
                         ),
@@ -221,7 +219,7 @@ class _AddLandScreenState extends State<AddLandScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading

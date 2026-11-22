@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../services/incident_service.dart';
 import '../../services/land_service.dart';
+import '../../theme/app_theme.dart';
 
 class AddIncidentScreen extends StatefulWidget {
   const AddIncidentScreen({super.key});
@@ -97,11 +98,8 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Lapor Insiden',
-          style: TextStyle(color: Colors.white),
+          'Lapor Insiden'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isFetchingLands
           ? const Center(child: CircularProgressIndicator())
@@ -164,9 +162,9 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
                       height: 150,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: AppColors.outline,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey),
+                        border: Border.all(color: AppColors.textMuted),
                       ),
                       child: _selectedImage != null
                           ? ClipRRect(
@@ -182,11 +180,11 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
                                 Icon(
                                   Icons.camera_alt,
                                   size: 40,
-                                  color: Colors.grey,
+                                  color: AppColors.textMuted,
                                 ),
                                 Text(
                                   'Ketuk untuk memilih foto',
-                                  style: TextStyle(color: Colors.grey),
+                                  style: TextStyle(color: AppColors.textMuted),
                                 ),
                               ],
                             ),
@@ -197,7 +195,7 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[800],
+                      backgroundColor: AppColors.danger,
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: _isLoading

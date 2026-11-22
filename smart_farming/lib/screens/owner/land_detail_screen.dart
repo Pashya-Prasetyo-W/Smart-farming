@@ -11,6 +11,7 @@ import '../mandor/harvest_log_screen.dart';
 import 'add_planting_screen.dart';
 import 'edit_land_screen.dart';
 import 'planting_summary_screen.dart';
+import '../../theme/app_theme.dart';
 
 class LandDetailScreen extends StatefulWidget {
   final dynamic land;
@@ -245,7 +246,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
               );
               if (success && mounted) _fetchMilestones();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             child: const Text('Hapus', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -266,7 +267,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isAchieved ? Colors.green : Colors.grey.shade300,
+          color: isAchieved ? AppColors.primary : AppColors.outline,
         ),
       ),
       child: Padding(
@@ -292,7 +293,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                       if (isAchieved)
                         const Icon(
                           Icons.check_circle,
-                          color: Colors.green,
+                          color: AppColors.primary,
                           size: 20,
                         ),
                     ],
@@ -307,7 +308,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                     const PopupMenuItem(value: 'edit', child: Text('Edit')),
                     const PopupMenuItem(
                       value: 'delete',
-                      child: Text('Hapus', style: TextStyle(color: Colors.red)),
+                      child: Text('Hapus', style: TextStyle(color: AppColors.danger)),
                     ),
                   ],
                 ),
@@ -315,14 +316,14 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
             ),
             Text(
               'Deadline: ${m['deadline'].toString().substring(0, 10)}',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 12),
 
             LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.grey[200],
-              color: isAchieved ? Colors.green : Colors.orange,
+              backgroundColor: AppColors.outline,
+              color: isAchieved ? AppColors.primary : AppColors.warning,
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -385,7 +386,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                 _refreshLand();
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             child: const Text(
               'Ya, Batalkan',
               style: TextStyle(color: Colors.white),
@@ -403,9 +404,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(land['name'], style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(land['name']),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit, color: Colors.white),
@@ -434,7 +433,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -448,7 +447,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                     children: [
                       const Icon(
                         Icons.straighten,
-                        color: Color(0xFF2E7D32),
+                        color: AppColors.primary,
                         size: 24,
                       ),
                       const SizedBox(width: 12),
@@ -468,7 +467,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                               '${NumberFormat.decimalPattern('id_ID').format(double.parse(land['area_sqm'].toString()))} m²',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey[800],
+                                color: AppColors.textDark,
                               ),
                             ),
                           ],
@@ -480,7 +479,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.map, color: Color(0xFF2E7D32), size: 24),
+                      const Icon(Icons.map, color: AppColors.primary, size: 24),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -498,7 +497,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                               '${land['location_lat']}, ${land['location_long']}',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey[800],
+                                color: AppColors.textDark,
                               ),
                             ),
                           ],
@@ -531,7 +530,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                 padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: Text(
                   'Belum ada target untuk lahan ini.',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: AppColors.textMuted),
                 ),
               ),
             ..._milestones.map((m) => _buildMilestoneCard(m)),
@@ -548,8 +547,8 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
-                  border: Border.all(color: Colors.green),
+                  color: AppColors.primarySoft,
+                  border: Border.all(color: AppColors.primary),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -560,7 +559,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green,
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -572,7 +571,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                               onPressed: () =>
                                   _openSummary(activePlanting['id']),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
+                                backgroundColor: AppColors.primary,
                               ),
                               child: const Text(
                                 'PANEN & RINGKASAN',
@@ -586,7 +585,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                               onPressed: () =>
                                   _showCancelDialog(activePlanting['id']),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
+                                backgroundColor: AppColors.danger,
                               ),
                               child: const Text(
                                 'GAGAL',
@@ -602,7 +601,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                         child: ElevatedButton(
                           onPressed: () => _openHarvestLog(activePlanting),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: AppColors.primary,
                           ),
                           child: const Text(
                             'CATAT & LIHAT PANEN',
@@ -633,7 +632,7 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
+                  backgroundColor: AppColors.primary,
                   minimumSize: const Size(double.infinity, 48),
                 ),
               ),

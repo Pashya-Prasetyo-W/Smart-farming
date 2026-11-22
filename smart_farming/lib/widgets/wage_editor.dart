@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../utils/currency_formatter.dart';
 import '../utils/rupiah.dart';
+import '../theme/app_theme.dart';
 
 class AllowanceEntry {
   AllowanceEntry({String name = '', String amount = ''})
@@ -184,7 +185,7 @@ class _WageEditorState extends State<WageEditor> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.amber[50],
+              color: AppColors.warningSoft,
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Text(
@@ -219,7 +220,7 @@ class _WageEditorState extends State<WageEditor> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 'Belum ada tunjangan.',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: AppColors.textMuted),
               ),
             ),
           for (var i = 0; i < draft.allowances.length; i++)
@@ -244,7 +245,7 @@ class _WageEditorState extends State<WageEditor> {
                         ),
                         IconButton(
                           tooltip: 'Hapus',
-                          icon: const Icon(Icons.delete, color: Colors.red),
+                          icon: const Icon(Icons.delete, color: AppColors.danger),
                           onPressed: () => _removeAllowance(i),
                         ),
                       ],

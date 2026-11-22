@@ -4,10 +4,11 @@ import '../../services/analytics_service.dart';
 import '../../utils/attendance_format.dart';
 import '../../utils/rupiah.dart';
 import 'planting_summary_screen.dart';
+import '../../theme/app_theme.dart';
 
-const _green = Color(0xFF2E7D32);
-const _red = Color(0xFFC62828);
-const _orange = Color(0xFFEF6C00);
+const _green = AppColors.primary;
+const _red = AppColors.danger;
+const _orange = AppColors.warning;
 
 String _money(dynamic value) {
   final number = num.tryParse(value?.toString() ?? '') ?? 0;
@@ -18,7 +19,7 @@ Color _signColor(dynamic value) {
   final number = num.tryParse(value?.toString() ?? '') ?? 0;
   if (number < 0) return _red;
   if (number > 0) return _green;
-  return Colors.grey;
+  return AppColors.textMuted;
 }
 
 String _kg(dynamic value) {
@@ -60,11 +61,8 @@ class AnalyticsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            'Analitik Laba & Risiko',
-            style: TextStyle(color: Colors.white),
+            'Analitik Laba & Risiko'
           ),
-          backgroundColor: _green,
-          iconTheme: const IconThemeData(color: Colors.white),
           bottom: const TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
@@ -226,7 +224,7 @@ class _ProfitTabState extends State<_ProfitTab> {
               ),
               Text(
                 '${formatShortDate(cycle['plant_date'])} • ${cycle['duration_days']} hari',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
               const SizedBox(height: 8),
               _line('Pendapatan', _money(cycle['income'])),
@@ -265,7 +263,7 @@ class _ProfitTabState extends State<_ProfitTab> {
             Text(
               '${land['cycles']} siklus • ${land['running']} berjalan • '
               '${land['harvested']} panen • ${land['failed']} gagal',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             const SizedBox(height: 8),
             _line('Pendapatan', _money(land['income'])),
@@ -471,7 +469,7 @@ class _RiskTabState extends State<_RiskTab> {
             ),
             Text(
               _harvestText((item['days_to_harvest'] as num).toInt()),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             if (factors.isEmpty)
               const Padding(

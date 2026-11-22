@@ -7,6 +7,7 @@ import '../../widgets/attendance_status_chip.dart';
 import '../../widgets/reason_dialog.dart';
 import '../../widgets/search_field.dart';
 import 'record_attendance_screen.dart';
+import '../../theme/app_theme.dart';
 
 class AttendanceReviewScreen extends StatefulWidget {
   const AttendanceReviewScreen({super.key});
@@ -150,7 +151,7 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'Melewati 24 jam, dinaikkan ke pemilik.',
-                  style: TextStyle(color: Color(0xFFEF6C00), fontSize: 12),
+                  style: TextStyle(color: AppColors.warning, fontSize: 12),
                 ),
               ),
             if (status == 'keberatan' && item['objection_note'] != null)
@@ -164,7 +165,7 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
                 child: Text(
                   'Ditolak: ${item['reject_reason']}'
                   '${item['is_final'] == true ? ' (final)' : ''}',
-                  style: const TextStyle(color: Color(0xFFC62828)),
+                  style: const TextStyle(color: AppColors.danger),
                 ),
               ),
             if (!actionable && reviewer != null)
@@ -172,7 +173,7 @@ class _AttendanceReviewScreenState extends State<AttendanceReviewScreen> {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   'Diproses oleh ${reviewer['name']}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ),
             if (actionable) ...[

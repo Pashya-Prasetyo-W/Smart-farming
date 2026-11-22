@@ -5,6 +5,7 @@ import '../../services/worker_service.dart';
 import '../../utils/password_generator.dart';
 import '../../widgets/benefit_editor.dart';
 import '../../widgets/wage_editor.dart';
+import '../../theme/app_theme.dart';
 
 class EditWorkerScreen extends StatefulWidget {
   final Map<String, dynamic> worker;
@@ -181,9 +182,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit $_roleLabel', style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text('Edit $_roleLabel'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -298,7 +297,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
                   onSelected: (selected) {
                     setState(() => _workDays[day] = selected);
                   },
-                  selectedColor: const Color(0xFFC8E6C9),
+                  selectedColor: AppColors.primaryContainer,
                 );
               }).toList(),
             ),
@@ -328,7 +327,7 @@ class _EditWorkerScreenState extends State<EditWorkerScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading

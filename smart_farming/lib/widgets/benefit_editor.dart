@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class BenefitEntry {
   BenefitEntry({required this.type, String name = '', String description = ''})
@@ -62,7 +63,7 @@ class BenefitEditor extends StatefulWidget {
 }
 
 class _BenefitEditorState extends State<BenefitEditor> {
-  static const Color _green = Color(0xFF2E7D32);
+  static const Color _green = AppColors.primary;
 
   String _typeLabel(String type) {
     return type == 'makan' ? 'Tunjangan Makan' : 'Jaminan Kesehatan';
@@ -98,7 +99,7 @@ class _BenefitEditorState extends State<BenefitEditor> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(
               'Belum ada jaminan. Tambahkan sesuai kebutuhan.',
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: AppColors.textMuted),
             ),
           ),
         for (var i = 0; i < widget.entries.length; i++)
@@ -121,7 +122,7 @@ class _BenefitEditorState extends State<BenefitEditor> {
                       ),
                       IconButton(
                         tooltip: 'Hapus',
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete, color: AppColors.danger),
                         onPressed: () => _remove(i),
                       ),
                     ],

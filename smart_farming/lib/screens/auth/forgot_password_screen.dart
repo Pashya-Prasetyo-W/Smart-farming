@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../services/auth_service.dart';
+import '../../theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key, this.initialEmail = ''});
@@ -120,11 +121,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Lupa Password',
-          style: TextStyle(color: Colors.white),
+          'Lupa Password'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -134,7 +132,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.amber[50],
+                color: AppColors.warningSoft,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
@@ -157,7 +155,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _sendCode,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -207,7 +205,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _resetPassword,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),

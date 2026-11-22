@@ -15,6 +15,8 @@ import '../../utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../utils/search.dart';
 import '../../widgets/search_field.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -57,8 +59,7 @@ class _InventoryScreenState extends State<InventoryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventaris', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF2E7D32),
+        title: const Text('Inventaris'),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -214,7 +215,7 @@ class _ToolTabState extends State<_ToolTab> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             child: const Text('Hapus', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -246,9 +247,9 @@ class _ToolTabState extends State<_ToolTab> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _tools == null || _tools!.isEmpty
-          ? const Center(child: Text('Belum ada alat.'))
+          ? const EmptyState(message: 'Belum ada alat.')
           : tools.isEmpty
-          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
           : ListView.builder(
               itemCount: tools.length,
               itemBuilder: (context, index) {
@@ -259,7 +260,7 @@ class _ToolTabState extends State<_ToolTab> {
                     vertical: 8,
                   ),
                   child: ListTile(
-                    leading: const Icon(Icons.build, color: Color(0xFF2E7D32)),
+                    leading: const Icon(Icons.build, color: AppColors.primary),
                     title: Text(
                       tool['name'],
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -279,7 +280,7 @@ class _ToolTabState extends State<_ToolTab> {
                         IconButton(
                           icon: const Icon(
                             Icons.edit,
-                            color: Colors.blue,
+                            color: AppColors.water,
                             size: 20,
                           ),
                           onPressed: () => _showEditDialog(tool),
@@ -287,7 +288,7 @@ class _ToolTabState extends State<_ToolTab> {
                         IconButton(
                           icon: const Icon(
                             Icons.delete,
-                            color: Colors.red,
+                            color: AppColors.danger,
                             size: 20,
                           ),
                           onPressed: () => _showDeleteDialog(tool),
@@ -300,7 +301,7 @@ class _ToolTabState extends State<_ToolTab> {
             ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'fabTool',
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () async {
           await Navigator.push(
@@ -424,7 +425,7 @@ class _ResourceTabState extends State<_ResourceTab> {
             },
 
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: AppColors.primary,
             ),
             child: const Text('Simpan', style: TextStyle(color: Colors.white)),
           ),
@@ -460,7 +461,7 @@ class _ResourceTabState extends State<_ResourceTab> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             child: const Text('Hapus', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -510,9 +511,9 @@ class _ResourceTabState extends State<_ResourceTab> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _resources == null || _resources!.isEmpty
-          ? const Center(child: Text('Belum ada bahan.'))
+          ? const EmptyState(message: 'Belum ada bahan.')
           : resources.isEmpty
-          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
           : ListView.builder(
               itemCount: resources.length,
               itemBuilder: (context, index) {
@@ -525,7 +526,7 @@ class _ResourceTabState extends State<_ResourceTab> {
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.science, color: Colors.blue),
+                        leading: const Icon(Icons.science, color: AppColors.water),
                         title: Text(
                           res['name'],
                           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -543,7 +544,7 @@ class _ResourceTabState extends State<_ResourceTab> {
                             decimalDigits: 0,
                           ).format(double.parse(res['unit_price'].toString())),
                           style: const TextStyle(
-                            color: Colors.green,
+                            color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -562,7 +563,7 @@ class _ResourceTabState extends State<_ResourceTab> {
                               IconButton(
                                 icon: const Icon(
                                   Icons.edit,
-                                  color: Colors.blue,
+                                  color: AppColors.water,
                                   size: 20,
                                 ),
                                 onPressed: () => _showEditDialog(res),
@@ -570,7 +571,7 @@ class _ResourceTabState extends State<_ResourceTab> {
                               IconButton(
                                 icon: const Icon(
                                   Icons.delete,
-                                  color: Colors.red,
+                                  color: AppColors.danger,
                                   size: 20,
                                 ),
                                 onPressed: () => _showDeleteDialog(res),
@@ -586,7 +587,7 @@ class _ResourceTabState extends State<_ResourceTab> {
             ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'fabResource',
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.water,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () async {
           await Navigator.push(

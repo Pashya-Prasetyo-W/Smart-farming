@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/dashboard_service.dart';
+import '../../services/review_queue_service.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
+import '../../widgets/role_shell.dart';
 import '../attendance/attendance_review_screen.dart';
 import '../attendance/my_attendance_screen.dart';
-import '../payroll/my_payslip_screen.dart';
-import '../reports/report_review_screen.dart';
+import '../more/more_screen.dart';
 import '../owner/add_task_screen.dart';
 import '../owner/failure_log_screen.dart';
 import '../owner/incident_list_screen.dart';
@@ -13,26 +16,137 @@ import '../owner/inventory_screen.dart';
 import '../owner/land_list_screen.dart';
 import '../owner/task_list_screen.dart';
 import '../owner/worker_list_screen.dart';
-import '../profile/profile_screen.dart';
+import '../payroll/my_payslip_screen.dart';
+import '../reports/report_review_screen.dart';
 
-class MandorDashboardScreen extends StatefulWidget {
+class MandorDashboardScreen extends StatelessWidget {
   const MandorDashboardScreen({super.key});
 
   @override
-  State<MandorDashboardScreen> createState() => _MandorDashboardScreenState();
+  Widget build(BuildContext context) {
+    return RoleShell(
+      tabs: [
+        ShellTab(
+          label: 'Beranda',
+          icon: Icons.home_outlined,
+          selectedIcon: Icons.home_rounded,
+          builder: (context, goToTab) => _MandorHome(goToTab: goToTab),
+        ),
+        ShellTab(
+          label: 'Tugas',
+          icon: Icons.task_alt_outlined,
+          selectedIcon: Icons.task_alt_rounded,
+          builder: (context, goToTab) => const TaskListScreen(),
+        ),
+        ShellTab(
+          label: 'Lahan',
+          icon: Icons.landscape_outlined,
+          selectedIcon: Icons.landscape_rounded,
+          builder: (context, goToTab) => const LandListScreen(),
+        ),
+        ShellTab(
+          label: 'Inventaris',
+          icon: Icons.inventory_2_outlined,
+          selectedIcon: Icons.inventory_2_rounded,
+          builder: (context, goToTab) => const InventoryScreen(),
+        ),
+        ShellTab(
+          label: 'Lainnya',
+          icon: Icons.grid_view_outlined,
+          selectedIcon: Icons.grid_view_rounded,
+          refreshOnOpen: false,
+          builder: (context, goToTab) => MoreScreen(
+            groups: [
+              MoreGroupData(
+                title: 'Kerja Saya',
+                items: [
+                  MoreItem(
+                    label: 'Absensi Saya',
+                    subtitle: 'Absen masuk dan pulang',
+                    icon: Icons.fingerprint,
+                    builder: () => const MyAttendanceScreen(),
+                  ),
+                  MoreItem(
+                    label: 'Slip Upah Saya',
+                    subtitle: 'Riwayat upah dan potongan',
+                    icon: Icons.receipt_long_rounded,
+                    color: AppColors.primaryDark,
+                    builder: () => const MyPayslipScreen(),
+                  ),
+                ],
+              ),
+              MoreGroupData(
+                title: 'Tim',
+                items: [
+                  MoreItem(
+                    label: 'Verifikasi Absensi',
+                    subtitle: 'Absensi buruh',
+                    icon: Icons.fact_check_rounded,
+                    color: AppColors.accent,
+                    builder: () => const AttendanceReviewScreen(),
+                  ),
+                  MoreItem(
+                    label: 'Verifikasi Laporan',
+                    subtitle: 'Laporan kerja buruh',
+                    icon: Icons.assignment_turned_in_rounded,
+                    color: AppColors.water,
+                    builder: () => const ReportReviewScreen(),
+                  ),
+                  MoreItem(
+                    label: 'Kelola Buruh',
+                    subtitle: 'Data buruh dan jadwal kerja',
+                    icon: Icons.people_alt_rounded,
+                    builder: () => const WorkerListScreen(),
+                  ),
+                ],
+              ),
+              MoreGroupData(
+                title: 'Lapangan',
+                items: [
+                  MoreItem(
+                    label: 'Laporan Insiden',
+                    subtitle: 'Kejadian yang dilaporkan di lahan',
+                    icon: Icons.warning_amber_rounded,
+                    color: AppColors.danger,
+                    builder: () => const IncidentListScreen(),
+                  ),
+                  MoreItem(
+                    label: 'Risiko Gagal Panen',
+                    subtitle: 'Cuaca dan laporan lapangan',
+                    icon: Icons.crisis_alert_rounded,
+                    color: AppColors.warning,
+                    builder: () => const FailureLogScreen(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class _MandorDashboardScreenState extends State<MandorDashboardScreen> {
+class _MandorHome extends StatefulWidget {
+  const _MandorHome({required this.goToTab});
+
+  final ValueChanged<int> goToTab;
+
+  @override
+  State<_MandorHome> createState() => _MandorHomeState();
+}
+
+class _MandorHomeState extends State<_MandorHome> {
   String _userName = 'Mandor';
   bool _isLoading = true;
-  int _currentIndex = 0;
   Map<String, dynamic>? _stats;
+  Map<String, int> _queue = {'attendance': 0, 'reports': 0};
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
-    _fetchStats();
+    _refreshAll();
   }
 
   Future<void> _loadUserData() async {
@@ -50,168 +164,146 @@ class _MandorDashboardScreenState extends State<MandorDashboardScreen> {
     });
   }
 
+  Future<void> _fetchQueue() async {
+    final counts = await ReviewQueueService().counts();
+    if (!mounted) return;
+    setState(() => _queue = counts);
+  }
+
+  Future<void> _refreshAll() async {
+    await Future.wait([_fetchStats(), _fetchQueue()]);
+  }
+
   void _open(Widget screen) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => screen),
-    ).then((_) => _fetchStats());
+    ).then((_) {
+      if (mounted) _refreshAll();
+    });
   }
 
-  Widget _statCard(String label, dynamic value, IconData icon) {
-    final scheme = Theme.of(context).colorScheme;
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-          child: Column(
-            children: [
-              Icon(icon, color: scheme.primary),
-              const SizedBox(height: 8),
-              Text(
-                '${value ?? 0}',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _content() {
+    final stats = _stats;
 
-  Widget _menuTile(String label, IconData icon, Widget screen) {
-    final scheme = Theme.of(context).colorScheme;
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => _open(screen),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: scheme.primary),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHome() {
     return RefreshIndicator(
-      onRefresh: _fetchStats,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'Halo, $_userName',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 4),
-          const Text('Mandor lapangan'),
-          const SizedBox(height: 16),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else
-            Row(
-              children: [
-                _statCard('Lahan', _stats?['total_lands'], Icons.landscape_rounded),
-                const SizedBox(width: 8),
-                _statCard(
-                  'Tugas Aktif',
-                  _stats?['active_tasks'],
-                  Icons.assignment_turned_in_rounded,
-                ),
-                const SizedBox(width: 8),
-                _statCard(
-                  'Buruh Aktif',
-                  _stats?['active_workers'],
-                  Icons.people_alt_rounded,
-                ),
-              ],
+      onRefresh: _refreshAll,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppHeader(
+              name: _userName,
+              roleLabel: 'Mandor Lapangan',
+              onAvatarTap: () => widget.goToTab(4),
             ),
-          const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.3,
-            children: [
-              _menuTile(
-                'Absensi Saya',
-                Icons.fingerprint,
-                const MyAttendanceScreen(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page,
+                AppSpacing.xl,
+                AppSpacing.page,
+                AppSpacing.xl,
               ),
-              _menuTile(
-                'Slip Upah Saya',
-                Icons.receipt_long_rounded,
-                const MyPayslipScreen(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SectionTitle('Ringkasan'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: StatCard(
+                          label: 'Lahan',
+                          value: '${stats?['total_lands'] ?? 0}',
+                          icon: Icons.landscape_rounded,
+                          color: AppColors.soil,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: StatCard(
+                          label: 'Tugas Aktif',
+                          value: '${stats?['active_tasks'] ?? 0}',
+                          icon: Icons.assignment_turned_in_rounded,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: StatCard(
+                          label: 'Buruh Aktif',
+                          value: '${stats?['active_workers'] ?? 0}',
+                          icon: Icons.people_alt_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  const SectionTitle('Perlu Diverifikasi'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 118,
+                          child: ActionTile(
+                            label: 'Verifikasi Absensi',
+                            icon: Icons.fact_check_rounded,
+                            color: AppColors.accent,
+                            badge: _queue['attendance'] ?? 0,
+                            onTap: () => _open(const AttendanceReviewScreen()),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: SizedBox(
+                          height: 118,
+                          child: ActionTile(
+                            label: 'Verifikasi Laporan',
+                            icon: Icons.assignment_turned_in_rounded,
+                            color: AppColors.water,
+                            badge: _queue['reports'] ?? 0,
+                            onTap: () => _open(const ReportReviewScreen()),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  const SectionTitle('Akses Cepat'),
+                  ActionGrid(children: [
+                    ActionTile(
+                      label: 'Absensi Saya',
+                      icon: Icons.fingerprint,
+                      onTap: () => _open(const MyAttendanceScreen()),
+                    ),
+                    ActionTile(
+                      label: 'Buat Tugas',
+                      icon: Icons.add_task_rounded,
+                      onTap: () => _open(const AddTaskScreen()),
+                    ),
+                    ActionTile(
+                      label: 'Slip Upah',
+                      icon: Icons.receipt_long_rounded,
+                      color: AppColors.primaryDark,
+                      onTap: () => _open(const MyPayslipScreen()),
+                    ),
+                  ]),
+                ],
               ),
-              _menuTile(
-                'Verifikasi Absensi',
-                Icons.fact_check_rounded,
-                const AttendanceReviewScreen(),
-              ),
-              _menuTile(
-                'Verifikasi Laporan',
-                Icons.assignment_turned_in_rounded,
-                const ReportReviewScreen(),
-              ),
-              _menuTile('Lahan & Siklus', Icons.landscape_rounded, const LandListScreen()),
-              _menuTile('Buat Tugas', Icons.add_task_rounded, const AddTaskScreen()),
-              _menuTile('Inventaris', Icons.inventory_2_rounded, const InventoryScreen()),
-              _menuTile('Kelola Buruh', Icons.people_alt_rounded, const WorkerListScreen()),
-              _menuTile(
-                'Laporan Insiden',
-                Icons.warning_amber_rounded,
-                const IncidentListScreen(),
-              ),
-              _menuTile(
-                'Risiko Gagal Panen',
-                Icons.crisis_alert_rounded,
-                const FailureLogScreen(),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final pages = <Widget>[
-      _buildHome(),
-      const TaskListScreen(),
-      const ProfileScreen(),
-    ];
-
     return Scaffold(
-      appBar: _currentIndex == 0 ? AppBar(title: const Text('Tani Pintar')) : null,
-      body: pages[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_rounded), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.task_alt_rounded), label: 'Tugas'),
-          NavigationDestination(icon: Icon(Icons.person_rounded), label: 'Profil'),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _content(),
     );
   }
 }

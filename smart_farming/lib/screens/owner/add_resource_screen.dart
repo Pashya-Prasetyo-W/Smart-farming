@@ -5,6 +5,7 @@ import '../../services/resource_service.dart';
 import 'package:flutter/services.dart';
 
 import '../../utils/currency_formatter.dart';
+import '../../theme/app_theme.dart';
 
 class AddResourceScreen extends StatefulWidget {
   const AddResourceScreen({super.key});
@@ -57,7 +58,6 @@ class _AddResourceScreenState extends State<AddResourceScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tambah Bahan'),
-        backgroundColor: const Color(0xFF2E7D32),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -108,7 +108,7 @@ class _AddResourceScreenState extends State<AddResourceScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading

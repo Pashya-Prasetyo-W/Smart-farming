@@ -4,6 +4,7 @@ import '../../services/attendance_service.dart';
 import '../../utils/attendance_format.dart';
 import '../../widgets/attendance_status_chip.dart';
 import '../../widgets/reason_dialog.dart';
+import '../../theme/app_theme.dart';
 
 class MyAttendanceScreen extends StatefulWidget {
   const MyAttendanceScreen({super.key});
@@ -159,7 +160,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+        Text(label, style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
         Text(
           value,
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -203,7 +204,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
               const SizedBox(height: 6),
               Text(
                 'Alasan ditolak: ${item['reject_reason']}',
-                style: const TextStyle(color: Color(0xFFC62828)),
+                style: const TextStyle(color: AppColors.danger),
               ),
             ],
             if (status == 'keberatan' && item['objection_note'] != null) ...[

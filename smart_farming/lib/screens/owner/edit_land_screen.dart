@@ -7,6 +7,7 @@ import '../../utils/currency_formatter.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
+import '../../theme/app_theme.dart';
 
 class EditLandScreen extends StatefulWidget {
   final Map<String, dynamic> land;
@@ -113,9 +114,7 @@ class _EditLandScreenState extends State<EditLandScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Lahan', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Edit Lahan'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -157,7 +156,7 @@ class _EditLandScreenState extends State<EditLandScreen> {
             const SizedBox(height: 8),
             const Text(
               'Pilih titik lokasi lahan dengan mengetuk pada peta di bawah:',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             const SizedBox(height: 16),
 
@@ -165,7 +164,7 @@ class _EditLandScreenState extends State<EditLandScreen> {
               height: 250,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey),
+                border: Border.all(color: AppColors.textMuted),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -197,7 +196,7 @@ class _EditLandScreenState extends State<EditLandScreen> {
                           height: 40,
                           child: const Icon(
                             Icons.location_on,
-                            color: Colors.red,
+                            color: AppColors.danger,
                             size: 40,
                           ),
                         ),
@@ -247,7 +246,7 @@ class _EditLandScreenState extends State<EditLandScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading

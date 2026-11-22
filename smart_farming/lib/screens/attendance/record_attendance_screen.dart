@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/attendance_service.dart';
 import '../../services/worker_service.dart';
 import '../../utils/attendance_format.dart';
+import '../../theme/app_theme.dart';
 
 class RecordAttendanceScreen extends StatefulWidget {
   const RecordAttendanceScreen({super.key});
@@ -122,7 +123,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 const SizedBox(height: 16),
                 ListTile(
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.grey.shade400),
+                    side: BorderSide(color: AppColors.outline),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   leading: const Icon(Icons.event_rounded),
@@ -133,7 +134,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 const SizedBox(height: 16),
                 ListTile(
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.grey.shade400),
+                    side: BorderSide(color: AppColors.outline),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   leading: const Icon(Icons.login_rounded),
@@ -144,7 +145,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 const SizedBox(height: 16),
                 ListTile(
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.grey.shade400),
+                    side: BorderSide(color: AppColors.outline),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   leading: const Icon(Icons.logout_rounded),
@@ -162,7 +163,7 @@ class _RecordAttendanceScreenState extends State<RecordAttendanceScreen> {
                 const SizedBox(height: 8),
                 const Text(
                   'Absensi yang Anda catat langsung berstatus terverifikasi.',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: AppColors.textMuted),
                 ),
                 const SizedBox(height: 24),
                 FilledButton(

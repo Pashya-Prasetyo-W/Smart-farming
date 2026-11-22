@@ -5,6 +5,7 @@ import '../../services/task_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'dart:io';
+import '../../theme/app_theme.dart';
 
 class ReportTaskScreen extends StatefulWidget {
   final int taskId;
@@ -153,8 +154,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lapor Tugas', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF2E7D32),
+        title: const Text('Lapor Tugas'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -168,9 +168,9 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                   height: 150,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: AppColors.outline,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey),
+                    border: Border.all(color: AppColors.textMuted),
                   ),
                   child: _selectedImage != null
                       ? ClipRRect(
@@ -183,11 +183,11 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                             Icon(
                               Icons.camera_alt,
                               size: 40,
-                              color: Colors.grey,
+                              color: AppColors.textMuted,
                             ),
                             Text(
                               'Ambil Bukti Foto',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: AppColors.textMuted),
                             ),
                           ],
                         ),
@@ -223,7 +223,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
                             'Maks: ${res['pivot']['max_allocated_qty']} ${res['unit']}',
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.grey,
+                              color: AppColors.textMuted,
                             ),
                           ),
                         ],
@@ -326,7 +326,7 @@ class _ReportTaskScreenState extends State<ReportTaskScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submitReport,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: AppColors.primary,
                 minimumSize: const Size(double.infinity, 48),
               ),
               child: _isLoading

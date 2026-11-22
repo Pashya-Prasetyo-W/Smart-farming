@@ -2,24 +2,71 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/worker_service.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
+import '../../widgets/role_shell.dart';
 import '../attendance/my_attendance_screen.dart';
-import '../payroll/my_payslip_screen.dart';
 import '../owner/task_list_screen.dart';
+import '../payroll/my_payslip_screen.dart';
 import '../profile/profile_screen.dart';
 import 'add_incident_screen.dart';
 
-class WorkerDashboardScreen extends StatefulWidget {
+class WorkerDashboardScreen extends StatelessWidget {
   const WorkerDashboardScreen({super.key});
 
   @override
-  State<WorkerDashboardScreen> createState() => _WorkerDashboardScreenState();
+  Widget build(BuildContext context) {
+    return RoleShell(
+      tabs: [
+        ShellTab(
+          label: 'Beranda',
+          icon: Icons.home_outlined,
+          selectedIcon: Icons.home_rounded,
+          builder: (context, goToTab) => _WorkerHome(goToTab: goToTab),
+        ),
+        ShellTab(
+          label: 'Tugas',
+          icon: Icons.task_alt_outlined,
+          selectedIcon: Icons.task_alt_rounded,
+          builder: (context, goToTab) => const TaskListScreen(),
+        ),
+        ShellTab(
+          label: 'Absensi',
+          icon: Icons.fingerprint,
+          selectedIcon: Icons.fingerprint,
+          builder: (context, goToTab) => const MyAttendanceScreen(),
+        ),
+        ShellTab(
+          label: 'Upah',
+          icon: Icons.receipt_long_outlined,
+          selectedIcon: Icons.receipt_long_rounded,
+          builder: (context, goToTab) => const MyPayslipScreen(),
+        ),
+        ShellTab(
+          label: 'Profil',
+          icon: Icons.person_outline_rounded,
+          selectedIcon: Icons.person_rounded,
+          refreshOnOpen: false,
+          builder: (context, goToTab) => const ProfileScreen(),
+        ),
+      ],
+    );
+  }
 }
 
-class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
+class _WorkerHome extends StatefulWidget {
+  const _WorkerHome({required this.goToTab});
+
+  final ValueChanged<int> goToTab;
+
+  @override
+  State<_WorkerHome> createState() => _WorkerHomeState();
+}
+
+class _WorkerHomeState extends State<_WorkerHome> {
   String _userName = 'Buruh';
   bool _isLoading = true;
   Map<String, dynamic>? _stats;
-  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -27,203 +74,115 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
     _loadData();
   }
 
-  void _loadData() async {
+  Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    _userName = prefs.getString('name') ?? 'Buruh';
-
     final data = await WorkerService().getWorkerStats();
     if (!mounted) return;
 
     setState(() {
+      _userName = prefs.getString('name') ?? 'Buruh';
       _stats = data;
       _isLoading = false;
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> _pages = [
-      _buildHomeTab(),
-      const TaskListScreen(),
-      const ProfileScreen(),
-    ];
+  Widget _content() {
+    final stats = _stats!;
 
-    return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF2E7D32),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tugas'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomeTab() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Dashboard Buruh',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF2E7D32),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _stats == null
-          ? const Center(child: Text('Gagal memuat data.'))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppHeader(
+              name: _userName,
+              roleLabel: 'Buruh',
+              onAvatarTap: () => widget.goToTab(4),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page,
+                AppSpacing.xl,
+                AppSpacing.page,
+                AppSpacing.xl,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Halo,',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-                  Text(
-                    _userName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
+                  const SectionTitle('Ringkasan'),
                   Row(
                     children: [
-                      _buildStatCard(
-                        'Tugas Hari Ini',
-                        '${_stats!['todays_tasks_count']}',
-                        Colors.orange,
+                      Expanded(
+                        child: StatCard(
+                          label: 'Tugas Hari Ini',
+                          value: '${stats['todays_tasks_count']}',
+                          icon: Icons.today_rounded,
+                          color: AppColors.accent,
+                        ),
                       ),
-                      const SizedBox(width: 16),
-                      _buildStatCard(
-                        'Selesai Bulan Ini',
-                        '${_stats!['completed_this_month']}',
-                        Colors.green,
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: StatCard(
+                          label: 'Selesai Bulan Ini',
+                          value: '${stats['completed_this_month']}',
+                          icon: Icons.task_alt_rounded,
+                        ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 32),
-                  const Text(
-                    'Aksi Cepat',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MyAttendanceScreen(),
+                  const SizedBox(height: AppSpacing.xl),
+                  const SectionTitle('Aksi Cepat'),
+                  ActionGrid(
+                    children: [
+                      ActionTile(
+                        label: 'Absensi Hari Ini',
+                        icon: Icons.fingerprint,
+                        onTap: () => widget.goToTab(2),
+                      ),
+                      ActionTile(
+                        label: 'Tugas Saya',
+                        icon: Icons.task_alt_rounded,
+                        color: AppColors.accent,
+                        onTap: () => widget.goToTab(1),
+                      ),
+                      ActionTile(
+                        label: 'Lapor Insiden',
+                        icon: Icons.warning_amber_rounded,
+                        color: AppColors.danger,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddIncidentScreen(),
+                          ),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.fingerprint, color: Colors.white),
-                    label: const Text(
-                      'Absensi Hari Ini',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MyPayslipScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.receipt_long_rounded, color: Colors.white),
-                    label: const Text(
-                      'Slip Upah Saya',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AddIncidentScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.warning_amber_rounded,
-                      color: Colors.white,
-                    ),
-                    label: const Text(
-                      'Laporkan Insiden di Lahan',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[800],
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border(top: BorderSide(color: color, width: 4)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
           ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _stats == null
+          ? ErrorState(
+              message: 'Gagal memuat data beranda.',
+              onRetry: () {
+                setState(() => _isLoading = true);
+                _loadData();
+              },
+            )
+          : _content(),
     );
   }
 }

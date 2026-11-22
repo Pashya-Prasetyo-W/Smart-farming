@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 const _monthNames = [
   'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
@@ -42,13 +43,13 @@ String statusLabel(String? status) {
 Color statusColor(String? status) {
   switch (status) {
     case 'terverifikasi':
-      return const Color(0xFF2E7D32);
+      return AppColors.primary;
     case 'ditolak':
-      return const Color(0xFFC62828);
+      return AppColors.danger;
     case 'keberatan':
-      return const Color(0xFFEF6C00);
+      return AppColors.warning;
     default:
-      return const Color(0xFF546E7A);
+      return AppColors.textMuted;
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../utils/attendance_format.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/rupiah.dart';
+import '../theme/app_theme.dart';
 
 class HarvestInput {
   HarvestInput({
@@ -140,7 +141,7 @@ class HarvestFormDialogState extends State<HarvestFormDialog> {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   _error!,
-                  style: const TextStyle(color: Color(0xFFC62828)),
+                  style: const TextStyle(color: AppColors.danger),
                 ),
               ),
           ],

@@ -5,6 +5,7 @@ import '../../services/user_service.dart';
 import '../auth/login_screen.dart';
 import '../../services/worker_service.dart';
 import '../../utils/rupiah.dart';
+import '../../theme/app_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -54,11 +55,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            child: const Text('Batal', style: TextStyle(color: AppColors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -86,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (wage is! Map) {
       return const Card(
-        color: Color(0xFFFFF3E0),
+        color: AppColors.warningSoft,
         child: Padding(
           padding: EdgeInsets.all(12),
           child: Align(
@@ -101,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (type == 'borongan') {
       return const Card(
-        color: Color(0xFFFFF8E1),
+        color: AppColors.warningSoft,
         child: Padding(
           padding: EdgeInsets.all(12),
           child: Column(
@@ -126,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     return Card(
-      color: Colors.amber[50],
+      color: AppColors.warningSoft,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -174,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         (_workerData?['benefits'] as List<dynamic>?) ?? [];
 
     return Card(
-      color: Colors.blue[50],
+      color: AppColors.primarySoft,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: benefits.isEmpty
@@ -195,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           item['type'] == 'makan'
                               ? Icons.restaurant
                               : Icons.health_and_safety,
-                          color: Colors.green,
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -225,8 +226,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil Saya', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF2E7D32),
+        title: const Text('Profil Saya'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -239,11 +239,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 20),
                   const CircleAvatar(
                     radius: 50,
-                    backgroundColor: Color(0xFFC8E6C9),
+                    backgroundColor: AppColors.primaryContainer,
                     child: Icon(
                       Icons.person,
                       size: 60,
-                      color: Color(0xFF2E7D32),
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -256,7 +256,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Text(
                     _user!['email'],
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 16, color: AppColors.textMuted),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -265,13 +265,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       _user!['role'].toString().toUpperCase(),
                       style: const TextStyle(
-                        color: Colors.blue,
+                        color: AppColors.water,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -298,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 8),
                     Card(
-                      color: Colors.green[50],
+                      color: AppColors.primarySoft,
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(
@@ -308,7 +308,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               children: [
                                 const Icon(
                                   Icons.access_time,
-                                  color: Colors.green,
+                                  color: AppColors.primary,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -322,7 +322,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               children: [
                                 const Icon(
                                   Icons.calendar_today,
-                                  color: Colors.green,
+                                  color: AppColors.primary,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -372,7 +372,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: const Icon(Icons.logout),
                     label: const Text('LOGOUT'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.danger,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                     ),

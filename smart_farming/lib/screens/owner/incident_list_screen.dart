@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../services/incident_service.dart';
 import '../../utils/search.dart';
 import '../../widgets/search_field.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
 
 class IncidentListScreen extends StatefulWidget {
   const IncidentListScreen({super.key});
@@ -51,10 +53,8 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Laporan Insiden',
-          style: TextStyle(color: Colors.white),
+          'Laporan Insiden'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: SearchField(
@@ -62,14 +62,13 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
             onChanged: (value) => setState(() => _query = value),
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _incidents == null || _incidents!.isEmpty
-          ? const Center(child: Text('Belum ada laporan insiden.'))
+          ? const EmptyState(message: 'Belum ada laporan insiden.')
           : incidents.isEmpty
-          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: incidents.length,
@@ -83,11 +82,7 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
                     .format(date);
 
                 return Card(
-                  elevation: 2,
                   margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -104,12 +99,12 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
                                   height: 150,
-                                  color: Colors.grey[300],
+                                  color: AppColors.outline,
                                   child: const Center(
                                     child: Icon(
                                       Icons.broken_image,
                                       size: 50,
-                                      color: Colors.grey,
+                                      color: AppColors.textMuted,
                                     ),
                                   ),
                                 ),
@@ -130,7 +125,7 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(0.1),
+                                    color: AppColors.danger.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -139,7 +134,7 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
                                         .replaceAll('_', ' ')
                                         .toUpperCase(),
                                     style: const TextStyle(
-                                      color: Colors.red,
+                                      color: AppColors.danger,
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -148,7 +143,7 @@ class _IncidentListScreenState extends State<IncidentListScreen> {
                                 Text(
                                   formattedDate,
                                   style: TextStyle(
-                                    color: Colors.grey[600],
+                                    color: AppColors.textMuted,
                                     fontSize: 12,
                                   ),
                                 ),

@@ -5,6 +5,8 @@ import '../../services/failure_log_service.dart';
 import '../../services/incident_service.dart';
 import '../../utils/search.dart';
 import '../../widgets/search_field.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/app_ui.dart';
 
 class FailureLogScreen extends StatefulWidget {
   const FailureLogScreen({super.key});
@@ -28,11 +30,8 @@ class _FailureLogScreenState extends State<FailureLogScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Indikasi Gagal Panen',
-          style: TextStyle(color: Colors.white),
+          'Indikasi Gagal Panen'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -107,10 +106,10 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
           width: double.infinity,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isHighRisk ? Colors.red[50] : Colors.orange[50],
+            color: isHighRisk ? AppColors.danger.withValues(alpha: 0.08) : AppColors.warning.withValues(alpha: 0.1),
             border: Border(
               bottom: BorderSide(
-                color: isHighRisk ? Colors.red : Colors.orange,
+                color: isHighRisk ? AppColors.danger : AppColors.warning,
                 width: 2,
               ),
             ),
@@ -119,7 +118,7 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
             children: [
               Text(
                 'Risiko Cuaca Tertinggi',
-                style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+                style: TextStyle(fontSize: 16, color: AppColors.textDark),
               ),
               const SizedBox(height: 8),
               Row(
@@ -131,7 +130,7 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
                     style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: isHighRisk ? Colors.red[800] : Colors.orange[800],
+                      color: isHighRisk ? AppColors.danger : AppColors.warning,
                     ),
                   ),
                   Text(
@@ -139,7 +138,7 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: isHighRisk ? Colors.red[800] : Colors.orange[800],
+                      color: isHighRisk ? AppColors.danger : AppColors.warning,
                     ),
                   ),
                 ],
@@ -154,7 +153,7 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
         ),
         Expanded(
           child: logs.isEmpty
-              ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+              ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
               : ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: logs.length,
@@ -181,16 +180,16 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
                             ),
                             decoration: BoxDecoration(
                               color: isHigh
-                                  ? Colors.red[100]
-                                  : Colors.orange[100],
+                                  ? AppColors.danger.withValues(alpha: 0.16)
+                                  : AppColors.warning.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               'Risiko: ${score.toStringAsFixed(0)}%',
                               style: TextStyle(
                                 color: isHigh
-                                    ? Colors.red[800]
-                                    : Colors.orange[800],
+                                    ? AppColors.danger
+                                    : AppColors.warning,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -198,7 +197,7 @@ class _WeatherRiskTabState extends State<_WeatherRiskTab> {
                           Text(
                             DateFormat('dd MMM yyyy').format(date),
                             style: TextStyle(
-                              color: Colors.grey[600],
+                              color: AppColors.textMuted,
                               fontSize: 12,
                             ),
                           ),
@@ -280,7 +279,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
         ),
       ),
       body: incidents.isEmpty
-          ? Center(child: Text('Tidak ada hasil untuk "$_query".'))
+          ? EmptyState(message: 'Tidak ada hasil untuk "$_query".', icon: Icons.search_off_rounded)
           : ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: incidents.length,
@@ -291,11 +290,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
         final date = DateTime.parse(incident['reported_at']);
 
         return Card(
-          elevation: 2,
           margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -325,7 +320,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: AppColors.danger.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -334,7 +329,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
                                 .replaceAll('_', ' ')
                                 .toUpperCase(),
                             style: const TextStyle(
-                              color: Colors.red,
+                              color: AppColors.danger,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -343,7 +338,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
                         Text(
                           DateFormat('dd MMM yyyy').format(date),
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: AppColors.textMuted,
                             fontSize: 12,
                           ),
                         ),
@@ -356,7 +351,7 @@ class _IncidentRiskTabState extends State<_IncidentRiskTab> {
                     ),
                     Text(
                       'Pelapor: ${incident['reporter']['name']}',
-                      style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                     ),
                     const Divider(),
                     Text(incident['description']),

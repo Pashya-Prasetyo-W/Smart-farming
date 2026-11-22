@@ -6,6 +6,7 @@ import '../../services/planting_service.dart';
 import '../../utils/attendance_format.dart';
 import '../../utils/rupiah.dart';
 import '../../widgets/harvest_form_dialog.dart';
+import '../../theme/app_theme.dart';
 
 class HarvestLogScreen extends StatefulWidget {
   const HarvestLogScreen({
@@ -163,7 +164,7 @@ class _HarvestLogScreenState extends State<HarvestLogScreen> {
                   if (recorder is Map)
                     Text(
                       'Dicatat oleh ${recorder['name']}',
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                     ),
                 ],
               ),

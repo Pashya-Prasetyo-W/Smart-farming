@@ -8,6 +8,7 @@ import '../../services/tool_service.dart';
 import '../../services/resource_service.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/rupiah.dart';
+import '../../theme/app_theme.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -198,7 +199,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   'Stok tersedia: ${_availableOf(selectedResource)} ${selectedResource['unit']}',
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Colors.grey,
+                    color: AppColors.textMuted,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -310,7 +311,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   Text(
                     'Ketersediaan: $availableQty ${selectedTool['unit_label'] ?? 'buah'}',
                     style: const TextStyle(
-                      color: Colors.blue,
+                      color: AppColors.water,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -389,7 +390,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       child: workers.isEmpty
           ? const Text(
               'Belum ada karyawan aktif.',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: AppColors.danger),
             )
           : Column(
               children: [
@@ -446,11 +447,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Buat Tugas Baru',
-          style: TextStyle(color: Colors.white),
+          'Buat Tugas Baru'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -480,7 +478,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   _activePlantings.isEmpty
                       ? const Text(
                           'Tidak ada siklus tanam aktif. Buat siklus tanam terlebih dahulu!',
-                          style: TextStyle(color: Colors.red),
+                          style: TextStyle(color: AppColors.danger),
                         )
                       : DropdownButtonFormField<int>(
                           value: _selectedPlantingId,
@@ -581,12 +579,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   if (_selectedResources.isEmpty)
                     const Text(
                       'Belum ada bahan dipilih.',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textMuted),
                     )
                   else if (_selectedWorkerIds.length > 1)
                     Text(
                       'Jumlah bahan dibagi rata ke ${_selectedWorkerIds.length} tugas.',
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
                     ),
                   ..._selectedResources.map((res) {
                     final resItem = _resources.firstWhere(
@@ -623,12 +621,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   if (_selectedTools.isEmpty)
                     const Text(
                       'Belum ada alat dipinjam.',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textMuted),
                     )
                   else if (_selectedWorkerIds.length > 1)
                     Text(
                       'Jumlah alat dibagi rata ke ${_selectedWorkerIds.length} karyawan.',
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
                     ),
                   ..._selectedTools.map((tool) {
                     final toolItem = _tools.firstWhere(
@@ -645,7 +643,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ElevatedButton(
                     onPressed: _isSaving ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
+                      backgroundColor: AppColors.primary,
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: _isSaving

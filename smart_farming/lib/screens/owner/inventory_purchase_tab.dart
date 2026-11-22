@@ -8,6 +8,7 @@ import '../../utils/currency_formatter.dart';
 import '../../utils/rupiah.dart';
 import '../../widgets/inventory_status_chip.dart';
 import '../../widgets/reason_dialog.dart';
+import '../../theme/app_theme.dart';
 
 String _qtyText(dynamic value) {
   final number = num.tryParse(value?.toString() ?? '');
@@ -201,7 +202,7 @@ class _PurchaseDialogState extends State<_PurchaseDialog> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _error!,
-                    style: const TextStyle(color: Color(0xFFC62828)),
+                    style: const TextStyle(color: AppColors.danger),
                   ),
                 ),
               ),
@@ -338,24 +339,24 @@ class _PurchaseTabState extends State<PurchaseTab> {
             Text(
               Rupiah.format(item['total_cost']),
               style: const TextStyle(
-                color: Color(0xFF2E7D32),
+                color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               '${formatWorkDate(item['purchased_at'])} • ${requester?['name'] ?? '-'}',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             if ((item['supplier'] ?? '').toString().isNotEmpty)
               Text(
                 'Pemasok: ${item['supplier']}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
             if ((item['notes'] ?? '').toString().isNotEmpty)
               Text(
                 item['notes'].toString(),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
             if (status == 'ditolak' &&
                 (item['reject_reason'] ?? '').toString().isNotEmpty)
@@ -363,7 +364,7 @@ class _PurchaseTabState extends State<PurchaseTab> {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   'Alasan ditolak: ${item['reject_reason']}',
-                  style: const TextStyle(color: Color(0xFFC62828)),
+                  style: const TextStyle(color: AppColors.danger),
                 ),
               ),
             if (pending && widget.isOwner)
@@ -434,7 +435,7 @@ class _PurchaseTabState extends State<PurchaseTab> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'fabPurchase',
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.primary,
         onPressed: _create,
         icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
         label: const Text('Catat Pembelian', style: TextStyle(color: Colors.white)),

@@ -7,6 +7,7 @@ import '../../widgets/attendance_status_chip.dart';
 import '../../widgets/reason_dialog.dart';
 import '../../widgets/search_field.dart';
 import '../owner/task_detail_screen.dart';
+import '../../theme/app_theme.dart';
 
 class ReportReviewScreen extends StatefulWidget {
   const ReportReviewScreen({super.key});
@@ -147,7 +148,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
                 '(batas ${_qty(pivot['max_allocated_qty'])} $unit)'
                 '${over ? ' - melebihi batas' : ''}',
                 style: TextStyle(
-                  color: over ? const Color(0xFFC62828) : null,
+                  color: over ? AppColors.danger : null,
                   fontWeight: over ? FontWeight.w600 : null,
                 ),
               ),
@@ -192,7 +193,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
               child: Text(
                 '- ${tool['name']}: ${parts.join(', ')}',
                 style: const TextStyle(
-                  color: Color(0xFFC62828),
+                  color: AppColors.danger,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -263,7 +264,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       height: 60,
-                      color: Colors.grey[300],
+                      color: AppColors.outline,
                       child: const Center(child: Text('Gagal memuat gambar')),
                     ),
                   ),
@@ -281,7 +282,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
                   padding: EdgeInsets.only(top: 4),
                   child: Text(
                     'Melewati 24 jam, dinaikkan ke pemilik.',
-                    style: TextStyle(color: Color(0xFFEF6C00), fontSize: 12),
+                    style: TextStyle(color: AppColors.warning, fontSize: 12),
                   ),
                 ),
               if (status == 'keberatan' && item['objection_note'] != null)
@@ -295,7 +296,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
                   child: Text(
                     'Ditolak: ${item['reject_reason']}'
                     '${item['is_final'] == true ? ' (final)' : ''}',
-                    style: const TextStyle(color: Color(0xFFC62828)),
+                    style: const TextStyle(color: AppColors.danger),
                   ),
                 ),
               if (!actionable && reviewer != null)
@@ -303,7 +304,7 @@ class _ReportReviewScreenState extends State<ReportReviewScreen> {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     'Diproses oleh ${reviewer['name']}',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                   ),
                 ),
               if (actionable) ...[

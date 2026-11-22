@@ -8,6 +8,7 @@ import '../../services/tool_service.dart';
 import '../../services/resource_service.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/rupiah.dart';
+import '../../theme/app_theme.dart';
 
 class EditTaskScreen extends StatefulWidget {
   final Map<String, dynamic> task;
@@ -209,7 +210,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   'Stok tersedia: ${selectedResource['stock_qty']} ${selectedResource['unit']}',
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Colors.grey,
+                    color: AppColors.textMuted,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -320,7 +321,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   Text(
                     'Ketersediaan: $availableQty ${selectedTool['unit_label'] ?? 'buah'}',
                     style: const TextStyle(
-                      color: Colors.blue,
+                      color: AppColors.water,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -389,9 +390,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Tugas', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Edit Tugas'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -421,7 +420,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   _activePlantings.isEmpty
                       ? const Text(
                           'Tidak ada siklus tanam aktif.',
-                          style: TextStyle(color: Colors.red),
+                          style: TextStyle(color: AppColors.danger),
                         )
                       : DropdownButtonFormField<int>(
                           value: _selectedPlantingId,
@@ -539,7 +538,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   if (_selectedResources.isEmpty)
                     const Text(
                       'Belum ada bahan dipilih.',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textMuted),
                     ),
                   ..._selectedResources.map((res) {
                     final resItem = _resources.firstWhere(
@@ -576,7 +575,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   if (_selectedTools.isEmpty)
                     const Text(
                       'Belum ada alat dipinjam.',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textMuted),
                     ),
                   ..._selectedTools.map((tool) {
                     final toolItem = _tools.firstWhere(
@@ -593,7 +592,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   ElevatedButton(
                     onPressed: _isSaving ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
+                      backgroundColor: AppColors.primary,
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: _isSaving

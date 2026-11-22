@@ -9,6 +9,7 @@ import '../../widgets/attendance_status_chip.dart';
 import '../../widgets/reason_dialog.dart';
 import 'report_task_screen.dart';
 import 'edit_task_screen.dart';
+import '../../theme/app_theme.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final int taskId;
@@ -101,7 +102,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Tutup', style: TextStyle(color: Colors.grey)),
+              child: const Text('Tutup', style: TextStyle(color: AppColors.textMuted)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -147,7 +148,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   );
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
               child: const Text(
                 'Batalkan',
                 style: TextStyle(color: Colors.white),
@@ -164,10 +165,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Detail Tugas',
-          style: TextStyle(color: Colors.white),
+          'Detail Tugas'
         ),
-        backgroundColor: const Color(0xFF2E7D32),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -242,7 +241,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               child: Text(
                                 'Maks: $maxQty ${res['unit']}\nTerpakai: ${_task!['report'] != null ? actualQty : "-"} ${res['unit']}',
                                 style: TextStyle(
-                                  color: Colors.grey[700],
+                                  color: AppColors.textMuted,
                                   fontSize: 13,
                                 ),
                               ),
@@ -278,7 +277,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E7D32),
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -295,7 +294,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
                                 height: 100,
-                                color: Colors.grey[300],
+                                color: AppColors.outline,
                                 child: const Center(
                                   child: Text('Gagal memuat gambar'),
                                 ),
@@ -336,7 +335,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         child: Text(
                           'Alasan ditolak: ${_task!['report']['reject_reason']}'
                           '${_task!['report']['is_final'] == true ? ' (keputusan final)' : ''}',
-                          style: const TextStyle(color: Color(0xFFC62828)),
+                          style: const TextStyle(color: AppColors.danger),
                         ),
                       ),
                     if (_task!['report']['objection_note'] != null &&
@@ -377,7 +376,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         style: TextStyle(color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: AppColors.water,
                         minimumSize: const Size(double.infinity, 48),
                       ),
                     ),
@@ -390,7 +389,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     ElevatedButton(
                       onPressed: _showCancelDialog,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppColors.danger,
                         minimumSize: const Size(double.infinity, 48),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -430,7 +429,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: AppColors.warning,
                           minimumSize: const Size(double.infinity, 48),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -459,7 +458,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ).then((_) => _fetchDetail());
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E7D32),
+                          backgroundColor: AppColors.primary,
                           minimumSize: const Size(double.infinity, 48),
                         ),
                         child: const Text(

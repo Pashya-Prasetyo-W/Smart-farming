@@ -5,6 +5,7 @@ import '../../utils/attendance_format.dart';
 import '../../utils/rupiah.dart';
 import '../../widgets/payroll_item_details.dart';
 import '../../widgets/payroll_status_chip.dart';
+import '../../theme/app_theme.dart';
 
 class PayrollDetailScreen extends StatefulWidget {
   const PayrollDetailScreen({super.key, required this.payrollId});
@@ -148,7 +149,7 @@ class _PayrollDetailScreenState extends State<PayrollDetailScreen> {
     }
 
     return Card(
-      color: const Color(0xFFFFF3E0),
+      color: AppColors.warningSoft,
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(12),
