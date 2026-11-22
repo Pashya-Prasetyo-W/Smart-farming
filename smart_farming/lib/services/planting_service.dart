@@ -54,6 +54,9 @@ class PlantingService {
   Future<Map<String, dynamic>> summary(int plantingId) =>
       ApiClient.send('GET', '/plantings/$plantingId/summary');
 
+  Future<Map<String, dynamic>> harvests(int plantingId) =>
+      ApiClient.send('GET', '/plantings/$plantingId/harvests');
+
   Future<Map<String, dynamic>> recordHarvest(
     int plantingId, {
     required String harvestDate,

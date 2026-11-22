@@ -76,6 +76,9 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::put('/tasks/{task}', [TaskController::class, 'update']);
         Route::post('/tasks/{task}/cancel', [TaskController::class, 'cancel']);
 
+        Route::post('/lands', [LandController::class, 'store']);
+        Route::put('/lands/{land}', [LandController::class, 'update']);
+
         Route::get('/plantings', [PlantingController::class, 'index']);
         Route::post('/plantings', [PlantingController::class, 'store']);
 
@@ -97,8 +100,6 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     });
 
     Route::middleware('role:pemilik')->group(function () {
-        Route::post('/lands', [LandController::class, 'store']);
-        Route::put('/lands/{land}', [LandController::class, 'update']);
 
         Route::post('/plantings/{planting}/harvest', [PlantingController::class, 'harvest']);
         Route::post('/plantings/{planting}/cancel', [PlantingController::class, 'cancelPlanting']);

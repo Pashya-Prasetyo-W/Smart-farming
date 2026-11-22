@@ -10,6 +10,7 @@ import '../owner/add_task_screen.dart';
 import '../owner/failure_log_screen.dart';
 import '../owner/incident_list_screen.dart';
 import '../owner/inventory_screen.dart';
+import '../owner/land_list_screen.dart';
 import '../owner/task_list_screen.dart';
 import '../owner/worker_list_screen.dart';
 import '../profile/profile_screen.dart';
@@ -170,6 +171,7 @@ class _MandorDashboardScreenState extends State<MandorDashboardScreen> {
                 Icons.assignment_turned_in_rounded,
                 const ReportReviewScreen(),
               ),
+              _menuTile('Lahan & Siklus', Icons.landscape_rounded, const LandListScreen()),
               _menuTile('Buat Tugas', Icons.add_task_rounded, const AddTaskScreen()),
               _menuTile('Inventaris', Icons.inventory_2_rounded, const InventoryScreen()),
               _menuTile('Kelola Buruh', Icons.people_alt_rounded, const WorkerListScreen()),

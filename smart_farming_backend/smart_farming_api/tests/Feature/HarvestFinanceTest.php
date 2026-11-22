@@ -159,16 +159,55 @@ class HarvestFinanceTest extends TestCase
         $this->assertSame(0, Harvest::count());
     }
 
-    public function test_hanya_pemilik_mencatat_panen(): void
+    public function test_buruh_tidak_bisa_panen_dan_mandor_tidak_bisa_ringkasan(): void
     {
         $planting = $this->planting();
 
-        foreach (['mandor', 'buruh'] as $role) {
-            Sanctum::actingAs($this->t[$role]);
+        Sanctum::actingAs($this->t['buruh']);
+        $this->postJson("/api/plantings/{$planting->id}/harvests", ['quantity_kg' => 5])->assertForbidden();
+        $this->getJson("/api/plantings/{$planting->id}/harvests")->assertForbidden();
+        $this->getJson("/api/plantings/{$planting->id}/summary")->assertForbidden();
 
-            $this->postJson("/api/plantings/{$planting->id}/harvests", ['quantity_kg' => 5])->assertForbidden();
-            $this->getJson("/api/plantings/{$planting->id}/summary")->assertForbidden();
-        }
+        Sanctum::actingAs($this->t['mandor']);
+        $this->getJson("/api/plantings/{$planting->id}/summary")->assertForbidden();
+    }
+
+    public function test_mandor_mencatat_dan_melihat_panen(): void
+    {
+        $planting = $this->planting();
+
+        Sanctum::actingAs($this->t['mandor']);
+
+        $this->postJson("/api/plantings/{$planting->id}/harvests", [
+            'quantity_kg' => 40, 'sold_kg' => 10, 'price_per_kg' => 2000,
+        ])->assertCreated();
+
+        $response = $this->getJson("/api/plantings/{$planting->id}/harvests")->assertOk();
+
+        $this->assertCount(1, $response->json('data.harvests'));
+        $this->assertEquals(40, $response->json('data.harvested_kg'));
+        $this->assertSame($this->t['mandor']->id, $response->json('data.harvests.0.recorded_by'));
+        $this->assertSame(1, Finance::where('type', 'pemasukan')->count());
+    }
+
+    public function test_mandor_hanya_menghapus_panen_miliknya(): void
+    {
+        $planting = $this->planting();
+
+        Sanctum::actingAs($this->t['owner']);
+        $ownerId = $this->postJson("/api/plantings/{$planting->id}/harvests", ['quantity_kg' => 10])
+            ->assertCreated()->json('data.id');
+
+        Sanctum::actingAs($this->t['mandor']);
+        $mandorId = $this->postJson("/api/plantings/{$planting->id}/harvests", ['quantity_kg' => 5])
+            ->assertCreated()->json('data.id');
+
+        $this->deleteJson("/api/harvests/{$ownerId}")->assertForbidden();
+        $this->deleteJson("/api/harvests/{$mandorId}")->assertOk();
+
+        Sanctum::actingAs($this->t['owner']);
+        $this->deleteJson("/api/harvests/{$ownerId}")->assertOk();
+        $this->assertSame(0, Harvest::count());
     }
 
     public function test_hapus_catatan_panen_menghapus_pemasukannya(): void

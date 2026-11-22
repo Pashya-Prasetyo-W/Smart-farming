@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/currency_formatter.dart';
 import '../../services/planting_service.dart';
 import '../../services/land_service.dart';
 import '../../services/milestone_service.dart';
+import '../mandor/harvest_log_screen.dart';
 import 'add_planting_screen.dart';
 import 'edit_land_screen.dart';
 import 'planting_summary_screen.dart';
@@ -21,12 +23,33 @@ class LandDetailScreen extends StatefulWidget {
 class _LandDetailScreenState extends State<LandDetailScreen> {
   late dynamic _currentLand;
   List<dynamic> _milestones = [];
+  bool _isOwner = false;
 
   @override
   void initState() {
     super.initState();
     _currentLand = widget.land;
+    _loadRole();
     _fetchMilestones();
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) setState(() => _isOwner = prefs.getString('role') == 'pemilik');
+  }
+
+  Future<void> _openHarvestLog(dynamic planting) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HarvestLogScreen(
+          plantingId: planting['id'],
+          cropName: planting['crop_name'].toString(),
+          plantDate: planting['plant_date']?.toString(),
+        ),
+      ),
+    );
+    _refreshLand();
   }
 
   void _refreshLand() async {
@@ -541,37 +564,52 @@ class _LandDetailScreenState extends State<LandDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () =>
-                                _openSummary(activePlanting['id']),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                            ),
-                            child: const Text(
-                              'PANEN & RINGKASAN',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () =>
-                                _showCancelDialog(activePlanting['id']),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
-                            child: const Text(
-                              'GAGAL',
-                              style: TextStyle(color: Colors.white),
+                    if (_isOwner)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  _openSummary(activePlanting['id']),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              child: const Text(
+                                'PANEN & RINGKASAN',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  _showCancelDialog(activePlanting['id']),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              child: const Text(
+                                'GAGAL',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => _openHarvestLog(activePlanting),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                          ),
+                          child: const Text(
+                            'CATAT & LIHAT PANEN',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
                   ],
                 ),
               )

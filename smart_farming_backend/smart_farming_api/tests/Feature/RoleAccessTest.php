@@ -64,7 +64,7 @@ class RoleAccessTest extends TestCase
             ->assertJsonStructure(['data' => ['total_lands', 'active_tasks', 'active_workers']]);
     }
 
-    public function test_mandor_tidak_bisa_keuangan_lahan_dan_keputusan_siklus_tanam(): void
+    public function test_mandor_tidak_bisa_keuangan_dan_keputusan_siklus_tanam(): void
     {
         Sanctum::actingAs($this->t['mandor']);
 
@@ -72,14 +72,26 @@ class RoleAccessTest extends TestCase
         $this->postJson('/api/finances', [
             'type' => 'pemasukan', 'amount' => 1000, 'description' => 'x',
         ])->assertForbidden();
-        $this->postJson('/api/lands', [
-            'name' => 'Lahan Baru', 'area_sqm' => 10, 'location_lat' => 0, 'location_long' => 0,
-        ])->assertForbidden();
         $this->postJson('/api/plantings/' . $this->t['planting']->id . '/harvest', ['harvest_kg' => 5])
             ->assertForbidden();
         $this->postJson('/api/plantings/' . $this->t['planting']->id . '/cancel')
             ->assertForbidden();
         $this->getJson('/api/dashboard/owner')->assertForbidden();
+    }
+
+    public function test_mandor_bisa_menambah_dan_mengubah_lahan_tetapi_buruh_tidak(): void
+    {
+        $payload = ['name' => 'Lahan Baru', 'area_sqm' => 10, 'location_lat' => 0, 'location_long' => 0];
+
+        Sanctum::actingAs($this->t['mandor']);
+        $id = $this->postJson('/api/lands', $payload)->assertCreated()->json('data.id');
+        $this->putJson("/api/lands/{$id}", array_merge($payload, ['name' => 'Lahan Ganti']))
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Lahan Ganti');
+
+        Sanctum::actingAs($this->t['buruh']);
+        $this->postJson('/api/lands', $payload)->assertForbidden();
+        $this->putJson("/api/lands/{$id}", $payload)->assertForbidden();
     }
 
     public function test_pemilik_bisa_semua_area_tanpa_dashboard_mandor(): void
